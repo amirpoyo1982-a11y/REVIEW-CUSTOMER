@@ -167,7 +167,7 @@
       align-items: center;
     }
     
-    /* GAYA REKABENTUK NAMA + BADGE VERIFIED */
+    /* Susunan Nama + Lencana Verified */
     .buyer-name-container {
       display: flex;
       align-items: center;
@@ -269,7 +269,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    // Menggunakan deleteDoc bagi menggantikan fungsi lama updateDoc
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBOkyPe2f1tHu9OQiwHHpgfJTYM-KM7cuU",
@@ -295,7 +296,7 @@
 
     const warnaAvatar = ['#38bdf8', '#a855f7', '#ec4899', '#10b981', '#f59e0b', '#ef4444'];
 
-    // 1. Fungsi Simpan Data + Validasi Kod Sekali Guna
+    // 1. Fungsi Simpan Data + AUTO-PADAM Kod Pengesahan
     butangHantar.addEventListener("click", async () => {
       const kod = kodVerification.value.trim().toUpperCase();
       const nama = namaPelanggan.value.trim();
@@ -311,16 +312,13 @@
         const docRef = doc(db, "review_codes", kod);
         const docSnap = await getDoc(docRef);
 
+        // Sekatan: Jika kod tidak wujud (atau sudah didelete), sistem akan sekat terus
         if (!docSnap.exists()) {
-          alert("❌ Ralat: Kod pengesahan salah atau tidak sah!");
+          alert("❌ Ralat: Kod salah atau telah pun digunakan!");
           return;
         }
 
-        if (docSnap.data().used === true) {
-          alert("❌ Ralat: Kod ini telah pun digunakan sebelum ini!");
-          return;
-        }
-
+        // Lulus: Simpan ulasan ke database utama 'ratings'
         await addDoc(collection(db, "ratings"), {
           nama: nama,
           bintang: nilaiBintang,
@@ -328,18 +326,17 @@
           diciptaPada: serverTimestamp()
         });
         
-        await updateDoc(docRef, {
-          used: true
-        });
+        // 🔥 LOGIK UTAMA: Padam terus dokumen kod ini dari Firebase secara kekal
+        await deleteDoc(docRef);
 
         kodVerification.value = "";
         namaPelanggan.value = "";
         ulasanPelanggan.value = "";
-        alert("🔥 Berjaya! Ulasan anda disahkan dan telah selamat disimpan.");
+        alert("🔥 Berjaya! Ulasan disahkan dan kod lama telah dilupuskan secara automatik.");
 
       } catch (ralat) {
         console.error(ralat);
-        alert("Sistem sibuk atau ralat network. Cuba lagi sebentar.");
+        alert("Sistem sibuk atau ralat rangkaian. Cuba lagi sebentar.");
       }
     });
 
@@ -367,7 +364,7 @@
         const rawNama = data.nama || "Pelanggan Misteri";
         const paparanUlasan = data.ulasan || "Tiada ulasan teks disediakan.";
 
-        // --- FUNGSI CIPTAAN: KAWALAN PRIVASI SOROK NAMA SETENGAH ---
+        // Sistem Privasi Sorok Nama Setengah (Contoh: "adat" -> "ad*t")
         let namaDisorok = rawNama;
         if (rawNama !== "Pelanggan Misteri") {
           if (rawNama.length <= 2) {
@@ -375,7 +372,6 @@
           } else if (rawNama.length === 3) {
             namaDisorok = rawNama.charAt(0) + "*" + rawNama.charAt(2);
           } else {
-            // Contoh: "adat" -> ambil 2 huruf depan ("ad"), tambah '*', dan huruf terakhir ("t") = ad*t
             namaDisorok = rawNama.substring(0, 2) + "*".repeat(rawNama.length - 3) + rawNama.slice(-1);
           }
         }
