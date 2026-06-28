@@ -1,591 +1,421 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H4SX STORE — Penjana Resit</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.8/dist/html2canvas.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verified Reviews — H4SX STORE</title>
+  <style>
+    /* Estetik Deep Cyberpunk / Dark Mode */
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0; 
+      padding: 40px 20px;
+      background-color: #080c14; 
+      color: #f1f5f9; 
+    }
+    .main-container {
+      max-width: 550px;
+      margin: 0 auto;
+      background-color: #0f172a;
+      padding: 30px;
+      border-radius: 20px;
+      border: 1px solid #1e293b;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(14, 165, 233, 0.05);
+    }
+    h2 {
+      color: #38bdf8;
+      margin-top: 0;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-size: 22px;
+      border-bottom: 2px solid #1e293b;
+      padding-bottom: 12px;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
 
-    <style>
-        :root {
-            --ink: #05070d;
-            --panel: #0c1018;
-            --panel-soft: #11161f;
-            --line: rgba(148, 178, 255, 0.14);
-            --accent: #5eead4;
-            --accent-soft: rgba(94, 234, 212, 0.12);
-            --accent2: #f472b6;
-            --text: #eef2ff;
-            --text-dim: #8993ad;
-        }
-        body {
-            font-family: 'Sora', sans-serif;
-            background-color: var(--ink);
-            background-image:
-                radial-gradient(circle at 15% 0%, rgba(94, 234, 212, 0.07), transparent 45%),
-                radial-gradient(circle at 85% 100%, rgba(244, 114, 182, 0.05), transparent 45%);
-            color: var(--text);
-        }
-        .mono { font-family: 'Space Mono', monospace; }
-        .signature-text {
-            font-family: 'Caveat', cursive;
-            font-size: 2.4rem;
-            transform: rotate(-3deg);
-            line-height: 1;
-        }
-        .panel {
-            background: linear-gradient(180deg, var(--panel), #080a10);
-            border: 1px solid var(--line);
-        }
-        .field {
-            background: #060810;
-            border: 1px solid var(--line);
-            transition: border-color .15s ease, box-shadow .15s ease;
-        }
-        .field:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-soft);
-        }
-        .btn {
-            transition: transform .12s ease, filter .12s ease;
-        }
-        .btn:hover { filter: brightness(1.08); }
-        .btn:active { transform: scale(0.98); }
+    /* Kotak Ringkasan Rating Utama */
+    .rating-summary {
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      border: 1px dashed #334155;
+    }
+    .big-score {
+      font-size: 36px;
+      font-weight: 800;
+      color: #38bdf8;
+      margin-right: 15px;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+    .stats-info h4 { margin: 0; color: #f1f5f9; font-size: 15px; }
+    .stats-info p { margin: 2px 0 0 0; color: #64748b; font-size: 12px; }
 
-        #receiptCard {
-            border: 1px solid var(--line);
-            box-shadow: 0 0 0 1px rgba(94,234,212,0.06), 0 30px 60px -20px rgba(0,0,0,0.6);
-        }
-        .stub-row::before {
-            content: "";
-            position: absolute;
-            left: 0; right: 0; top: 0;
-            height: 1px;
-            background-image: repeating-linear-gradient(to right, var(--line) 0, var(--line) 6px, transparent 6px, transparent 12px);
-        }
-        .seal {
-            border: 1px solid rgba(94, 234, 212, 0.35);
-            background: var(--accent-soft);
-        }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0b0f19; }
-        ::-webkit-scrollbar-thumb { background: #1e2638; border-radius: 4px; }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    input[type="text"], select, textarea { 
+      width: 100%;
+      padding: 12px; 
+      border-radius: 10px; 
+      border: 1px solid #334155; 
+      background-color: #1e293b; 
+      color: #fff; 
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    input[type="text"]:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+    
+    /* Highlight khas untuk input KOD */
+    .code-input {
+      border: 1px dashed #f59e0b !important;
+      background-color: #1e1b12 !important;
+      color: #f59e0b !important;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    .code-input:focus {
+      border-color: #f59e0b !important;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.2) !important;
+    }
 
-        .upload-drop {
-            border: 1px dashed var(--line);
-            transition: border-color .15s ease, background-color .15s ease;
-        }
-        .upload-drop.dragover {
-            border-color: var(--accent);
-            background-color: var(--accent-soft);
-        }
-        .seg-btn { transition: background-color .15s ease, color .15s ease; }
-        .seg-btn.active { background: var(--accent); color: #052e2a; }
-    </style>
+    textarea { resize: vertical; }
+    
+    /* Butang Impak Neon */
+    button { 
+      width: 100%;
+      padding: 14px; 
+      border-radius: 10px; 
+      background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%);
+      color: #fff; 
+      font-size: 15px;
+      font-weight: bold; 
+      cursor: pointer; 
+      border: none; 
+      transition: all 0.2s;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    button:hover { 
+      background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+    button:active { transform: scale(0.98); }
+
+    .rating-box { 
+      border: 1px solid #1e293b; 
+      padding: 5px; 
+      margin-top: 15px; 
+      background-color: #090c14; 
+      border-radius: 14px; 
+      max-height: 450px;
+      overflow-y: auto;
+    }
+
+    /* Kad Struktur Komen Ber-Avatar */
+    .review-card { 
+      padding: 16px; 
+      border-bottom: 1px solid #1e293b; 
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+    .review-card:last-child { border-bottom: none; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      color: #0f172a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 15px;
+      flex-shrink: 0;
+      box-shadow: 0 0 8px rgba(256, 256, 256, 0.05);
+    }
+    .review-content {
+      flex-grow: 1;
+    }
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    /* GAYA REKABENTUK NAMA + BADGE VERIFIED */
+    .buyer-name-container {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .buyer-name { 
+      font-weight: bold; 
+      color: #f8fafc;
+      font-size: 14px;
+    }
+    .verified-badge {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .buyer-stars { font-size: 11px; letter-spacing: 1px; }
+    .buyer-time {
+      font-size: 11px;
+      color: #475569;
+      margin-bottom: 5px;
+    }
+    .buyer-feedback { 
+      color: #cbd5e1;
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin: 0;
+      word-break: break-word;
+    }
+    .no-reviews {
+      text-align: center;
+      color: #475569;
+      font-size: 13px;
+      padding: 30px 0;
+    }
+    h3 {
+      color: #64748b;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 30px;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center relative overflow-x-hidden">
+<body>
 
-    <div id="toastNotification" class="fixed top-6 right-6 z-50 transform translate-x-80 opacity-0 transition-all duration-300 pointer-events-none">
-        <div id="toastBorder" class="bg-[#0c1018]/95 backdrop-blur-md border border-emerald-400/40 rounded-2xl p-4 shadow-2xl flex items-start gap-3 max-w-sm">
-            <div id="toastIconBg" class="w-9 h-9 rounded-xl bg-emerald-400/15 flex items-center justify-center text-emerald-300 text-sm shrink-0 mt-0.5">
-                <i id="toastIcon" class="fa-solid fa-circle-check"></i>
-            </div>
-            <div>
-                <h4 id="toastTitle" class="text-sm font-bold text-white">Berjaya</h4>
-                <p id="toastMessage" class="text-xs text-slate-400 mt-0.5 leading-relaxed">Mesej di sini...</p>
-            </div>
-        </div>
+  <div class="main-container">
+    <h2>Beri Penarafan Anda</h2>
+    
+    <div class="rating-summary">
+      <div class="big-score" id="purataSkor">0.0</div>
+      <div class="stats-info">
+        <h4>Purata Kepuasan Pelanggan</h4>
+        <p id="jumlahUlasan">Memuatkan statistik ulasan...</p>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="kodVerification" style="color: #f59e0b;">🔐 Kod Pengesahan Pembelian (Dapatkan dari Admin):</label>
+      <input type="text" id="kodVerification" class="code-input" placeholder="TAIP KOD DI SINI" style="text-transform: uppercase;">
     </div>
 
-    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-        <div class="lg:col-span-5 panel p-6 rounded-2xl shadow-2xl space-y-5">
-            <div>
-                <h1 class="text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
-                    <span class="text-emerald-300"><i class="fa-solid fa-receipt"></i></span> H4SX STORE
-                </h1>
-                <p class="text-xs text-slate-500 mt-1">Penjana resit jualan — auto-simpan dalam pelayar ini</p>
-            </div>
-
-            <hr class="border-white/5">
-
-            <div class="space-y-4 text-sm">
-                <div>
-                    <label class="block text-slate-400 font-medium mb-1.5 text-xs uppercase tracking-wide">Nama Pembeli / Username</label>
-                    <input type="text" id="inputUser" class="w-full field rounded-lg px-3 py-2.5 text-slate-100">
-                </div>
-
-                <div>
-                    <label class="block text-slate-400 font-medium mb-1.5 text-xs uppercase tracking-wide">Nama Game</label>
-                    <input type="text" id="inputGame" class="w-full field rounded-lg px-3 py-2.5 text-slate-100">
-                </div>
-
-                <div>
-                    <label class="block text-slate-400 font-medium mb-1.5 text-xs uppercase tracking-wide">Butiran Item / Deskripsi</label>
-                    <textarea id="inputDesc" rows="2" class="w-full field rounded-lg px-3 py-2.5 text-slate-100"></textarea>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-slate-400 font-medium mb-1.5 text-xs uppercase tracking-wide">Harga</label>
-                        <input type="number" id="inputPrice" step="0.01" class="w-full field rounded-lg px-3 py-2.5 text-slate-100">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 font-medium mb-1.5 text-xs uppercase tracking-wide">Mata Wang</label>
-                        <select id="inputCurrency" class="w-full field rounded-lg px-3 py-2.5 text-slate-100">
-                            <option value="RM">RM (Malaysia)</option>
-                            <option value="USD">USD (Dollar)</option>
-                            <option value="RP">RP (Rupiah)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-slate-400 font-medium mb-1.5 text-xs uppercase tracking-wide">Gambar Latar Belakang</label>
-
-                    <div class="flex gap-1.5 mb-2 bg-[#060810] border border-white/10 rounded-lg p-1 w-fit">
-                        <button type="button" id="segUpload" class="seg-btn active text-xs font-semibold px-3 py-1.5 rounded-md">Muat Naik</button>
-                        <button type="button" id="segUrl" class="seg-btn text-xs font-semibold px-3 py-1.5 rounded-md text-slate-400">Link URL</button>
-                    </div>
-
-                    <div id="uploadPane">
-                        <label for="inputBgFile" id="uploadDrop" class="upload-drop rounded-lg flex flex-col items-center justify-center gap-1.5 py-5 cursor-pointer text-slate-400 hover:text-slate-300">
-                            <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
-                            <span class="text-xs">Klik atau seret gambar ke sini</span>
-                            <span id="fileNameLabel" class="text-[11px] text-emerald-300 mono"></span>
-                        </label>
-                        <input type="file" id="inputBgFile" accept="image/*" class="hidden">
-                        <p class="text-[11px] text-slate-500 mt-1.5">Disyorkan — elak masalah copy/download imej.</p>
-                    </div>
-
-                    <div id="urlPane" class="hidden">
-                        <input type="text" id="inputBg" placeholder="https://..." class="w-full field rounded-lg px-3 py-2.5 text-slate-100 text-xs mono">
-                        <p class="text-[11px] text-amber-400/80 mt-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Sumber luar tanpa CORS akan gagalkan copy &amp; download. Guna "Muat Naik" jika ini berlaku.</p>
-                    </div>
-
-                    <button type="button" id="clearBgBtn" class="text-[11px] text-slate-500 hover:text-slate-300 mt-2 hidden">Buang gambar latar</button>
-                </div>
-            </div>
-
-            <div class="pt-2 space-y-2.5">
-                <button onclick="resetAndGenerateNew()" class="btn w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow flex items-center justify-center gap-2 cursor-pointer text-sm">
-                    <i class="fa-solid fa-rotate"></i> Jana Kod Resit Baharu
-                </button>
-
-                <button onclick="copyReceiptImage()" id="copyImgBtn" class="btn w-full bg-pink-500/90 hover:bg-pink-500 text-white font-semibold py-2.5 px-4 rounded-xl shadow flex items-center justify-center gap-2 cursor-pointer text-sm">
-                    <i class="fa-solid fa-copy"></i> Salin Gambar ke Clipboard
-                </button>
-
-                <button onclick="downloadReceiptImage()" class="btn w-full bg-indigo-500/90 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl shadow flex items-center justify-center gap-2 cursor-pointer text-sm">
-                    <i class="fa-solid fa-download"></i> Muat Turun Gambar (PNG)
-                </button>
-
-                <button onclick="copyToClipboard()" class="btn w-full bg-emerald-500/90 hover:bg-emerald-500 text-[#052e2a] font-semibold py-2.5 px-4 rounded-xl shadow flex items-center justify-center gap-2 cursor-pointer text-sm">
-                    <i class="fa-solid fa-file-lines"></i> Salin Teks Butiran Resit
-                </button>
-            </div>
-        </div>
-
-        <div class="lg:col-span-7 w-full flex justify-center">
-
-            <div id="receiptCard" class="w-full max-w-md bg-[#080a10] rounded-3xl p-8 relative overflow-hidden transition-all duration-300 bg-cover bg-center">
-                <div id="bgOverlay" class="absolute inset-0 bg-[#080a10]/93 z-0 transition-opacity duration-300"></div>
-
-                <div class="relative z-10 space-y-5">
-                    <div class="text-center space-y-1.5">
-                        <div class="text-[10px] uppercase tracking-[0.2em] text-emerald-300 font-bold">Resit Jualan</div>
-                        <h2 class="text-2xl font-extrabold text-white tracking-tight">H4SX STORE</h2>
-                        <div class="text-xs text-slate-500 font-medium flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-globe text-emerald-300 text-[10px]"></i> h4sx-store.vercel.app
-                        </div>
-                    </div>
-
-                    <div class="relative pt-3 stub-row"></div>
-
-                    <div class="grid grid-cols-2 gap-3 text-xs">
-                        <div class="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl">
-                            <span class="block text-[10px] text-slate-500 uppercase tracking-wide mb-1">Kod TX</span>
-                            <span id="resitCode" class="font-bold text-white text-sm mono">H4SX-XXXXXX</span>
-                        </div>
-                        <div class="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl">
-                            <span class="block text-[10px] text-slate-500 uppercase tracking-wide mb-1">Tarikh Jualan</span>
-                            <span id="resitDate" class="font-semibold text-slate-200 mono">--/--/----</span>
-                        </div>
-                        <div class="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl">
-                            <span class="block text-[10px] text-slate-500 uppercase tracking-wide mb-1">Pembeli</span>
-                            <span id="resitUser" class="font-bold text-slate-200 truncate block">-</span>
-                        </div>
-                        <div class="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl">
-                            <span class="block text-[10px] text-slate-500 uppercase tracking-wide mb-1">Game</span>
-                            <span id="resitGame" class="font-bold text-emerald-300 truncate block">-</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-white/[0.03] border border-white/[0.06] p-4 rounded-xl space-y-1.5">
-                        <span class="block text-[10px] text-slate-500 uppercase tracking-wide font-bold">Item / Perkhidmatan</span>
-                        <p id="resitDesc" class="text-xs text-slate-200 font-medium leading-relaxed">-</p>
-                    </div>
-
-                    <div class="flex justify-between items-center bg-gradient-to-r from-emerald-400/10 to-transparent border border-emerald-400/25 p-4 rounded-xl">
-                        <span class="text-xs text-emerald-300 uppercase tracking-wide font-bold">Jumlah Bayaran</span>
-                        <span id="resitPrice" class="text-2xl font-extrabold text-white mono tracking-tight">RM 0.00</span>
-                    </div>
-
-                    <div class="grid grid-cols-2 items-end pt-1">
-                        <div class="flex items-center gap-2 seal p-2 rounded-xl max-w-[160px]">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-400/15 flex items-center justify-center text-emerald-300 text-xs shrink-0">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <div class="leading-none">
-                                <span class="text-[9px] font-bold text-emerald-300 block tracking-wide">DIBAYAR</span>
-                                <span class="text-[8px] text-slate-500 block mt-0.5">Direkodkan</span>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Dikeluarkan Oleh</span>
-                            <div class="signature-text text-emerald-300 select-none">
-                                H4SX Store
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+    <div class="form-group">
+      <label for="namaPelanggan">Nama / Username Pembeli:</label>
+      <input type="text" id="namaPelanggan" placeholder="Contoh: Hasnain Gaming">
     </div>
 
-    <script>
-        const defaultData = {
-            user: "Muhammad Hasnain",
-            game: "Blox Fruits",
-            desc: "Joki Cursed Dual Katana (CDK) Full Gear Max Level",
-            price: "27.00",
-            currency: "RM",
-            bg: "",
-            bgFile: ""
-        };
+    <div class="form-group">
+      <label for="pilihBintang">Skor Perkhidmatan:</label>
+      <select id="pilihBintang">
+        <option value="5">⭐⭐⭐⭐⭐ (5 Bintang — Sangat Puas)</option>
+        <option value="4">⭐⭐⭐⭐ (4 Bintang — Baik)</option>
+        <option value="3">⭐⭐⭐ (3 Bintang — Sederhana)</option>
+        <option value="2">⭐⭐ (2 Bintang — Kurang Memuaskan)</option>
+        <option value="1">⭐ (1 Bintang — Lemah)</option>
+      </select>
+    </div>
 
-        function generateRandomCode() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let result = '';
-            for (let i = 0; i < 6; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return `H4SX-${result}`;
+    <div class="form-group">
+      <label for="ulasanPelanggan">Ulasan Telus:</label>
+      <textarea id="ulasanPelanggan" rows="3" placeholder="Kongsi pengalaman anda berurusan dengan H4SX STORE..."></textarea>
+    </div>
+
+    <button id="butangHantar">Hantar Review</button>
+
+    <h3>Ulasan Pelanggan Terkini (Real-Time):</h3>
+    <div id="kotakPaparan" class="rating-box">Memuatkan maklumat ulasan...</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBOkyPe2f1tHu9OQiwHHpgfJTYM-KM7cuU",
+      authDomain: "h4sx-6712c.firebaseapp.com",
+      projectId: "h4sx-6712c",
+      storageBucket: "h4sx-6712c.firebasestorage.app",
+      messagingSenderId: "416803081247",
+      appId: "1:416803081247:web:e201174233b953e539992a",
+      measurementId: "G-J9QWB39V87"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const kodVerification = document.getElementById("kodVerification");
+    const namaPelanggan = document.getElementById("namaPelanggan");
+    const pilihBintang = document.getElementById("pilihBintang");
+    const ulasanPelanggan = document.getElementById("ulasanPelanggan");
+    const butangHantar = document.getElementById("butangHantar");
+    const kotakPaparan = document.getElementById("kotakPaparan");
+    const purataSkor = document.getElementById("purataSkor");
+    const jumlahUlasan = document.getElementById("jumlahUlasan");
+
+    const warnaAvatar = ['#38bdf8', '#a855f7', '#ec4899', '#10b981', '#f59e0b', '#ef4444'];
+
+    // 1. Fungsi Simpan Data + Validasi Kod Sekali Guna
+    butangHantar.addEventListener("click", async () => {
+      const kod = kodVerification.value.trim().toUpperCase();
+      const nama = namaPelanggan.value.trim();
+      const nilaiBintang = parseInt(pilihBintang.value);
+      const ulasan = ulasanPelanggan.value.trim();
+
+      if (!kod || !nama || !ulasan) {
+        alert("Sila lengkapkan Kod Pengesahan, Nama, dan Ruangan Ulasan!");
+        return;
+      }
+
+      try {
+        const docRef = doc(db, "review_codes", kod);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          alert("❌ Ralat: Kod pengesahan salah atau tidak sah!");
+          return;
         }
 
-        // ---------- Background source mode (upload vs URL) ----------
-        let bgSourceMode = 'upload'; // 'upload' | 'url'
-        let bgUploadDataUrl = '';    // base64 data URL of uploaded file (safe for canvas export)
-
-        function setBgMode(mode) {
-            bgSourceMode = mode;
-            document.getElementById('segUpload').classList.toggle('active', mode === 'upload');
-            document.getElementById('segUrl').classList.toggle('active', mode === 'url');
-            document.getElementById('segUrl').classList.toggle('text-slate-400', mode === 'upload');
-            document.getElementById('segUpload').classList.toggle('text-slate-400', mode === 'url');
-            document.getElementById('uploadPane').classList.toggle('hidden', mode !== 'upload');
-            document.getElementById('urlPane').classList.toggle('hidden', mode !== 'url');
-            localStorage.setItem('h4sx_bgmode', mode);
-            renderReceiptCardOnly();
+        if (docSnap.data().used === true) {
+          alert("❌ Ralat: Kod ini telah pun digunakan sebelum ini!");
+          return;
         }
 
-        document.getElementById('segUpload').addEventListener('click', () => setBgMode('upload'));
-        document.getElementById('segUrl').addEventListener('click', () => setBgMode('url'));
-
-        function handleFile(file) {
-            if (!file || !file.type.startsWith('image/')) {
-                triggerToast('FAIL TIDAK SAH', 'Sila pilih fail imej (PNG, JPG, atau WebP).', 'error');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                bgUploadDataUrl = e.target.result;
-                localStorage.setItem('h4sx_bgfile', bgUploadDataUrl);
-                document.getElementById('fileNameLabel').innerText = file.name;
-                document.getElementById('clearBgBtn').classList.remove('hidden');
-                renderReceiptCardOnly();
-            };
-            reader.onerror = () => {
-                triggerToast('GAGAL BACA FAIL', 'Cuba muat naik semula gambar tersebut.', 'error');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        document.getElementById('inputBgFile').addEventListener('change', (e) => {
-            handleFile(e.target.files[0]);
+        await addDoc(collection(db, "ratings"), {
+          nama: nama,
+          bintang: nilaiBintang,
+          ulasan: ulasan,
+          diciptaPada: serverTimestamp()
+        });
+        
+        await updateDoc(docRef, {
+          used: true
         });
 
-        const dropZone = document.getElementById('uploadDrop');
-        ['dragover', 'dragenter'].forEach(evt => {
-            dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-        });
-        ['dragleave', 'drop'].forEach(evt => {
-            dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
-        });
-        dropZone.addEventListener('drop', (e) => {
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-        });
+        kodVerification.value = "";
+        namaPelanggan.value = "";
+        ulasanPelanggan.value = "";
+        alert("🔥 Berjaya! Ulasan anda disahkan dan telah selamat disimpan.");
 
-        document.getElementById('clearBgBtn').addEventListener('click', () => {
-            bgUploadDataUrl = '';
-            localStorage.removeItem('h4sx_bgfile');
-            document.getElementById('fileNameLabel').innerText = '';
-            document.getElementById('clearBgBtn').classList.add('hidden');
-            renderReceiptCardOnly();
-        });
+      } catch (ralat) {
+        console.error(ralat);
+        alert("Sistem sibuk atau ralat network. Cuba lagi sebentar.");
+      }
+    });
 
-        // ---------- Auto-save text inputs ----------
-        function autoSaveAllInputs() {
-            localStorage.setItem('h4sx_user', document.getElementById('inputUser').value);
-            localStorage.setItem('h4sx_game', document.getElementById('inputGame').value);
-            localStorage.setItem('h4sx_desc', document.getElementById('inputDesc').value);
-            localStorage.setItem('h4sx_price', document.getElementById('inputPrice').value);
-            localStorage.setItem('h4sx_currency', document.getElementById('inputCurrency').value);
-            localStorage.setItem('h4sx_bg', document.getElementById('inputBg').value);
-            renderReceiptCardOnly();
+    // 2. Fungsi Ambil Data & Pengiraan Statistik Live
+    const queryRating = query(collection(db, "ratings"), orderBy("diciptaPada", "desc"));
+    onSnapshot(queryRating, (snapshot) => {
+      kotakPaparan.innerHTML = ""; 
+      
+      let totalBintang = 0;
+      let count = snapshot.size;
+
+      if (snapshot.empty) {
+        kotakPaparan.innerHTML = '<div class="no-reviews">Belum ada sebarang maklum balas terkumpul.</div>';
+        purataSkor.textContent = "0.0";
+        jumlahUlasan.textContent = "Berdasarkan 0 ulasan pembeli";
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const score = parseInt(data.bintang) || 0;
+        totalBintang += score;
+
+        const bintangTeks = "⭐".repeat(score);
+        const rawNama = data.nama || "Pelanggan Misteri";
+        const paparanUlasan = data.ulasan || "Tiada ulasan teks disediakan.";
+
+        // --- FUNGSI CIPTAAN: KAWALAN PRIVASI SOROK NAMA SETENGAH ---
+        let namaDisorok = rawNama;
+        if (rawNama !== "Pelanggan Misteri") {
+          if (rawNama.length <= 2) {
+            namaDisorok = rawNama.charAt(0) + "*";
+          } else if (rawNama.length === 3) {
+            namaDisorok = rawNama.charAt(0) + "*" + rawNama.charAt(2);
+          } else {
+            // Contoh: "adat" -> ambil 2 huruf depan ("ad"), tambah '*', dan huruf terakhir ("t") = ad*t
+            namaDisorok = rawNama.substring(0, 2) + "*".repeat(rawNama.length - 3) + rawNama.slice(-1);
+          }
         }
 
-        const inputIds = ['inputUser', 'inputGame', 'inputDesc', 'inputPrice', 'inputCurrency', 'inputBg'];
-        inputIds.forEach(id => {
-            document.getElementById(id).addEventListener('input', autoSaveAllInputs);
-        });
+        const inisial = rawNama.charAt(0).toUpperCase();
+        const warnaDipilih = warnaAvatar[rawNama.length % warnaAvatar.length];
 
-        function loadSavedData() {
-            document.getElementById('inputUser').value = localStorage.getItem('h4sx_user') ?? defaultData.user;
-            document.getElementById('inputGame').value = localStorage.getItem('h4sx_game') ?? defaultData.game;
-            document.getElementById('inputDesc').value = localStorage.getItem('h4sx_desc') ?? defaultData.desc;
-            document.getElementById('inputPrice').value = localStorage.getItem('h4sx_price') ?? defaultData.price;
-            document.getElementById('inputCurrency').value = localStorage.getItem('h4sx_currency') ?? defaultData.currency;
-            document.getElementById('inputBg').value = localStorage.getItem('h4sx_bg') ?? defaultData.bg;
-
-            const savedFile = localStorage.getItem('h4sx_bgfile');
-            if (savedFile) {
-                bgUploadDataUrl = savedFile;
-                document.getElementById('clearBgBtn').classList.remove('hidden');
-                document.getElementById('fileNameLabel').innerText = 'Gambar tersimpan';
-            }
-
-            const savedMode = localStorage.getItem('h4sx_bgmode') || 'upload';
-            setBgMode(savedMode);
-
-            if (!localStorage.getItem('h4sx_code')) {
-                localStorage.setItem('h4sx_code', generateRandomCode());
-            }
-            document.getElementById('resitCode').innerText = localStorage.getItem('h4sx_code');
-
-            const today = new Date();
-            const dateStr = String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear();
-            document.getElementById('resitDate').innerText = dateStr;
+        let paparanMasa = "Baru sahaja masuk";
+        if (data.diciptaPada) {
+          const tarikhObjek = data.diciptaPada.toDate();
+          paparanMasa = tarikhObjek.toLocaleString('ms-MY', {
+            day: 'numeric', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: true
+          });
         }
 
-        function renderReceiptCardOnly() {
-            const user = document.getElementById('inputUser').value || 'Pelanggan';
-            const game = document.getElementById('inputGame').value || 'General Game';
-            const desc = document.getElementById('inputDesc').value || 'Tiada deskripsi item ditawarkan.';
-            const price = parseFloat(document.getElementById('inputPrice').value || 0).toFixed(2);
-            const currency = document.getElementById('inputCurrency').value;
+        const card = document.createElement("div");
+        card.className = "review-card";
+        card.innerHTML = `
+          <div class="avatar" style="background-color: ${warnaDipilih}">${inisial}</div>
+          <div class="review-content">
+            <div class="review-header">
+              <div class="buyer-name-container">
+                <span class="buyer-name">${namaDisorok}</span>
+                <span class="verified-badge">✓ Verified Buyer</span>
+              </div>
+              <span class="buyer-stars">${bintangTeks}</span>
+            </div>
+            <div class="buyer-time">${paparanMasa}</div>
+            <p class="buyer-feedback">${paparanUlasan}</p>
+          </div>
+        `;
+        
+        kotakPaparan.appendChild(card);
+      });
 
-            let currencySymbol = 'RM ';
-            if (currency === 'USD') currencySymbol = '$ ';
-            if (currency === 'RP') currencySymbol = 'Rp ';
-
-            document.getElementById('resitUser').innerText = user;
-            document.getElementById('resitGame').innerText = game;
-            document.getElementById('resitDesc').innerText = desc;
-            document.getElementById('resitPrice').innerText = `${currencySymbol}${price}`;
-
-            const receiptCard = document.getElementById('receiptCard');
-            const bgOverlay = document.getElementById('bgOverlay');
-
-            let activeBg = '';
-            if (bgSourceMode === 'upload' && bgUploadDataUrl) {
-                activeBg = bgUploadDataUrl;
-            } else if (bgSourceMode === 'url') {
-                activeBg = document.getElementById('inputBg').value.trim();
-            }
-
-            if (activeBg) {
-                receiptCard.style.backgroundImage = `url('${activeBg}')`;
-                bgOverlay.style.opacity = "0.91";
-            } else {
-                receiptCard.style.backgroundImage = "none";
-                bgOverlay.style.opacity = "1";
-            }
-        }
-
-        function resetAndGenerateNew() {
-            const newCode = generateRandomCode();
-            localStorage.setItem('h4sx_code', newCode);
-            document.getElementById('resitCode').innerText = newCode;
-            triggerToast('KOD DIJANA', 'Kod transaksi baharu telah dikemas kini.', 'success');
-        }
-
-        function copyToClipboard() {
-            const code = document.getElementById('resitCode').innerText;
-            const date = document.getElementById('resitDate').innerText;
-            const user = document.getElementById('resitUser').innerText;
-            const game = document.getElementById('resitGame').innerText;
-            const desc = document.getElementById('resitDesc').innerText;
-            const price = document.getElementById('resitPrice').innerText;
-
-            const textToCopy =
-`=================================
-       RESIT JUALAN H4SX STORE
-=================================
-SITE          : h4sx-store.vercel.app
-KOD TX        : ${code}
-TARIKH        : ${date}
-PEMBELI       : ${user}
-GAME          : ${game}
-ITEM/SERV     : ${desc}
-JUMLAH BAYAR  : ${price}
-=================================`;
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    triggerToast('TEKS DISALIN', 'Butiran resit berjaya disalin ke clipboard.', 'success');
-                }).catch(() => fallbackCopyText(textToCopy));
-            } else {
-                fallbackCopyText(textToCopy);
-            }
-        }
-
-        function fallbackCopyText(text) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                triggerToast('TEKS DISALIN', 'Disalin melalui mod fallback pelayar.', 'success');
-            } catch (err) {
-                triggerToast('GAGAL SALIN', 'Sila salin teks secara manual.', 'error');
-            }
-            document.body.removeChild(textArea);
-        }
-
-        // ---------- Image export (copy + download) with real error diagnosis ----------
-        function renderCanvas() {
-            if (typeof html2canvas !== 'function') {
-                return Promise.reject(new Error('html2canvas library failed to load'));
-            }
-            const receipt = document.getElementById('receiptCard');
-            return html2canvas(receipt, {
-                useCORS: true,
-                allowTaint: false,
-                scale: 3,
-                backgroundColor: "#080a10",
-                logging: false
-            });
-        }
-
-        function explainExportFailure(err) {
-            const usingExternalUrl = bgSourceMode === 'url' && document.getElementById('inputBg').value.trim();
-            if (err && err.message && err.message.includes('html2canvas library failed to load')) {
-                triggerToast(
-                    'LIBRARY GAGAL DIMUAT',
-                    'Skrip eksport gambar tak berjaya dimuat (mungkin sambungan internet/CDN disekat). Refresh halaman dan cuba lagi.',
-                    'error'
-                );
-            } else if (usingExternalUrl) {
-                triggerToast(
-                    'GAMBAR LUAR SEKAT EXPORT',
-                    'Link gambar tu tak benarkan akses silang (CORS), jadi pelayar sekat eksport. Tukar ke tab "Muat Naik" dan pilih fail dari peranti anda.',
-                    'error'
-                );
-            } else if (!window.ClipboardItem) {
-                triggerToast(
-                    'PELAYAR TAK SOKONG',
-                    'Pelayar ini tak sokong salin imej terus. Guna butang Muat Turun PNG sebagai gantinya.',
-                    'error'
-                );
-            } else {
-                triggerToast(
-                    'EKSPORT GAGAL',
-                    'Sesuatu menghalang eksport imej. Cuba Muat Turun PNG, atau guna gambar lain.',
-                    'error'
-                );
-            }
-        }
-
-        function copyReceiptImage() {
-            renderCanvas().then(canvas => {
-                canvas.toBlob(blob => {
-                    if (!blob) {
-                        explainExportFailure(new Error('blob null — likely tainted canvas'));
-                        return;
-                    }
-                    try {
-                        const item = new ClipboardItem({ "image/png": blob });
-                        navigator.clipboard.write([item]).then(() => {
-                            triggerToast('GAMBAR DISALIN', 'Sedia untuk paste (Ctrl+V) ke mana-mana chat.', 'success');
-                        }).catch(() => {
-                            explainExportFailure(new Error('clipboard write rejected'));
-                        });
-                    } catch (e) {
-                        explainExportFailure(e);
-                    }
-                }, 'image/png');
-            }).catch(explainExportFailure);
-        }
-
-        function downloadReceiptImage() {
-            const code = document.getElementById('resitCode').innerText;
-            renderCanvas().then(canvas => {
-                try {
-                    const link = document.createElement('a');
-                    link.download = `H4SX-RECEIPT-${code}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    triggerToast('DIMUAT TURUN', 'Fail imej resit disimpan secara lokal.', 'success');
-                } catch (e) {
-                    explainExportFailure(e);
-                }
-            }).catch(explainExportFailure);
-        }
-
-        function triggerToast(title, message, type = 'success') {
-            const toast = document.getElementById('toastNotification');
-            const border = document.getElementById('toastBorder');
-            const iconBg = document.getElementById('toastIconBg');
-            const icon = document.getElementById('toastIcon');
-
-            document.getElementById('toastTitle').innerText = title;
-            document.getElementById('toastMessage').innerText = message;
-
-            if (type === 'error') {
-                border.className = "bg-[#0c1018]/95 backdrop-blur-md border border-amber-400/40 rounded-2xl p-4 shadow-2xl flex items-start gap-3 max-w-sm";
-                iconBg.className = "w-9 h-9 rounded-xl bg-amber-400/15 flex items-center justify-center text-amber-300 text-sm shrink-0 mt-0.5";
-                icon.className = "fa-solid fa-triangle-exclamation";
-            } else {
-                border.className = "bg-[#0c1018]/95 backdrop-blur-md border border-emerald-400/40 rounded-2xl p-4 shadow-2xl flex items-start gap-3 max-w-sm";
-                iconBg.className = "w-9 h-9 rounded-xl bg-emerald-400/15 flex items-center justify-center text-emerald-300 text-sm shrink-0 mt-0.5";
-                icon.className = "fa-solid fa-circle-check";
-            }
-
-            toast.classList.remove('translate-x-80', 'opacity-0');
-            toast.classList.add('translate-x-0', 'opacity-100');
-
-            clearTimeout(window._toastTimer);
-            window._toastTimer = setTimeout(() => {
-                toast.classList.remove('translate-x-0', 'opacity-100');
-                toast.classList.add('translate-x-80', 'opacity-0');
-            }, type === 'error' ? 6000 : 4000);
-        }
-
-        window.onload = function () {
-            loadSavedData();
-            renderReceiptCardOnly();
-        };
-    </script>
+      const hasilPurata = (totalBintang / count).toFixed(1);
+      purataSkor.textContent = hasilPurata;
+      jumlahUlasan.textContent = `Berdasarkan ${count} ulasan pembeli sah`;
+    });
+  </script>
 </body>
 </html>
