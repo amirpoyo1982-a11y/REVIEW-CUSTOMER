@@ -167,7 +167,6 @@
       align-items: center;
     }
     
-    /* Susunan Nama + Lencana Verified */
     .buyer-name-container {
       display: flex;
       align-items: center;
@@ -179,6 +178,25 @@
       color: #f8fafc;
       font-size: 14px;
     }
+
+    /* STYLE PREMIUM: LENCANA VERIFIED ADMIN (BIRU GOLD NEON) */
+    .admin-badge {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(14, 165, 233, 0.05) 100%);
+      color: #38bdf8;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid #a16207; /* Bingkai Emas Premium */
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      display: inline-flex;
+      align-items: center;
+      text-shadow: 0 0 5px rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 5px rgba(161, 98, 7, 0.15);
+    }
+
+    /* Style Lencana Verified Buyer (Hijau Neon) */
     .verified-badge {
       background-color: rgba(16, 185, 129, 0.1);
       color: #10b981;
@@ -236,7 +254,7 @@
     </div>
     
     <div class="form-group">
-      <label for="kodVerification" style="color: #f59e0b;">🔐 Kod Pengesahan Pembelian (Dapatkan dari Admin):</label>
+      <label for="kodVerification" style="color: #f59e0b;">🔐 Kod Pengesahan Pembelian:</label>
       <input type="text" id="kodVerification" class="code-input" placeholder="TAIP KOD DI SINI" style="text-transform: uppercase;">
     </div>
 
@@ -269,7 +287,6 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    // Menggunakan deleteDoc bagi menggantikan fungsi lama updateDoc
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -296,7 +313,7 @@
 
     const warnaAvatar = ['#38bdf8', '#a855f7', '#ec4899', '#10b981', '#f59e0b', '#ef4444'];
 
-    // 1. Fungsi Simpan Data + AUTO-PADAM Kod Pengesahan
+    // 1. Fungsi Simpan Data + AUTO-PADAM Kod + SEKAT PENYAMAR ADMIN
     butangHantar.addEventListener("click", async () => {
       const kod = kodVerification.value.trim().toUpperCase();
       const nama = namaPelanggan.value.trim();
@@ -308,17 +325,46 @@
         return;
       }
 
+      const namaUpper = nama.toUpperCase().trim();
+      const adakahNamaAdmin = (namaUpper === "OFFICIAL H4SX STORE" || namaUpper === "H4SX STORE");
+      
+      // =========================================================================
+      // 🔐 SILA TUKAR KOD ADMIN RAHSIA AWAK DI BAWAH INI KEPADA KOD YANG AWAK UTUSKAN
+      // =========================================================================
+      const KOD_RAHSIA_ADMIN = "H4SX-BOSS-999"; 
+
+      // SEKATAN: Jika orang luar guna nama admin tapi kod rahsia salah
+      if (adakahNamaAdmin && kod !== KOD_RAHSIA_ADMIN) {
+        alert("❌ AMARAN: Anda dilarang keras menyamar sebagai ADMIN H4SX STORE!");
+        return;
+      }
+
       try {
+        // JIKA AWAK (ADMIN) YANG LOG MASUK & HANTAR
+        if (adakahNamaAdmin && kod === KOD_RAHSIA_ADMIN) {
+          await addDoc(collection(db, "ratings"), {
+            nama: nama,
+            bintang: nilaiBintang,
+            ulasan: ulasan,
+            diciptaPada: serverTimestamp()
+          });
+          
+          kodVerification.value = "";
+          namaPelanggan.value = "";
+          ulasanPelanggan.value = "";
+          alert("👑 Salam bos! Pengumuman/ulasan rasmi Admin berjaya diterbitkan.");
+          return; // Tamat (Kod admin tidak dipadam dari Firebase)
+        }
+
+        // JIKA PELANGGAN BIASA (Sistem auto-padam kod pakai deleteDoc)
         const docRef = doc(db, "review_codes", kod);
         const docSnap = await getDoc(docRef);
 
-        // Sekatan: Jika kod tidak wujud (atau sudah didelete), sistem akan sekat terus
         if (!docSnap.exists()) {
           alert("❌ Ralat: Kod salah atau telah pun digunakan!");
           return;
         }
 
-        // Lulus: Simpan ulasan ke database utama 'ratings'
         await addDoc(collection(db, "ratings"), {
           nama: nama,
           bintang: nilaiBintang,
@@ -326,7 +372,6 @@
           diciptaPada: serverTimestamp()
         });
         
-        // 🔥 LOGIK UTAMA: Padam terus dokumen kod ini dari Firebase secara kekal
         await deleteDoc(docRef);
 
         kodVerification.value = "";
@@ -364,9 +409,15 @@
         const rawNama = data.nama || "Pelanggan Misteri";
         const paparanUlasan = data.ulasan || "Tiada ulasan teks disediakan.";
 
-        // Sistem Privasi Sorok Nama Setengah (Contoh: "adat" -> "ad*t")
         let namaDisorok = rawNama;
-        if (rawNama !== "Pelanggan Misteri") {
+        const namaUpper = rawNama.toUpperCase().trim();
+        let isAdmin = (namaUpper === "OFFICIAL H4SX STORE" || namaUpper === "H4SX STORE");
+        
+        // Pilih lencana mengikut identiti
+        let lencanaHtml = isAdmin ? '<span class="admin-badge">✓ Verified Admin</span>' : '<span class="verified-badge">✓ Verified Buyer</span>';
+
+        // Sorok nama pelanggan biasa, lepaskan nama admin penuh
+        if (rawNama !== "Pelanggan Misteri" && !isAdmin) {
           if (rawNama.length <= 2) {
             namaDisorok = rawNama.charAt(0) + "*";
           } else if (rawNama.length === 3) {
@@ -396,7 +447,7 @@
             <div class="review-header">
               <div class="buyer-name-container">
                 <span class="buyer-name">${namaDisorok}</span>
-                <span class="verified-badge">✓ Verified Buyer</span>
+                ${lencanaHtml}
               </div>
               <span class="buyer-stars">${bintangTeks}</span>
             </div>
