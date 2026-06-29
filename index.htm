@@ -73,6 +73,29 @@
       margin: 0 0 22px;
     }
 
+    .launch-notice {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: var(--accent-soft);
+      border: 1px solid rgba(217, 142, 115, 0.3);
+      border-radius: 14px;
+      padding: 13px 16px;
+      margin-bottom: 22px;
+    }
+    .launch-notice .icon {
+      font-size: 17px;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+    .launch-notice p {
+      margin: 0;
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #6b5d55;
+    }
+    .launch-notice strong { color: #4a3f3a; }
+
     .rating-summary {
       display: flex;
       align-items: center;
@@ -315,6 +338,16 @@
     <h2>Ulasan &amp; Penarafan Pelanggan</h2>
     <p class="subtitle">H4SX STORE — kongsi pengalaman anda</p>
 
+    <div class="launch-notice">
+      <span class="icon">📣</span>
+      <p>
+        <strong>Sistem feedback baru dibuka</strong> pada 29/6/2026, jam 4–5 pagi.
+        Kami amat hargai setiap ulasan — sila beri rating yang <strong>jujur</strong> berdasarkan
+        pengalaman sebenar anda, dan elakkan bahasa kasar atau carutan. Terima kasih kerana
+        membantu kami berkembang lebih baik. 🙏
+      </p>
+    </div>
+
     <div class="layout-grid">
       <div class="form-col">
         <div class="rating-summary">
@@ -335,7 +368,7 @@
 
         <div class="form-group">
           <label for="namaPelanggan">Nama / Username Pembeli</label>
-          <input type="text" id="namaPelanggan" placeholder="Contoh: Hasnain Gaming" autocomplete="off" maxlength="40">
+          <input type="text" id="namaPelanggan" placeholder="Contoh: H4SX" autocomplete="off" maxlength="40">
         </div>
 
         <!-- Custom profile picker — optional, sensible default if user skips -->
