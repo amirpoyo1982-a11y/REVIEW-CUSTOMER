@@ -326,6 +326,83 @@
       font-weight: 700;
     }
 
+    /* ---------- Admin reply ---------- */
+    .admin-reply-box {
+      margin-top: 10px;
+      margin-left: 6px;
+      padding: 10px 12px;
+      background: rgba(122, 155, 176, 0.10);
+      border-left: 3px solid #7a9bb0;
+      border-radius: 0 10px 10px 0;
+    }
+    .admin-reply-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #5d7e93;
+      margin: 0 0 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .admin-reply-text {
+      font-size: 13px;
+      color: #4a3f3a;
+      margin: 0;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .admin-reply-time {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .reply-toggle-btn {
+      background: none;
+      border: none;
+      color: #7a9bb0;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 4px 0;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .reply-toggle-btn:hover { color: #5d7e93; text-decoration: underline; }
+
+    .admin-reply-form {
+      margin-top: 8px;
+      display: none;
+    }
+    .admin-reply-form.show { display: block; }
+    .admin-reply-form textarea {
+      min-height: 50px;
+      font-size: 13px;
+    }
+    .admin-reply-form-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .admin-reply-form-actions button {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .btn-hantar-balasan { background: #7a9bb0; color: #fff; }
+    .btn-hantar-balasan:hover { filter: brightness(1.08); }
+    .btn-batal-balasan { background: #ece3d8; color: var(--text-dim); }
+    .btn-batal-balasan:hover { background: #e3d6c6; }
+
     @media (max-width: 420px) {
       .main-container { padding: 18px 14px; border-radius: 18px; }
       .profile-picker { flex-direction: column; align-items: flex-start; }
@@ -410,7 +487,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBOkyPe2f1tHu9OQiwHHpgfJTYM-KM7cuU",
@@ -424,6 +501,31 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // ---------- Admin gate (LIGHT-WEIGHT ONLY — see notes below) ----------
+    // PENTING: Ini bukan keselamatan sebenar. Kod ini boleh dilihat oleh
+    // sesiapa yang buka "View Page Source" / DevTools. Tujuannya semata-mata
+    // untuk mengelakkan pelanggan biasa secara tidak sengaja menekan butang
+    // "Balas (Admin)". Untuk kawalan akses sebenar, guna Firebase
+    // Authentication + Security Rules di sisi server.
+    const KOD_ADMIN_RAHSIA = "H4SXADMIN2026"; // <-- TUKAR kod ini sebelum guna sebenar
+    const ADMIN_SESSION_KEY = "h4sx_admin_ok";
+
+    function adminSudahLogin() {
+      return sessionStorage.getItem(ADMIN_SESSION_KEY) === "1";
+    }
+
+    function mintaKodAdmin() {
+      if (adminSudahLogin()) return true;
+      const cubaan = prompt("Masukkan Kod Admin untuk balas ulasan ini:");
+      if (cubaan === null) return false; // admin tekan cancel
+      if (cubaan.trim() === KOD_ADMIN_RAHSIA) {
+        sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
+        return true;
+      }
+      alert("Kod admin salah.");
+      return false;
+    }
 
     const kodVerification = document.getElementById("kodVerification");
     const namaPelanggan = document.getElementById("namaPelanggan");
@@ -534,6 +636,8 @@
           ulasan: ulasan,
           warnaProfil: pilihanWarna || warnaUntukNama(nama),
           emojiProfil: pilihanEmoji || null,
+          balasanAdmin: null,
+          balasanPada: null,
           diciptaPada: serverTimestamp()
         });
 
@@ -557,6 +661,28 @@
       }
     });
 
+    // ---------- Admin: hantar / kemaskini balasan ----------
+    async function hantarBalasanAdmin(idDokumen, teksBalasan, btnElement) {
+      if (!teksBalasan.trim()) {
+        alert("Sila taip balasan sebelum hantar.");
+        return;
+      }
+      btnElement.disabled = true;
+      btnElement.textContent = "Menghantar...";
+      try {
+        await updateDoc(doc(db, "ratings", idDokumen), {
+          balasanAdmin: teksBalasan.trim(),
+          balasanPada: serverTimestamp()
+        });
+      } catch (ralat) {
+        console.error(ralat);
+        alert("Gagal hantar balasan. Cuba lagi.");
+      } finally {
+        btnElement.disabled = false;
+        btnElement.textContent = "Hantar Balasan";
+      }
+    }
+
     // ---------- Live feed + stats ----------
     const queryRating = query(collection(db, "ratings"), orderBy("diciptaPada", "desc"));
     onSnapshot(queryRating, (snapshot) => {
@@ -574,6 +700,7 @@
       }
 
       snapshot.forEach((docSnap) => {
+        const idDokumen = docSnap.id;
         const data = docSnap.data();
         const score = parseInt(data.bintang) || 0;
         totalBintang += score;
@@ -607,6 +734,17 @@
           });
         }
 
+        let paparanMasaBalasan = "";
+        if (data.balasanPada) {
+          const tarikhBalasan = data.balasanPada.toDate();
+          paparanMasaBalasan = tarikhBalasan.toLocaleString('ms-MY', {
+            day: 'numeric', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: true
+          });
+        }
+
+        const adaBalasan = !!(data.balasanAdmin && data.balasanAdmin.trim());
+
         const card = document.createElement("div");
         card.className = "review-card";
         card.innerHTML = `
@@ -621,10 +759,53 @@
             </div>
             <div class="buyer-time">${paparanMasa}</div>
             <p class="buyer-feedback">${paparanUlasan}</p>
+
+            <div class="admin-reply-display" data-doc-id="${idDokumen}" style="${adaBalasan ? '' : 'display:none;'}">
+              <div class="admin-reply-box">
+                <p class="admin-reply-label">💬 Balasan H4SX STORE</p>
+                <p class="admin-reply-text" class="teks-balasan-paparan">${adaBalasan ? escapeHtml(data.balasanAdmin) : ''}</p>
+                <p class="admin-reply-time">${paparanMasaBalasan}</p>
+              </div>
+            </div>
+
+            <button class="reply-toggle-btn" data-doc-id="${idDokumen}">
+              ${adaBalasan ? '✏️ Edit Balasan (Admin)' : '↩ Balas (Admin)'}
+            </button>
+
+            <div class="admin-reply-form" data-doc-id="${idDokumen}">
+              <textarea placeholder="Taip balasan rasmi H4SX STORE di sini..." maxlength="400">${adaBalasan ? escapeHtml(data.balasanAdmin) : ''}</textarea>
+              <div class="admin-reply-form-actions">
+                <button class="btn-hantar-balasan">Hantar Balasan</button>
+                <button class="btn-batal-balasan">Batal</button>
+              </div>
+            </div>
           </div>
         `;
 
         kotakPaparan.appendChild(card);
+
+        // ---- Wire up admin controls for this card ----
+        const togglebtn = card.querySelector(".reply-toggle-btn");
+        const formBalasan = card.querySelector(".admin-reply-form");
+        const textareaBalasan = formBalasan.querySelector("textarea");
+        const btnHantar = formBalasan.querySelector(".btn-hantar-balasan");
+        const btnBatal = formBalasan.querySelector(".btn-batal-balasan");
+
+        togglebtn.addEventListener("click", () => {
+          if (!mintaKodAdmin()) return; // gate ringkas — lihat nota di atas
+          formBalasan.classList.toggle("show");
+          if (formBalasan.classList.contains("show")) {
+            textareaBalasan.focus();
+          }
+        });
+
+        btnBatal.addEventListener("click", () => {
+          formBalasan.classList.remove("show");
+        });
+
+        btnHantar.addEventListener("click", () => {
+          hantarBalasanAdmin(idDokumen, textareaBalasan.value, btnHantar);
+        });
       });
 
       const hasilPurata = (totalBintang / count).toFixed(1);
