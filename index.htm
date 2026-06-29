@@ -3,286 +3,376 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verified Reviews — H4SX STORE</title>
+  <title>Ulasan Pelanggan — H4SX STORE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* Estetik Deep Cyberpunk / Dark Mode */
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      margin: 0; 
-      padding: 40px 20px;
-      background-color: #080c14; 
-      color: #f1f5f9; 
+    :root {
+      --ink: #faf6f1;
+      --panel: #ffffff;
+      --panel-soft: #fdf9f4;
+      --line: rgba(193, 154, 130, 0.18);
+      --accent: #d98e73;
+      --accent-soft: rgba(217, 142, 115, 0.14);
+      --gold: #c99a3b;
+      --green: #5fa88a;
+      --text: #4a3f3a;
+      --text-dim: #a08d83;
     }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Sora', 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: clamp(16px, 4vw, 48px) 16px;
+      background-color: var(--ink);
+      background-image:
+        radial-gradient(circle at 10% 0%, rgba(217,142,115,0.10), transparent 45%),
+        radial-gradient(circle at 90% 100%, rgba(95,168,138,0.08), transparent 45%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .mono { font-family: 'Space Mono', monospace; }
+
     .main-container {
-      max-width: 550px;
+      max-width: 1040px;
       margin: 0 auto;
-      background-color: #0f172a;
-      padding: 30px;
-      border-radius: 20px;
-      border: 1px solid #1e293b;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(14, 165, 233, 0.05);
-    }
-    h2 {
-      color: #38bdf8;
-      margin-top: 0;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      font-size: 22px;
-      border-bottom: 2px solid #1e293b;
-      padding-bottom: 12px;
-      text-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+      background: linear-gradient(180deg, var(--panel), var(--panel-soft));
+      padding: clamp(20px, 4vw, 32px);
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      box-shadow: 0 30px 50px -28px rgba(184, 130, 100, 0.35), 0 2px 8px rgba(184,130,100,0.06);
     }
 
-    /* Kotak Ringkasan Rating Utama */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 28px;
+      margin-top: 22px;
+      align-items: start;
+    }
+    @media (min-width: 860px) {
+      .layout-grid {
+        grid-template-columns: 360px minmax(0, 1fr);
+      }
+      .reviews-col { border-left: 1px solid var(--line); padding-left: 28px; }
+      .reviews-col h3 { margin-top: 0; }
+    }
+    .form-col, .reviews-col { min-width: 0; }
+
+    h2 {
+      color: #3a312c;
+      margin: 0 0 4px;
+      font-size: clamp(19px, 4vw, 22px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .subtitle {
+      color: var(--text-dim);
+      font-size: 13px;
+      margin: 0 0 22px;
+    }
+
     .rating-summary {
       display: flex;
       align-items: center;
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      padding: 15px 20px;
-      border-radius: 12px;
-      margin-bottom: 25px;
-      border: 1px dashed #334155;
+      gap: 16px;
+      background: linear-gradient(135deg, rgba(56,189,248,0.08), transparent);
+      padding: 16px 18px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      border: 1px solid var(--line);
     }
     .big-score {
-      font-size: 36px;
+      font-size: clamp(32px, 7vw, 38px);
       font-weight: 800;
-      color: #38bdf8;
-      margin-right: 15px;
-      text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+      line-height: 1;
     }
-    .stats-info h4 { margin: 0; color: #f1f5f9; font-size: 15px; }
-    .stats-info p { margin: 2px 0 0 0; color: #64748b; font-size: 12px; }
+    .score-stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; margin-top: 2px; }
+    .stats-info h4 { margin: 0; color: var(--text); font-size: 14px; font-weight: 700; }
+    .stats-info p { margin: 3px 0 0; color: var(--text-dim); font-size: 12px; }
 
-    .form-group {
-      margin-bottom: 18px;
-    }
+    .form-group { margin-bottom: 16px; }
     label {
       display: block;
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 6px;
+      font-size: 12.5px;
+      color: var(--text-dim);
+      margin-bottom: 7px;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
     }
-    input[type="text"], select, textarea { 
+    input[type="text"], select, textarea {
       width: 100%;
-      padding: 12px; 
-      border-radius: 10px; 
-      border: 1px solid #334155; 
-      background-color: #1e293b; 
-      color: #fff; 
-      font-size: 14px;
-      box-sizing: border-box;
-      transition: all 0.2s ease;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background-color: #fdfbf8;
+      color: var(--text);
+      font-size: 14.5px;
+      font-family: inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
     }
     input[type="text"]:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: #38bdf8;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
     }
-    
-    /* Highlight khas untuk input KOD */
+    textarea { resize: vertical; min-height: 64px; }
+
     .code-input {
-      border: 1px dashed #f59e0b !important;
-      background-color: #1e1b12 !important;
-      color: #f59e0b !important;
-      font-weight: bold;
+      border: 1px dashed rgba(201,154,59,0.55) !important;
+      background-color: #fbf3df !important;
+      color: #97742a !important;
+      font-weight: 700;
       letter-spacing: 2px;
+      font-family: 'Space Mono', monospace;
     }
     .code-input:focus {
-      border-color: #f59e0b !important;
-      box-shadow: 0 0 10px rgba(245, 158, 11, 0.2) !important;
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 0 3px rgba(201,154,59,0.18) !important;
     }
 
-    textarea { resize: vertical; }
-    
-    /* Butang Impak Neon */
-    button { 
-      width: 100%;
-      padding: 14px; 
-      border-radius: 10px; 
-      background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%);
-      color: #fff; 
-      font-size: 15px;
-      font-weight: bold; 
-      cursor: pointer; 
-      border: none; 
-      transition: all 0.2s;
-      margin-top: 10px;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    button:hover { 
-      background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%);
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
-    }
-    button:active { transform: scale(0.98); }
-
-    .rating-box { 
-      border: 1px solid #1e293b; 
-      padding: 5px; 
-      margin-top: 15px; 
-      background-color: #090c14; 
-      border-radius: 14px; 
-      max-height: 450px;
-      overflow-y: auto;
-    }
-
-    /* Kad Struktur Komen Ber-Avatar */
-    .review-card { 
-      padding: 16px; 
-      border-bottom: 1px solid #1e293b; 
+    /* ---------- Custom profile picker ---------- */
+    .profile-picker {
       display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      animation: fadeIn 0.4s ease-in-out;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding: 14px;
+      background: #fdfbf8;
+      border: 1px solid var(--line);
+      border-radius: 14px;
     }
-    .review-card:last-child { border-bottom: none; }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .avatar {
-      width: 38px;
-      height: 38px;
-      color: #0f172a;
+    .avatar-preview {
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      font-size: 15px;
+      font-weight: 800;
+      font-size: 20px;
       flex-shrink: 0;
-      box-shadow: 0 0 8px rgba(256, 256, 256, 0.05);
+      color: #fff;
+      transition: background-color .2s ease;
+      box-shadow: 0 4px 14px -4px rgba(184,130,100,0.4);
     }
-    .review-content {
-      flex-grow: 1;
+    .profile-picker-controls { flex-grow: 1; min-width: 0; }
+    .profile-picker-controls p {
+      margin: 0 0 8px;
+      font-size: 11.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-weight: 600;
     }
-    .review-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform .12s ease, border-color .12s ease;
     }
-    
-    .buyer-name-container {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .buyer-name { 
-      font-weight: bold; 
-      color: #f8fafc;
-      font-size: 14px;
-    }
+    .swatch:hover { transform: scale(1.12); }
+    .swatch.active { border-color: #8a6a52; }
 
-    /* STYLE PREMIUM: LENCANA VERIFIED ADMIN (BIRU GOLD NEON) */
-    .admin-badge {
-      background: linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(14, 165, 233, 0.05) 100%);
-      color: #38bdf8;
+    .emoji-toggle-row { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .emoji-opt {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5ede4;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      font-size: 14px;
+      transition: border-color .12s ease, background-color .12s ease;
+    }
+    .emoji-opt:hover { border-color: var(--accent); }
+    .emoji-opt.active { border-color: var(--accent); background: var(--accent-soft); }
+
+    button#butangHantar {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #d98e73, #c97a5d);
+      color: #fff;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: filter .15s ease, transform .12s ease;
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    button#butangHantar:hover { filter: brightness(1.06); }
+    button#butangHantar:active { transform: scale(0.98); }
+    button#butangHantar:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+
+    .inline-msg {
+      font-size: 12.5px;
+      margin-top: 8px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      display: none;
+    }
+    .inline-msg.show { display: block; }
+    .inline-msg.error { background: rgba(214,90,90,0.1); color: #c1554f; border: 1px solid rgba(214,90,90,0.25); }
+    .inline-msg.success { background: rgba(95,168,138,0.12); color: #4d8c70; border: 1px solid rgba(95,168,138,0.3); }
+
+    .rating-box {
+      border: 1px solid var(--line);
+      padding: 6px;
+      margin-top: 22px;
+      background-color: #fdfbf8;
+      border-radius: 16px;
+      max-height: 460px;
+      overflow-y: auto;
+    }
+    @media (min-width: 860px) {
+      .reviews-col .rating-box {
+        margin-top: 14px;
+        max-height: none;
+        height: 100%;
+        min-height: 480px;
+      }
+      .reviews-col { display: flex; flex-direction: column; }
+    }
+    .rating-box::-webkit-scrollbar { width: 6px; }
+    .rating-box::-webkit-scrollbar-thumb { background: #e3d3c4; border-radius: 4px; }
+
+    .review-card {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      animation: fadeIn .35s ease-out;
+    }
+    .review-card:last-child { border-bottom: none; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 15px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .review-content { flex-grow: 1; min-width: 0; }
+    .review-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .buyer-name-container { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
+    .buyer-name { font-weight: 700; color: #4a3f3a; font-size: 14px; }
+
+    .verified-badge {
+      background-color: rgba(95,168,138,0.12);
+      color: var(--green);
       font-size: 10px;
       padding: 2px 7px;
-      border-radius: 4px;
-      border: 1px solid #a16207; /* Bingkai Emas Premium */
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      display: inline-flex;
-      align-items: center;
-      text-shadow: 0 0 5px rgba(56, 189, 248, 0.4);
-      box-shadow: 0 0 5px rgba(161, 98, 7, 0.15);
-    }
-
-    /* Style Lencana Verified Buyer (Hijau Neon) */
-    .verified-badge {
-      background-color: rgba(16, 185, 129, 0.1);
-      color: #10b981;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 5px;
+      border: 1px solid rgba(95,168,138,0.3);
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
       display: inline-flex;
       align-items: center;
+      gap: 3px;
+      white-space: nowrap;
     }
 
-    .buyer-stars { font-size: 11px; letter-spacing: 1px; }
-    .buyer-time {
-      font-size: 11px;
-      color: #475569;
-      margin-bottom: 5px;
-    }
-    .buyer-feedback { 
-      color: #cbd5e1;
-      font-size: 13.5px;
-      line-height: 1.5;
-      margin: 0;
-      word-break: break-word;
-    }
-    .no-reviews {
-      text-align: center;
-      color: #475569;
-      font-size: 13px;
-      padding: 30px 0;
-    }
+    .buyer-stars { font-size: 11px; letter-spacing: 1px; color: var(--gold); white-space: nowrap; }
+    .buyer-time { font-size: 11px; color: var(--text-dim); margin: 3px 0 6px; }
+    .buyer-feedback { color: #6b5d55; font-size: 13.5px; line-height: 1.55; margin: 0; word-break: break-word; }
+
+    .no-reviews { text-align: center; color: var(--text-dim); font-size: 13px; padding: 36px 0; }
     h3 {
-      color: #64748b;
-      font-size: 13px;
+      color: var(--text-dim);
+      font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 30px;
-      margin-bottom: 10px;
+      letter-spacing: 0.6px;
+      margin: 28px 0 10px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 420px) {
+      .main-container { padding: 18px 14px; border-radius: 18px; }
+      .profile-picker { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
 
   <div class="main-container">
-    <h2>Beri Penarafan Anda</h2>
-    
-    <div class="rating-summary">
-      <div class="big-score" id="purataSkor">0.0</div>
-      <div class="stats-info">
-        <h4>Purata Kepuasan Pelanggan</h4>
-        <p id="jumlahUlasan">Memuatkan statistik ulasan...</p>
+    <h2>Ulasan &amp; Penarafan Pelanggan</h2>
+    <p class="subtitle">H4SX STORE — kongsi pengalaman anda</p>
+
+    <div class="layout-grid">
+      <div class="form-col">
+        <div class="rating-summary">
+          <div>
+            <div class="big-score" id="purataSkor">0.0</div>
+            <div class="score-stars" id="purataBintang">☆☆☆☆☆</div>
+          </div>
+          <div class="stats-info">
+            <h4>Purata Kepuasan Pelanggan</h4>
+            <p id="jumlahUlasan">Memuatkan statistik ulasan...</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="kodVerification">🔐 Kod Pengesahan Pembelian</label>
+          <input type="text" id="kodVerification" class="code-input" placeholder="TAIP KOD DI SINI" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="namaPelanggan">Nama / Username Pembeli</label>
+          <input type="text" id="namaPelanggan" placeholder="Contoh: Hasnain Gaming" autocomplete="off" maxlength="40">
+        </div>
+
+        <!-- Custom profile picker — optional, sensible default if user skips -->
+        <div class="profile-picker">
+          <div class="avatar-preview" id="avatarPreview">H</div>
+          <div class="profile-picker-controls">
+            <p>Warna Profil (pilihan, bukan wajib)</p>
+            <div class="swatch-row" id="swatchRow"></div>
+            <div class="emoji-toggle-row" id="emojiRow"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="pilihBintang">Skor Perkhidmatan</label>
+          <select id="pilihBintang">
+            <option value="5">⭐⭐⭐⭐⭐ (5 — Sangat Puas)</option>
+            <option value="4">⭐⭐⭐⭐ (4 — Baik)</option>
+            <option value="3">⭐⭐⭐ (3 — Sederhana)</option>
+            <option value="2">⭐⭐ (2 — Kurang Memuaskan)</option>
+            <option value="1">⭐ (1 — Lemah)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="ulasanPelanggan">Ulasan Telus</label>
+          <textarea id="ulasanPelanggan" rows="3" placeholder="Kongsi pengalaman anda berurusan dengan H4SX STORE..." maxlength="500"></textarea>
+        </div>
+
+        <button id="butangHantar">Hantar Ulasan</button>
+        <div class="inline-msg" id="inlineMsg"></div>
+      </div>
+
+      <div class="reviews-col">
+        <h3>Ulasan Pelanggan Terkini</h3>
+        <div id="kotakPaparan" class="rating-box">Memuatkan maklumat ulasan...</div>
       </div>
     </div>
-    
-    <div class="form-group">
-      <label for="kodVerification" style="color: #f59e0b;">🔐 Kod Pengesahan Pembelian:</label>
-      <input type="text" id="kodVerification" class="code-input" placeholder="TAIP KOD DI SINI" style="text-transform: uppercase;">
-    </div>
-
-    <div class="form-group">
-      <label for="namaPelanggan">Nama / Username Pembeli:</label>
-      <input type="text" id="namaPelanggan" placeholder="Contoh: Hasnain Gaming">
-    </div>
-
-    <div class="form-group">
-      <label for="pilihBintang">Skor Perkhidmatan:</label>
-      <select id="pilihBintang">
-        <option value="5">⭐⭐⭐⭐⭐ (5 Bintang — Sangat Puas)</option>
-        <option value="4">⭐⭐⭐⭐ (4 Bintang — Baik)</option>
-        <option value="3">⭐⭐⭐ (3 Bintang — Sederhana)</option>
-        <option value="2">⭐⭐ (2 Bintang — Kurang Memuaskan)</option>
-        <option value="1">⭐ (1 Bintang — Lemah)</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="ulasanPelanggan">Ulasan Telus:</label>
-      <textarea id="ulasanPelanggan" rows="3" placeholder="Kongsi pengalaman anda berurusan dengan H4SX STORE..."></textarea>
-    </div>
-
-    <button id="butangHantar">Hantar Review</button>
-
-    <h3>Ulasan Pelanggan Terkini (Real-Time):</h3>
-    <div id="kotakPaparan" class="rating-box">Memuatkan maklumat ulasan...</div>
   </div>
 
   <script type="module">
@@ -309,11 +399,79 @@
     const butangHantar = document.getElementById("butangHantar");
     const kotakPaparan = document.getElementById("kotakPaparan");
     const purataSkor = document.getElementById("purataSkor");
+    const purataBintang = document.getElementById("purataBintang");
     const jumlahUlasan = document.getElementById("jumlahUlasan");
+    const inlineMsg = document.getElementById("inlineMsg");
+    const avatarPreview = document.getElementById("avatarPreview");
+    const swatchRow = document.getElementById("swatchRow");
+    const emojiRow = document.getElementById("emojiRow");
 
-    const warnaAvatar = ['#38bdf8', '#a855f7', '#ec4899', '#10b981', '#f59e0b', '#ef4444'];
+    // ---------- Custom profile: color + optional emoji ----------
+    const warnaAvatar = ['#d98e73', '#b87fa0', '#5fa88a', '#c99a3b', '#7a9bb0', '#c1554f', '#8c8a5e', '#a487c2'];
+    const emojiOptions = ['😀', '😎', '🔥', '🎮', '👾', '🐉', '⚡', '💎'];
+    let pilihanWarna = null; // null = auto (derived from name)
+    let pilihanEmoji = null; // null = use initial letter instead
 
-    // 1. Fungsi Simpan Data + AUTO-PADAM Kod + SEKAT PENYAMAR ADMIN
+    function buildPickers() {
+      warnaAvatar.forEach((warna) => {
+        const sw = document.createElement('div');
+        sw.className = 'swatch';
+        sw.style.backgroundColor = warna;
+        sw.title = 'Pilih warna ini';
+        sw.addEventListener('click', () => {
+          pilihanWarna = warna;
+          document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+          sw.classList.add('active');
+          updateAvatarPreview();
+        });
+        swatchRow.appendChild(sw);
+      });
+
+      emojiOptions.forEach((em) => {
+        const opt = document.createElement('div');
+        opt.className = 'emoji-opt';
+        opt.textContent = em;
+        opt.title = 'Guna emoji ini sebagai avatar';
+        opt.addEventListener('click', () => {
+          if (pilihanEmoji === em) {
+            pilihanEmoji = null; // toggle off -> back to letter
+            opt.classList.remove('active');
+          } else {
+            pilihanEmoji = em;
+            document.querySelectorAll('.emoji-opt').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+          }
+          updateAvatarPreview();
+        });
+        emojiRow.appendChild(opt);
+      });
+    }
+    buildPickers();
+
+    function warnaUntukNama(nama) {
+      const bersih = (nama || '').trim();
+      if (!bersih) return warnaAvatar[0];
+      return warnaAvatar[bersih.length % warnaAvatar.length];
+    }
+
+    function updateAvatarPreview() {
+      const nama = namaPelanggan.value.trim();
+      const inisial = nama ? nama.charAt(0).toUpperCase() : 'H';
+      const warna = pilihanWarna || warnaUntukNama(nama);
+      avatarPreview.style.backgroundColor = warna;
+      avatarPreview.textContent = pilihanEmoji || inisial;
+    }
+    namaPelanggan.addEventListener('input', updateAvatarPreview);
+    updateAvatarPreview();
+
+    function tunjukMesej(teks, jenis) {
+      inlineMsg.textContent = teks;
+      inlineMsg.className = `inline-msg show ${jenis}`;
+      clearTimeout(window._msgTimer);
+      window._msgTimer = setTimeout(() => inlineMsg.classList.remove('show'), 5000);
+    }
+
+    // ---------- Submit review (customer flow only — no admin/client-side privileged path) ----------
     butangHantar.addEventListener("click", async () => {
       const kod = kodVerification.value.trim().toUpperCase();
       const nama = namaPelanggan.value.trim();
@@ -321,47 +479,19 @@
       const ulasan = ulasanPelanggan.value.trim();
 
       if (!kod || !nama || !ulasan) {
-        alert("Sila lengkapkan Kod Pengesahan, Nama, dan Ruangan Ulasan!");
+        tunjukMesej("Sila lengkapkan Kod Pengesahan, Nama, dan Ulasan.", "error");
         return;
       }
 
-      const namaUpper = nama.toUpperCase().trim();
-      const adakahNamaAdmin = (namaUpper === "OFFICIAL H4SX STORE" || namaUpper === "H4SX STORE");
-      
-      // =========================================================================
-      // 🔐 SILA TUKAR KOD ADMIN RAHSIA AWAK DI BAWAH INI KEPADA KOD YANG AWAK UTUSKAN
-      // =========================================================================
-      const KOD_RAHSIA_ADMIN = "H4SX-BOSS-999"; 
-
-      // SEKATAN: Jika orang luar guna nama admin tapi kod rahsia salah
-      if (adakahNamaAdmin && kod !== KOD_RAHSIA_ADMIN) {
-        alert("❌ AMARAN: Anda dilarang keras menyamar sebagai ADMIN H4SX STORE!");
-        return;
-      }
+      butangHantar.disabled = true;
+      butangHantar.textContent = "Menghantar...";
 
       try {
-        // JIKA AWAK (ADMIN) YANG LOG MASUK & HANTAR
-        if (adakahNamaAdmin && kod === KOD_RAHSIA_ADMIN) {
-          await addDoc(collection(db, "ratings"), {
-            nama: nama,
-            bintang: nilaiBintang,
-            ulasan: ulasan,
-            diciptaPada: serverTimestamp()
-          });
-          
-          kodVerification.value = "";
-          namaPelanggan.value = "";
-          ulasanPelanggan.value = "";
-          alert("👑 Salam bos! Pengumuman/ulasan rasmi Admin berjaya diterbitkan.");
-          return; // Tamat (Kod admin tidak dipadam dari Firebase)
-        }
-
-        // JIKA PELANGGAN BIASA (Sistem auto-padam kod pakai deleteDoc)
         const docRef = doc(db, "review_codes", kod);
         const docSnap = await getDoc(docRef);
 
         if (!docSnap.exists()) {
-          alert("❌ Ralat: Kod salah atau telah pun digunakan!");
+          tunjukMesej("Kod pengesahan salah atau telah digunakan.", "error");
           return;
         }
 
@@ -369,55 +499,58 @@
           nama: nama,
           bintang: nilaiBintang,
           ulasan: ulasan,
+          warnaProfil: pilihanWarna || warnaUntukNama(nama),
+          emojiProfil: pilihanEmoji || null,
           diciptaPada: serverTimestamp()
         });
-        
+
         await deleteDoc(docRef);
 
         kodVerification.value = "";
         namaPelanggan.value = "";
         ulasanPelanggan.value = "";
-        alert("🔥 Berjaya! Ulasan disahkan dan kod lama telah dilupuskan secara automatik.");
+        pilihanWarna = null;
+        pilihanEmoji = null;
+        document.querySelectorAll('.swatch, .emoji-opt').forEach(el => el.classList.remove('active'));
+        updateAvatarPreview();
 
+        tunjukMesej("Ulasan berjaya dihantar. Terima kasih!", "success");
       } catch (ralat) {
         console.error(ralat);
-        alert("Sistem sibuk atau ralat rangkaian. Cuba lagi sebentar.");
+        tunjukMesej("Sistem sibuk atau ralat rangkaian. Cuba lagi sebentar.", "error");
+      } finally {
+        butangHantar.disabled = false;
+        butangHantar.textContent = "Hantar Ulasan";
       }
     });
 
-    // 2. Fungsi Ambil Data & Pengiraan Statistik Live
+    // ---------- Live feed + stats ----------
     const queryRating = query(collection(db, "ratings"), orderBy("diciptaPada", "desc"));
     onSnapshot(queryRating, (snapshot) => {
-      kotakPaparan.innerHTML = ""; 
-      
+      kotakPaparan.innerHTML = "";
+
       let totalBintang = 0;
       let count = snapshot.size;
 
       if (snapshot.empty) {
         kotakPaparan.innerHTML = '<div class="no-reviews">Belum ada sebarang maklum balas terkumpul.</div>';
         purataSkor.textContent = "0.0";
+        purataBintang.textContent = "☆☆☆☆☆";
         jumlahUlasan.textContent = "Berdasarkan 0 ulasan pembeli";
         return;
       }
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
         const score = parseInt(data.bintang) || 0;
         totalBintang += score;
 
-        const bintangTeks = "⭐".repeat(score);
+        const bintangTeks = "⭐".repeat(score) + "☆".repeat(5 - score);
         const rawNama = data.nama || "Pelanggan Misteri";
-        const paparanUlasan = data.ulasan || "Tiada ulasan teks disediakan.";
+        const paparanUlasan = escapeHtml(data.ulasan || "Tiada ulasan teks disediakan.");
 
         let namaDisorok = rawNama;
-        const namaUpper = rawNama.toUpperCase().trim();
-        let isAdmin = (namaUpper === "OFFICIAL H4SX STORE" || namaUpper === "H4SX STORE");
-        
-        // Pilih lencana mengikut identiti
-        let lencanaHtml = isAdmin ? '<span class="admin-badge">✓ Verified Admin</span>' : '<span class="verified-badge">✓ Verified Buyer</span>';
-
-        // Sorok nama pelanggan biasa, lepaskan nama admin penuh
-        if (rawNama !== "Pelanggan Misteri" && !isAdmin) {
+        if (rawNama !== "Pelanggan Misteri") {
           if (rawNama.length <= 2) {
             namaDisorok = rawNama.charAt(0) + "*";
           } else if (rawNama.length === 3) {
@@ -426,9 +559,11 @@
             namaDisorok = rawNama.substring(0, 2) + "*".repeat(rawNama.length - 3) + rawNama.slice(-1);
           }
         }
+        namaDisorok = escapeHtml(namaDisorok);
 
         const inisial = rawNama.charAt(0).toUpperCase();
-        const warnaDipilih = warnaAvatar[rawNama.length % warnaAvatar.length];
+        const warnaDipilih = data.warnaProfil || warnaUntukNama(rawNama);
+        const avatarIsi = data.emojiProfil || inisial;
 
         let paparanMasa = "Baru sahaja masuk";
         if (data.diciptaPada) {
@@ -442,12 +577,12 @@
         const card = document.createElement("div");
         card.className = "review-card";
         card.innerHTML = `
-          <div class="avatar" style="background-color: ${warnaDipilih}">${inisial}</div>
+          <div class="avatar" style="background-color: ${warnaDipilih}">${avatarIsi}</div>
           <div class="review-content">
             <div class="review-header">
               <div class="buyer-name-container">
                 <span class="buyer-name">${namaDisorok}</span>
-                ${lencanaHtml}
+                <span class="verified-badge">✓ Verified Buyer</span>
               </div>
               <span class="buyer-stars">${bintangTeks}</span>
             </div>
@@ -455,14 +590,22 @@
             <p class="buyer-feedback">${paparanUlasan}</p>
           </div>
         `;
-        
+
         kotakPaparan.appendChild(card);
       });
 
       const hasilPurata = (totalBintang / count).toFixed(1);
       purataSkor.textContent = hasilPurata;
+      const bulatPurata = Math.round(parseFloat(hasilPurata));
+      purataBintang.textContent = "★".repeat(bulatPurata) + "☆".repeat(5 - bulatPurata);
       jumlahUlasan.textContent = `Berdasarkan ${count} ulasan pembeli sah`;
     });
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
   </script>
 </body>
 </html>
