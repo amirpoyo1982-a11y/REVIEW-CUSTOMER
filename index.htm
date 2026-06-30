@@ -12,814 +12,1006 @@
       --ink: #faf6f1;
       --panel: #ffffff;
       --panel-soft: #fdf9f4;
-      --line: rgba(193, 154, 130, 0.18);
+      --line: rgba(193,154,130,0.18);
       --accent: #d98e73;
-      --accent-soft: rgba(217, 142, 115, 0.14);
+      --accent-soft: rgba(217,142,115,0.12);
       --gold: #c99a3b;
       --green: #5fa88a;
       --text: #4a3f3a;
       --text-dim: #a08d83;
+      --blue: #7a9bb0;
+      --red: #c1554f;
+      --shadow: 0 28px 48px -24px rgba(184,130,100,0.32), 0 2px 8px rgba(184,130,100,0.05);
+      --radius: 14px;
     }
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: 'Sora', 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: clamp(16px, 4vw, 48px) 16px;
-      background-color: var(--ink);
+      padding: clamp(14px, 4vw, 48px) 14px;
+      background: var(--ink);
       background-image:
-        radial-gradient(circle at 10% 0%, rgba(217,142,115,0.10), transparent 45%),
-        radial-gradient(circle at 90% 100%, rgba(95,168,138,0.08), transparent 45%);
+        radial-gradient(circle at 8% 0%, rgba(217,142,115,0.13), transparent 42%),
+        radial-gradient(circle at 92% 100%, rgba(95,168,138,0.09), transparent 42%);
       color: var(--text);
       min-height: 100vh;
     }
-    .mono { font-family: 'Space Mono', monospace; }
 
+    /* ─── TOAST ─── */
+    #toastStack {
+      position: fixed; top: 18px; right: 18px;
+      z-index: 9999; display: flex; flex-direction: column;
+      gap: 8px; max-width: 320px; pointer-events: none;
+    }
+    .toast {
+      padding: 12px 16px; border-radius: 12px; font-size: 13px;
+      font-weight: 600; line-height: 1.45; display: flex; align-items: center;
+      gap: 10px; box-shadow: 0 8px 24px -6px rgba(0,0,0,0.18);
+      animation: toastIn .28s cubic-bezier(.4,0,.2,1) forwards; pointer-events: all;
+    }
+    .toast.out { animation: toastOut .22s ease forwards; }
+    .toast.success { background: #ecf7f2; color: #2f7056; border: 1px solid rgba(95,168,138,0.35); }
+    .toast.error   { background: #fdecea; color: #a33a35; border: 1px solid rgba(193,85,79,0.28); }
+    .toast.info    { background: #eef4f8; color: #4a6e82; border: 1px solid rgba(122,155,176,0.32); }
+    .toast-icon { font-size: 16px; flex-shrink: 0; }
+    @keyframes toastIn  { from { opacity:0; transform:translateX(22px) scale(.95); } to { opacity:1; transform:none; } }
+    @keyframes toastOut { to   { opacity:0; transform:translateX(16px) scale(.95); } }
+
+    /* ─── SKELETON ─── */
+    .skeleton {
+      background: linear-gradient(90deg, #f0e8de 25%, #fdf5ee 50%, #f0e8de 75%);
+      background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* ─── WRAPPER ─── */
     .main-container {
-      max-width: 1040px;
-      margin: 0 auto;
+      max-width: 1060px; margin: 0 auto;
       background: linear-gradient(180deg, var(--panel), var(--panel-soft));
-      padding: clamp(20px, 4vw, 32px);
-      border-radius: 22px;
-      border: 1px solid var(--line);
-      box-shadow: 0 30px 50px -28px rgba(184, 130, 100, 0.35), 0 2px 8px rgba(184,130,100,0.06);
+      padding: clamp(20px, 4vw, 36px); border-radius: 22px;
+      border: 1px solid var(--line); box-shadow: var(--shadow);
     }
+    .page-header { margin-bottom: 22px; }
+    .page-header h2 { font-size: clamp(19px,4vw,23px); font-weight: 800; color: #3a312c; letter-spacing: -.015em; }
+    .page-header .subtitle { color: var(--text-dim); font-size: 12.5px; margin-top: 3px; }
 
-    .layout-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 28px;
-      margin-top: 22px;
-      align-items: start;
+    /* ─── NOTICE ─── */
+    .launch-notice {
+      display: flex; gap: 11px; align-items: flex-start;
+      background: var(--accent-soft); border: 1px solid rgba(217,142,115,0.28);
+      border-radius: var(--radius); padding: 13px 15px; margin-bottom: 22px;
     }
+    .launch-notice .icon { font-size: 16px; line-height: 1.45; flex-shrink: 0; }
+    .launch-notice p { font-size: 12.5px; line-height: 1.55; color: #6b5d55; }
+    .launch-notice strong { color: #4a3f3a; }
+
+    /* ─── RATING SUMMARY ─── */
+    .rating-summary {
+      display: flex; align-items: center; gap: 18px;
+      background: linear-gradient(135deg, rgba(217,142,115,0.07), rgba(95,168,138,0.05));
+      padding: 16px 20px; border-radius: var(--radius); margin-bottom: 24px; border: 1px solid var(--line);
+    }
+    .big-score { font-size: clamp(34px,7vw,42px); font-weight: 800; color: var(--accent); font-family: 'Space Mono', monospace; line-height: 1; }
+    .score-stars { color: var(--gold); font-size: 14px; letter-spacing: 1px; margin-top: 3px; }
+    .stats-info h4 { font-size: 14px; font-weight: 700; color: var(--text); }
+    .stats-info p  { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+
+    /* ─── LAYOUT ─── */
+    .layout-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 28px; align-items: start; }
     @media (min-width: 860px) {
-      .layout-grid {
-        grid-template-columns: 360px minmax(0, 1fr);
-      }
+      .layout-grid { grid-template-columns: 370px minmax(0,1fr); }
       .reviews-col { border-left: 1px solid var(--line); padding-left: 28px; }
       .reviews-col h3 { margin-top: 0; }
     }
-    .form-col, .reviews-col { min-width: 0; }
 
-    h2 {
-      color: #3a312c;
-      margin: 0 0 4px;
-      font-size: clamp(19px, 4vw, 22px);
-      font-weight: 800;
-      letter-spacing: -0.01em;
-    }
-    .subtitle {
-      color: var(--text-dim);
-      font-size: 13px;
-      margin: 0 0 22px;
-    }
-
-    .launch-notice {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      background: var(--accent-soft);
-      border: 1px solid rgba(217, 142, 115, 0.3);
-      border-radius: 14px;
-      padding: 13px 16px;
-      margin-bottom: 22px;
-    }
-    .launch-notice .icon {
-      font-size: 17px;
-      line-height: 1.4;
-      flex-shrink: 0;
-    }
-    .launch-notice p {
-      margin: 0;
-      font-size: 12.5px;
-      line-height: 1.55;
-      color: #6b5d55;
-    }
-    .launch-notice strong { color: #4a3f3a; }
-
-    .rating-summary {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: linear-gradient(135deg, rgba(56,189,248,0.08), transparent);
-      padding: 16px 18px;
-      border-radius: 16px;
-      margin-bottom: 24px;
-      border: 1px solid var(--line);
-    }
-    .big-score {
-      font-size: clamp(32px, 7vw, 38px);
-      font-weight: 800;
-      color: var(--accent);
-      font-family: 'Space Mono', monospace;
-      line-height: 1;
-    }
-    .score-stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; margin-top: 2px; }
-    .stats-info h4 { margin: 0; color: var(--text); font-size: 14px; font-weight: 700; }
-    .stats-info p { margin: 3px 0 0; color: var(--text-dim); font-size: 12px; }
-
-    .form-group { margin-bottom: 16px; }
+    /* ─── FORM BASICS ─── */
+    .form-group { margin-bottom: 16px; position: relative; }
     label {
-      display: block;
-      font-size: 12.5px;
-      color: var(--text-dim);
-      margin-bottom: 7px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
+      display: block; font-size: 11.5px; color: var(--text-dim); margin-bottom: 7px;
+      font-weight: 700; letter-spacing: .4px; text-transform: uppercase;
     }
     input[type="text"], select, textarea {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background-color: #fdfbf8;
-      color: var(--text);
-      font-size: 14.5px;
-      font-family: inherit;
-      transition: border-color .15s ease, box-shadow .15s ease;
+      width: 100%; padding: 12px 14px; border-radius: 11px; border: 1px solid var(--line);
+      background: #fdfbf8; color: var(--text); font-size: 14px; font-family: inherit;
+      transition: border-color .15s, box-shadow .15s; -webkit-appearance: none;
     }
     input[type="text"]:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-soft);
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
     }
-    textarea { resize: vertical; min-height: 64px; }
-
+    textarea { resize: vertical; min-height: 80px; padding-bottom: 28px; }
     .code-input {
-      border: 1px dashed rgba(201,154,59,0.55) !important;
-      background-color: #fbf3df !important;
-      color: #97742a !important;
-      font-weight: 700;
-      letter-spacing: 2px;
-      font-family: 'Space Mono', monospace;
+      border: 1px dashed rgba(201,154,59,.55) !important; background: #fbf3df !important;
+      color: #97742a !important; font-weight: 700; letter-spacing: 2.5px; font-family: 'Space Mono', monospace;
     }
-    .code-input:focus {
-      border-color: var(--gold) !important;
-      box-shadow: 0 0 0 3px rgba(201,154,59,0.18) !important;
-    }
+    .code-input:focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px rgba(201,154,59,.18) !important; }
 
-    /* ---------- Custom profile picker ---------- */
+    /* ─── CHAR COUNTER ─── */
+    .char-counter {
+      position: absolute; bottom: 10px; right: 12px; font-size: 11px;
+      color: var(--text-dim); pointer-events: none; font-family: 'Space Mono', monospace;
+    }
+    .char-counter.warn { color: var(--red); }
+
+    /* ─── DADU SUGGESTION ROW ─── */
+    .dadu-row {
+      position: absolute; bottom: 8px; left: 10px;
+      display: flex; gap: 5px; align-items: center;
+    }
+    .btn-dadu {
+      background: linear-gradient(135deg, #d98e73, #c97a5d);
+      border: none; border-radius: 8px; padding: 3px 9px;
+      color: #fff; font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+      font-weight: 700; font-family: inherit;
+      transition: filter .15s, transform .1s;
+      line-height: 1.6;
+      box-shadow: 0 2px 8px -2px rgba(217,142,115,0.5);
+    }
+    .btn-dadu:hover { filter: brightness(1.07); }
+    .btn-dadu:active { transform: scale(.94) rotate(-10deg); }
+    .btn-dadu .dice-icon { font-size: 14px; display: inline-block; transition: transform .2s; }
+    .btn-dadu:hover .dice-icon { transform: rotate(20deg); }
+    .dadu-label { font-size: 10.5px; color: var(--text-dim); font-weight: 600; white-space: nowrap; }
+
+    /* ─── PROFILE PICKER (upgraded) ─── */
     .profile-picker {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 16px;
-      padding: 14px;
-      background: #fdfbf8;
-      border: 1px solid var(--line);
-      border-radius: 14px;
+      margin-bottom: 16px; padding: 14px; background: #fdfbf8;
+      border: 1px solid var(--line); border-radius: var(--radius);
     }
-    .avatar-preview {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 20px;
-      flex-shrink: 0;
-      color: #fff;
-      transition: background-color .2s ease;
-      box-shadow: 0 4px 14px -4px rgba(184,130,100,0.4);
-    }
-    .profile-picker-controls { flex-grow: 1; min-width: 0; }
-    .profile-picker-controls p {
-      margin: 0 0 8px;
-      font-size: 11.5px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      font-weight: 600;
-    }
-    .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .swatch {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: transform .12s ease, border-color .12s ease;
-    }
-    .swatch:hover { transform: scale(1.12); }
-    .swatch.active { border-color: #8a6a52; }
+    .profile-picker-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
 
-    .emoji-toggle-row { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-    .emoji-opt {
-      width: 30px;
-      height: 30px;
-      border-radius: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f5ede4;
-      border: 1px solid var(--line);
+    /* Avatar preview — supports image */
+    .avatar-preview {
+      width: 64px; height: 64px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 24px; flex-shrink: 0; color: #fff;
+      transition: background-color .2s; overflow: hidden; position: relative;
+      box-shadow: 0 4px 14px -4px rgba(184,130,100,.38);
       cursor: pointer;
-      font-size: 14px;
-      transition: border-color .12s ease, background-color .12s ease;
+    }
+    .avatar-preview img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+    .avatar-preview .av-letter { position: relative; z-index: 1; }
+    .avatar-preview .av-edit-hint {
+      position: absolute; inset: 0; background: rgba(0,0,0,.42);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; opacity: 0; transition: opacity .15s; border-radius: 50%;
+      z-index: 2;
+    }
+    .avatar-preview:hover .av-edit-hint { opacity: 1; }
+
+    .profile-picker-controls { flex-grow: 1; min-width: 0; }
+    .pp-section-label { font-size: 10.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .4px; font-weight: 700; margin-bottom: 7px; }
+    .swatch-row, .emoji-toggle-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .emoji-toggle-row { margin-top: 7px; }
+    .swatch {
+      width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: transform .12s, border-color .12s;
+    }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.active { border-color: #8a6a52; transform: scale(1.1); }
+    .emoji-opt {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      background: #f5ede4; border: 1px solid var(--line); cursor: pointer;
+      font-size: 13px; transition: border-color .12s, background .12s;
     }
     .emoji-opt:hover { border-color: var(--accent); }
     .emoji-opt.active { border-color: var(--accent); background: var(--accent-soft); }
 
-    button#butangHantar {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
+    /* Image upload section */
+    .profile-image-section { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 2px; }
+    .image-upload-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+    .img-tab {
+      flex: 1; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line);
+      background: #f5ede4; color: var(--text-dim); font-size: 11.5px; font-weight: 700;
+      cursor: pointer; text-align: center; transition: all .12s; text-transform: uppercase; letter-spacing: .3px;
+    }
+    .img-tab:hover { border-color: var(--accent); color: var(--accent); }
+    .img-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .img-tab-panel { display: none; }
+    .img-tab-panel.show { display: block; }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed rgba(217,142,115,0.4); border-radius: 11px;
+      padding: 14px 10px; text-align: center; cursor: pointer;
+      transition: border-color .15s, background .15s; position: relative; overflow: hidden;
+    }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+    .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .drop-zone-icon { font-size: 22px; margin-bottom: 4px; }
+    .drop-zone-text { font-size: 12px; color: var(--text-dim); font-weight: 600; }
+    .drop-zone-sub  { font-size: 10.5px; color: var(--text-dim); margin-top: 2px; opacity: .7; }
+
+    /* URL input */
+    .url-input-row { display: flex; gap: 7px; }
+    .url-input-row input { flex: 1; font-size: 13px; padding: 9px 11px; }
+    .btn-url-load {
+      padding: 9px 14px; border-radius: 11px; border: none;
+      background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 700;
+      cursor: pointer; white-space: nowrap; transition: filter .15s;
+    }
+    .btn-url-load:hover { filter: brightness(1.07); }
+
+    /* Image preview strip */
+    .img-clear-btn {
+      display: none; margin-top: 8px; width: 100%; padding: 7px; border-radius: 9px;
+      border: 1px solid rgba(193,85,79,.3); background: rgba(193,85,79,.08);
+      color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer;
+      transition: background .12s;
+    }
+    .img-clear-btn.show { display: block; }
+    .img-clear-btn:hover { background: rgba(193,85,79,.14); }
+
+    /* ─── SELECT STARS ─── */
+    .star-select-wrap { position: relative; }
+    .star-select-wrap::after {
+      content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-dim); pointer-events: none; font-size: 12px;
+    }
+    select { padding-right: 32px; cursor: pointer; }
+
+    /* ─── SUBMIT BTN ─── */
+    #butangHantar {
+      width: 100%; padding: 14px; border-radius: 11px;
       background: linear-gradient(90deg, #d98e73, #c97a5d);
-      color: #fff;
-      font-size: 14.5px;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-      transition: filter .15s ease, transform .12s ease;
-      margin-top: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
+      color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; border: none;
+      transition: filter .15s, transform .12s, opacity .15s; margin-top: 6px;
+      text-transform: uppercase; letter-spacing: .7px; position: relative; overflow: hidden;
     }
-    button#butangHantar:hover { filter: brightness(1.06); }
-    button#butangHantar:active { transform: scale(0.98); }
-    button#butangHantar:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+    #butangHantar:hover { filter: brightness(1.06); }
+    #butangHantar:active { transform: scale(.98); }
+    #butangHantar:disabled { opacity: .55; cursor: not-allowed; transform: none; }
 
-    .inline-msg {
-      font-size: 12.5px;
-      margin-top: 8px;
-      padding: 9px 12px;
-      border-radius: 10px;
-      display: none;
+    /* ─── REVIEWS COL ─── */
+    .reviews-col h3 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-dim); font-weight: 700; margin-bottom: 12px; }
+    .filter-bar { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+    .filter-btn {
+      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      border: 1px solid var(--line); background: #fdfbf8; color: var(--text-dim);
+      cursor: pointer; transition: background .12s, border-color .12s, color .12s;
+      text-transform: uppercase; letter-spacing: .3px;
     }
-    .inline-msg.show { display: block; }
-    .inline-msg.error { background: rgba(214,90,90,0.1); color: #c1554f; border: 1px solid rgba(214,90,90,0.25); }
-    .inline-msg.success { background: rgba(95,168,138,0.12); color: #4d8c70; border: 1px solid rgba(95,168,138,0.3); }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .sort-select {
+      margin-left: auto; padding: 5px 10px; border-radius: 8px; font-size: 12px;
+      font-weight: 600; border: 1px solid var(--line); background: #fdfbf8;
+      color: var(--text-dim); cursor: pointer; font-family: inherit;
+    }
+    .sort-select:focus { outline: none; border-color: var(--accent); }
 
-    .rating-box {
-      border: 1px solid var(--line);
-      padding: 6px;
-      margin-top: 22px;
-      background-color: #fdfbf8;
-      border-radius: 16px;
-      max-height: 460px;
-      overflow-y: auto;
-    }
-    @media (min-width: 860px) {
-      .reviews-col .rating-box {
-        margin-top: 14px;
-        max-height: none;
-        height: 100%;
-        min-height: 480px;
-      }
-      .reviews-col { display: flex; flex-direction: column; }
-    }
-    .rating-box::-webkit-scrollbar { width: 6px; }
+    /* ─── REVIEW CARDS ─── */
+    .rating-box { border: 1px solid var(--line); background: #fdfbf8; border-radius: var(--radius); overflow: hidden; }
+    @media (min-width: 860px) { .reviews-col .rating-box { max-height: 640px; overflow-y: auto; } }
+    .rating-box::-webkit-scrollbar { width: 5px; }
     .rating-box::-webkit-scrollbar-thumb { background: #e3d3c4; border-radius: 4px; }
 
     .review-card {
-      padding: 16px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      animation: fadeIn .35s ease-out;
+      padding: 16px; border-bottom: 1px solid var(--line); display: flex; gap: 12px;
+      align-items: flex-start; animation: fadeCard .32s ease-out forwards; opacity: 0;
     }
     .review-card:last-child { border-bottom: none; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeCard { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }
 
     .avatar {
-      width: 38px; height: 38px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 15px;
-      color: #fff;
-      flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-weight: 800; font-size: 17px; color: #fff; flex-shrink: 0;
+      box-shadow: 0 3px 10px -3px rgba(0,0,0,.18); overflow: hidden; position: relative;
     }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; border-radius: 50%; }
     .review-content { flex-grow: 1; min-width: 0; }
-    .review-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .buyer-name-container { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
+    .review-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
+    .buyer-name-container { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
     .buyer-name { font-weight: 700; color: #4a3f3a; font-size: 14px; }
-
     .verified-badge {
-      background-color: rgba(95,168,138,0.12);
-      color: var(--green);
-      font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 5px;
-      border: 1px solid rgba(95,168,138,0.3);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      white-space: nowrap;
+      background: rgba(95,168,138,.12); color: var(--green); font-size: 9.5px;
+      padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(95,168,138,.28);
+      font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+      display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
     }
+    .star-display { display: flex; gap: 2px; }
+    .buyer-time { font-size: 11px; color: var(--text-dim); margin: 3px 0 7px; display: flex; align-items: center; gap: 5px; }
+    .buyer-time::before { content: '🕐'; font-size: 10px; }
+    .buyer-feedback { color: #6b5d55; font-size: 13.5px; line-height: 1.58; word-break: break-word; }
 
-    .buyer-stars { font-size: 11px; letter-spacing: 1px; color: var(--gold); white-space: nowrap; }
-    .buyer-time { font-size: 11px; color: var(--text-dim); margin: 3px 0 6px; }
-    .buyer-feedback { color: #6b5d55; font-size: 13.5px; line-height: 1.55; margin: 0; word-break: break-word; }
-
-    .no-reviews { text-align: center; color: var(--text-dim); font-size: 13px; padding: 36px 0; }
-    h3 {
-      color: var(--text-dim);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin: 28px 0 10px;
-      font-weight: 700;
-    }
-
-    /* ---------- Admin reply ---------- */
+    /* ─── ADMIN REPLY ─── */
     .admin-reply-box {
-      margin-top: 10px;
-      margin-left: 6px;
-      padding: 10px 12px;
-      background: rgba(122, 155, 176, 0.10);
-      border-left: 3px solid #7a9bb0;
-      border-radius: 0 10px 10px 0;
+      margin-top: 10px; padding: 10px 13px; background: rgba(122,155,176,.09);
+      border-left: 3px solid #7a9bb0; border-radius: 0 10px 10px 0;
     }
-    .admin-reply-label {
-      font-size: 10.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #5d7e93;
-      margin: 0 0 4px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .admin-reply-text {
-      font-size: 13px;
-      color: #4a3f3a;
-      margin: 0;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .admin-reply-time {
-      font-size: 10.5px;
-      color: var(--text-dim);
-      margin-top: 4px;
-    }
-
+    .admin-reply-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: #5d7e93; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+    .admin-reply-text { font-size: 13px; color: #4a3f3a; line-height: 1.5; word-break: break-word; }
+    .admin-reply-time { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
     .reply-toggle-btn {
-      background: none;
-      border: none;
-      color: #7a9bb0;
-      font-size: 11.5px;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 4px 0;
-      margin-top: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      background: none; border: none; color: #7a9bb0; font-size: 11px; font-weight: 700;
+      cursor: pointer; padding: 5px 0; margin-top: 5px; text-transform: uppercase; letter-spacing: .4px;
+      display: inline-flex; align-items: center; gap: 4px; transition: color .12s;
     }
-    .reply-toggle-btn:hover { color: #5d7e93; text-decoration: underline; }
-
-    .admin-reply-form {
-      margin-top: 8px;
-      display: none;
-    }
+    .reply-toggle-btn:hover { color: #5d7e93; }
+    .admin-reply-form { margin-top: 8px; display: none; }
     .admin-reply-form.show { display: block; }
-    .admin-reply-form textarea {
-      min-height: 50px;
-      font-size: 13px;
-    }
-    .admin-reply-form-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 6px;
-    }
+    .admin-reply-form textarea { min-height: 52px; font-size: 13px; }
+    .admin-reply-form-actions { display: flex; gap: 7px; margin-top: 6px; }
     .admin-reply-form-actions button {
-      flex: 1;
-      padding: 8px;
-      border-radius: 8px;
-      border: none;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      flex: 1; padding: 8px; border-radius: 8px; border: none; font-size: 12px;
+      font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: .3px; transition: filter .12s;
     }
     .btn-hantar-balasan { background: #7a9bb0; color: #fff; }
     .btn-hantar-balasan:hover { filter: brightness(1.08); }
     .btn-batal-balasan { background: #ece3d8; color: var(--text-dim); }
     .btn-batal-balasan:hover { background: #e3d6c6; }
 
-    @media (max-width: 420px) {
-      .main-container { padding: 18px 14px; border-radius: 18px; }
-      .profile-picker { flex-direction: column; align-items: flex-start; }
+    .no-reviews { text-align: center; color: var(--text-dim); font-size: 13px; padding: 40px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .no-reviews .no-icon { font-size: 28px; }
+    .skel-card { padding: 16px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; }
+    .skel-avatar { width:42px; height:42px; border-radius:50%; flex-shrink:0; }
+    .skel-lines { flex:1; display:flex; flex-direction:column; gap:8px; padding-top:2px; }
+    .skel-line { height:11px; }
+
+    @media (max-width:440px) {
+      .main-container { padding: 16px 13px; border-radius: 18px; }
+      .url-input-row { flex-direction: column; }
     }
   </style>
 </head>
 <body>
 
-  <div class="main-container">
+<div id="toastStack"></div>
+
+<div class="main-container">
+  <div class="page-header">
     <h2>Ulasan &amp; Penarafan Pelanggan</h2>
-    <p class="subtitle">H4SX STORE — kongsi pengalaman anda</p>
+    <p class="subtitle">H4SX STORE — kongsi pengalaman anda dengan jujur</p>
+  </div>
 
-    <div class="launch-notice">
-      <span class="icon">📣</span>
-      <p>
-        <strong>Sistem feedback baru dibuka</strong> pada 29/6/2026, jam 4–5 pagi.
-        Kami amat hargai setiap ulasan — sila beri rating yang <strong>jujur</strong> berdasarkan
-        pengalaman sebenar anda, dan elakkan bahasa kasar atau carutan. Terima kasih kerana
-        membantu kami berkembang lebih baik. 🙏
-      </p>
-    </div>
+  <div class="launch-notice">
+    <span class="icon">📣</span>
+    <p>
+      <strong>Sistem feedback dibuka</strong> pada 29/6/2026 jam 4–5 pagi.
+      Setiap ulasan memerlukan <strong>Kod Pengesahan</strong> unik — satu kod, satu ulasan sahaja.
+      Kami hargai pandangan jujur anda. 🙏
+    </p>
+  </div>
 
-    <div class="layout-grid">
-      <div class="form-col">
-        <div class="rating-summary">
-          <div>
-            <div class="big-score" id="purataSkor">0.0</div>
-            <div class="score-stars" id="purataBintang">☆☆☆☆☆</div>
+  <div class="layout-grid">
+    <!-- ══ FORM COL ══ -->
+    <div class="form-col">
+      <div class="rating-summary">
+        <div>
+          <div class="big-score" id="purataSkor">—</div>
+          <div class="score-stars" id="purataBintang">☆☆☆☆☆</div>
+        </div>
+        <div class="stats-info">
+          <h4>Purata Kepuasan Pelanggan</h4>
+          <p id="jumlahUlasan">Memuatkan...</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="kodVerification">🔐 Kod Pengesahan Pembelian</label>
+        <input type="text" id="kodVerification" class="code-input" placeholder="TAIP KOD DI SINI" autocomplete="off" maxlength="30" spellcheck="false">
+      </div>
+
+      <div class="form-group">
+        <label for="namaPelanggan">👤 Nama / Username Pembeli</label>
+        <input type="text" id="namaPelanggan" placeholder="Contoh: H4SX" autocomplete="off" maxlength="40">
+      </div>
+
+      <!-- ══ PROFILE PICKER UPGRADED ══ -->
+      <div class="profile-picker">
+        <div class="profile-picker-top">
+          <!-- Clickable avatar preview -->
+          <div class="avatar-preview" id="avatarPreview" title="Klik untuk upload gambar">
+            <span class="av-letter">H</span>
+            <div class="av-edit-hint">📷</div>
           </div>
-          <div class="stats-info">
-            <h4>Purata Kepuasan Pelanggan</h4>
-            <p id="jumlahUlasan">Memuatkan statistik ulasan...</p>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="kodVerification">🔐 Kod Pengesahan Pembelian</label>
-          <input type="text" id="kodVerification" class="code-input" placeholder="TAIP KOD DI SINI" autocomplete="off">
-        </div>
-
-        <div class="form-group">
-          <label for="namaPelanggan">Nama / Username Pembeli</label>
-          <input type="text" id="namaPelanggan" placeholder="Contoh: H4SX" autocomplete="off" maxlength="40">
-        </div>
-
-        <!-- Custom profile picker — optional, sensible default if user skips -->
-        <div class="profile-picker">
-          <div class="avatar-preview" id="avatarPreview">H</div>
           <div class="profile-picker-controls">
-            <p>Warna Profil (pilihan, bukan wajib)</p>
+            <p class="pp-section-label">Warna Profil</p>
             <div class="swatch-row" id="swatchRow"></div>
             <div class="emoji-toggle-row" id="emojiRow"></div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="pilihBintang">Skor Perkhidmatan</label>
-          <select id="pilihBintang">
-            <option value="5">⭐⭐⭐⭐⭐ (5 — Sangat Puas)</option>
-            <option value="4">⭐⭐⭐⭐ (4 — Baik)</option>
-            <option value="3">⭐⭐⭐ (3 — Sederhana)</option>
-            <option value="2">⭐⭐ (2 — Kurang Memuaskan)</option>
-            <option value="1">⭐ (1 — Lemah)</option>
-          </select>
-        </div>
+        <!-- Image upload section -->
+        <div class="profile-image-section">
+          <p class="pp-section-label" style="margin-bottom:10px;">📸 Gambar Profil (pilihan)</p>
+          <div class="image-upload-tabs">
+            <div class="img-tab active" data-tab="gallery">📁 Galeri / Phone</div>
+            <div class="img-tab" data-tab="url">🔗 URL Gambar</div>
+          </div>
 
-        <div class="form-group">
-          <label for="ulasanPelanggan">Ulasan Telus</label>
-          <textarea id="ulasanPelanggan" rows="3" placeholder="Kongsi pengalaman anda berurusan dengan H4SX STORE..." maxlength="500"></textarea>
-        </div>
+          <!-- Tab: Gallery upload -->
+          <div class="img-tab-panel show" id="panel-gallery">
+            <div class="drop-zone" id="dropZone">
+              <input type="file" id="fileInput" accept="image/*">
+              <div class="drop-zone-icon">🖼️</div>
+              <div class="drop-zone-text">Klik atau seret gambar ke sini</div>
+              <div class="drop-zone-sub">JPG, PNG, WEBP, GIF · Max 5MB · Auto-crop bulat</div>
+            </div>
+          </div>
 
-        <button id="butangHantar">Hantar Ulasan</button>
-        <div class="inline-msg" id="inlineMsg"></div>
+          <!-- Tab: URL -->
+          <div class="img-tab-panel" id="panel-url">
+            <div class="url-input-row">
+              <input type="text" id="urlGambar" placeholder="https://example.com/gambar.jpg">
+              <button class="btn-url-load" id="btnLoadUrl">Muat</button>
+            </div>
+          </div>
+
+          <button class="img-clear-btn" id="btnClearImg">✕ Buang Gambar Profil</button>
+        </div>
       </div>
 
-      <div class="reviews-col">
-        <h3>Ulasan Pelanggan Terkini</h3>
-        <div id="kotakPaparan" class="rating-box">Memuatkan maklumat ulasan...</div>
+      <div class="form-group">
+        <label for="pilihBintang">⭐ Skor Perkhidmatan</label>
+        <div class="star-select-wrap">
+          <select id="pilihBintang">
+            <option value="5">⭐⭐⭐⭐⭐  5 — Sangat Puas Hati</option>
+            <option value="4">⭐⭐⭐⭐  4 — Baik &amp; Memuaskan</option>
+            <option value="3">⭐⭐⭐  3 — Sederhana</option>
+            <option value="2">⭐⭐  2 — Kurang Memuaskan</option>
+            <option value="1">⭐  1 — Lemah</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="ulasanPelanggan">💬 Ulasan Anda</label>
+        <textarea id="ulasanPelanggan" rows="3"
+          placeholder="Kongsi pengalaman anda... atau tekan 🎲 untuk idea ayat!"
+          maxlength="500"></textarea>
+        <!-- Dadu + char counter -->
+        <div class="dadu-row">
+          <button class="btn-dadu" id="btnDadu" type="button" title="Jana ayat cadangan">
+            <span class="dice-icon">🎲</span> Cadangan
+          </button>
+          <span class="dadu-label">Malas taip? Tekan je!</span>
+        </div>
+        <span class="char-counter" id="charCounter">0 / 500</span>
+      </div>
+
+      <button id="butangHantar">Hantar Ulasan</button>
+    </div>
+
+    <!-- ══ REVIEWS COL ══ -->
+    <div class="reviews-col">
+      <h3>Ulasan Pelanggan Terkini</h3>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">Semua</button>
+        <button class="filter-btn" data-filter="5">⭐⭐⭐⭐⭐</button>
+        <button class="filter-btn" data-filter="4">⭐⭐⭐⭐</button>
+        <button class="filter-btn" data-filter="3">⭐⭐⭐</button>
+        <button class="filter-btn" data-filter="12">⭐⭐ &amp; ⭐</button>
+        <select class="sort-select" id="sortSelect">
+          <option value="newest">Terbaru</option>
+          <option value="highest">Tertinggi</option>
+          <option value="lowest">Terendah</option>
+        </select>
+      </div>
+      <div id="kotakPaparan" class="rating-box">
+        <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:55%"></div><div class="skel-line skeleton" style="width:80%"></div><div class="skel-line skeleton" style="width:65%"></div></div></div>
+        <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:45%"></div><div class="skel-line skeleton" style="width:72%"></div></div></div>
+        <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:60%"></div><div class="skel-line skeleton" style="width:50%"></div></div></div>
       </div>
     </div>
   </div>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<script type="module">
+  import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, onSnapshot,
+    query, orderBy, serverTimestamp,
+    doc, getDoc, deleteDoc, updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBOkyPe2f1tHu9OQiwHHpgfJTYM-KM7cuU",
-      authDomain: "h4sx-6712c.firebaseapp.com",
-      projectId: "h4sx-6712c",
-      storageBucket: "h4sx-6712c.firebasestorage.app",
-      messagingSenderId: "416803081247",
-      appId: "1:416803081247:web:e201174233b953e539992a",
-      measurementId: "G-J9QWB39V87"
+  // ─── Firebase ───────────────────────────────────────────────────
+  const app = initializeApp({
+    apiKey:            "AIzaSyBOkyPe2f1tHu9OQiwHHpgfJTYM-KM7cuU",
+    authDomain:        "h4sx-6712c.firebaseapp.com",
+    projectId:         "h4sx-6712c",
+    storageBucket:     "h4sx-6712c.firebasestorage.app",
+    messagingSenderId: "416803081247",
+    appId:             "1:416803081247:web:e201174233b953e539992a",
+    measurementId:     "G-J9QWB39V87"
+  });
+  const db = getFirestore(app);
+
+  // ─── Admin gate ─────────────────────────────────────────────────
+  const KOD_ADMIN = "H4SXADMIN2026"; // TUKAR sebelum deploy!
+  const adminOk   = () => sessionStorage.getItem("h4sx_admin_ok") === "1";
+  function mintaAdmin() {
+    if (adminOk()) return true;
+    const v = prompt("Masukkan Kod Admin:");
+    if (!v) return false;
+    if (v.trim() === KOD_ADMIN) { sessionStorage.setItem("h4sx_admin_ok","1"); return true; }
+    showToast("Kod admin salah.", "error"); return false;
+  }
+
+  // ─── Toast ──────────────────────────────────────────────────────
+  const toastStack = document.getElementById("toastStack");
+  function showToast(msg, type = "info") {
+    const icons = { success:"✅", error:"❌", info:"ℹ️" };
+    const t = document.createElement("div");
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${escapeHtml(msg)}</span>`;
+    toastStack.appendChild(t);
+    const rm = () => { t.classList.add("out"); t.addEventListener("animationend", () => t.remove(), {once:true}); };
+    const tid = setTimeout(rm, 3800);
+    t.addEventListener("click", () => { clearTimeout(tid); rm(); });
+  }
+
+  // ─── DOM ────────────────────────────────────────────────────────
+  const kodVerification = document.getElementById("kodVerification");
+  const namaPelanggan   = document.getElementById("namaPelanggan");
+  const pilihBintang    = document.getElementById("pilihBintang");
+  const ulasanPelanggan = document.getElementById("ulasanPelanggan");
+  const butangHantar    = document.getElementById("butangHantar");
+  const kotakPaparan    = document.getElementById("kotakPaparan");
+  const purataSkor      = document.getElementById("purataSkor");
+  const purataBintang   = document.getElementById("purataBintang");
+  const jumlahUlasan    = document.getElementById("jumlahUlasan");
+  const avatarPreview   = document.getElementById("avatarPreview");
+  const swatchRow       = document.getElementById("swatchRow");
+  const emojiRow        = document.getElementById("emojiRow");
+  const charCounter     = document.getElementById("charCounter");
+  const sortSelect      = document.getElementById("sortSelect");
+  const fileInput       = document.getElementById("fileInput");
+  const dropZone        = document.getElementById("dropZone");
+  const urlGambar       = document.getElementById("urlGambar");
+  const btnLoadUrl      = document.getElementById("btnLoadUrl");
+  const btnClearImg     = document.getElementById("btnClearImg");
+  const btnDadu         = document.getElementById("btnDadu");
+
+  // ─── Profile state ──────────────────────────────────────────────
+  const WARNA = ['#d98e73','#b87fa0','#5fa88a','#c99a3b','#7a9bb0','#c1554f','#8c8a5e','#a487c2'];
+  const EMOJI  = ['😀','😎','🔥','🎮','👾','🐉','⚡','💎'];
+  let pilihanWarna  = null;
+  let pilihanEmoji  = null;
+  let profileImgB64 = null; // compressed base64 of uploaded/url image
+
+  // Build swatches
+  WARNA.forEach(w => {
+    const sw = document.createElement("div");
+    sw.className = "swatch"; sw.style.backgroundColor = w;
+    sw.onclick = () => {
+      pilihanWarna = w;
+      document.querySelectorAll(".swatch").forEach(s => s.classList.remove("active"));
+      sw.classList.add("active");
+      updatePreview();
     };
+    swatchRow.appendChild(sw);
+  });
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  // Build emoji opts
+  EMOJI.forEach(em => {
+    const opt = document.createElement("div");
+    opt.className = "emoji-opt"; opt.textContent = em;
+    opt.onclick = () => {
+      pilihanEmoji = pilihanEmoji === em ? null : em;
+      document.querySelectorAll(".emoji-opt").forEach(o => o.classList.remove("active"));
+      if (pilihanEmoji) opt.classList.add("active");
+      // If emoji selected, clear image
+      if (pilihanEmoji) clearProfileImg(false);
+      updatePreview();
+    };
+    emojiRow.appendChild(opt);
+  });
 
-    // ---------- Admin gate (LIGHT-WEIGHT ONLY — see notes below) ----------
-    // PENTING: Ini bukan keselamatan sebenar. Kod ini boleh dilihat oleh
-    // sesiapa yang buka "View Page Source" / DevTools. Tujuannya semata-mata
-    // untuk mengelakkan pelanggan biasa secara tidak sengaja menekan butang
-    // "Balas (Admin)". Untuk kawalan akses sebenar, guna Firebase
-    // Authentication + Security Rules di sisi server.
-    const KOD_ADMIN_RAHSIA = "H4SXADMIN2026"; // <-- TUKAR kod ini sebelum guna sebenar
-    const ADMIN_SESSION_KEY = "h4sx_admin_ok";
+  function warnaAuto(nama) {
+    const n = (nama || "").trim();
+    return n ? WARNA[n.length % WARNA.length] : WARNA[0];
+  }
 
-    function adminSudahLogin() {
-      return sessionStorage.getItem(ADMIN_SESSION_KEY) === "1";
+  function updatePreview() {
+    const nama = namaPelanggan.value.trim();
+    const warna = pilihanWarna || warnaAuto(nama);
+    const letter = avatarPreview.querySelector(".av-letter");
+
+    avatarPreview.style.backgroundColor = warna;
+
+    // Remove old img if any
+    const oldImg = avatarPreview.querySelector("img.av-img");
+    if (oldImg) oldImg.remove();
+
+    if (profileImgB64) {
+      // Show image
+      const img = document.createElement("img");
+      img.className = "av-img";
+      img.src = profileImgB64;
+      avatarPreview.insertBefore(img, avatarPreview.querySelector(".av-edit-hint"));
+      letter.textContent = "";
+    } else {
+      letter.textContent = pilihanEmoji || (nama ? nama.charAt(0).toUpperCase() : "H");
     }
+  }
 
-    function mintaKodAdmin() {
-      if (adminSudahLogin()) return true;
-      const cubaan = prompt("Masukkan Kod Admin untuk balas ulasan ini:");
-      if (cubaan === null) return false; // admin tekan cancel
-      if (cubaan.trim() === KOD_ADMIN_RAHSIA) {
-        sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
-        return true;
-      }
-      alert("Kod admin salah.");
-      return false;
-    }
+  namaPelanggan.addEventListener("input", updatePreview);
+  updatePreview();
 
-    const kodVerification = document.getElementById("kodVerification");
-    const namaPelanggan = document.getElementById("namaPelanggan");
-    const pilihBintang = document.getElementById("pilihBintang");
-    const ulasanPelanggan = document.getElementById("ulasanPelanggan");
-    const butangHantar = document.getElementById("butangHantar");
-    const kotakPaparan = document.getElementById("kotakPaparan");
-    const purataSkor = document.getElementById("purataSkor");
-    const purataBintang = document.getElementById("purataBintang");
-    const jumlahUlasan = document.getElementById("jumlahUlasan");
-    const inlineMsg = document.getElementById("inlineMsg");
-    const avatarPreview = document.getElementById("avatarPreview");
-    const swatchRow = document.getElementById("swatchRow");
-    const emojiRow = document.getElementById("emojiRow");
-
-    // ---------- Custom profile: color + optional emoji ----------
-    const warnaAvatar = ['#d98e73', '#b87fa0', '#5fa88a', '#c99a3b', '#7a9bb0', '#c1554f', '#8c8a5e', '#a487c2'];
-    const emojiOptions = ['😀', '😎', '🔥', '🎮', '👾', '🐉', '⚡', '💎'];
-    let pilihanWarna = null; // null = auto (derived from name)
-    let pilihanEmoji = null; // null = use initial letter instead
-
-    function buildPickers() {
-      warnaAvatar.forEach((warna) => {
-        const sw = document.createElement('div');
-        sw.className = 'swatch';
-        sw.style.backgroundColor = warna;
-        sw.title = 'Pilih warna ini';
-        sw.addEventListener('click', () => {
-          pilihanWarna = warna;
-          document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-          sw.classList.add('active');
-          updateAvatarPreview();
-        });
-        swatchRow.appendChild(sw);
-      });
-
-      emojiOptions.forEach((em) => {
-        const opt = document.createElement('div');
-        opt.className = 'emoji-opt';
-        opt.textContent = em;
-        opt.title = 'Guna emoji ini sebagai avatar';
-        opt.addEventListener('click', () => {
-          if (pilihanEmoji === em) {
-            pilihanEmoji = null; // toggle off -> back to letter
-            opt.classList.remove('active');
-          } else {
-            pilihanEmoji = em;
-            document.querySelectorAll('.emoji-opt').forEach(o => o.classList.remove('active'));
-            opt.classList.add('active');
-          }
-          updateAvatarPreview();
-        });
-        emojiRow.appendChild(opt);
-      });
-    }
-    buildPickers();
-
-    function warnaUntukNama(nama) {
-      const bersih = (nama || '').trim();
-      if (!bersih) return warnaAvatar[0];
-      return warnaAvatar[bersih.length % warnaAvatar.length];
-    }
-
-    function updateAvatarPreview() {
-      const nama = namaPelanggan.value.trim();
-      const inisial = nama ? nama.charAt(0).toUpperCase() : 'H';
-      const warna = pilihanWarna || warnaUntukNama(nama);
-      avatarPreview.style.backgroundColor = warna;
-      avatarPreview.textContent = pilihanEmoji || inisial;
-    }
-    namaPelanggan.addEventListener('input', updateAvatarPreview);
-    updateAvatarPreview();
-
-    function tunjukMesej(teks, jenis) {
-      inlineMsg.textContent = teks;
-      inlineMsg.className = `inline-msg show ${jenis}`;
-      clearTimeout(window._msgTimer);
-      window._msgTimer = setTimeout(() => inlineMsg.classList.remove('show'), 5000);
-    }
-
-    // ---------- Submit review (customer flow only — no admin/client-side privileged path) ----------
-    butangHantar.addEventListener("click", async () => {
-      const kod = kodVerification.value.trim().toUpperCase();
-      const nama = namaPelanggan.value.trim();
-      const nilaiBintang = parseInt(pilihBintang.value);
-      const ulasan = ulasanPelanggan.value.trim();
-
-      if (!kod || !nama || !ulasan) {
-        tunjukMesej("Sila lengkapkan Kod Pengesahan, Nama, dan Ulasan.", "error");
-        return;
-      }
-
-      butangHantar.disabled = true;
-      butangHantar.textContent = "Menghantar...";
-
-      try {
-        const docRef = doc(db, "review_codes", kod);
-        const docSnap = await getDoc(docRef);
-
-        if (!docSnap.exists()) {
-          tunjukMesej("Kod pengesahan salah atau telah digunakan.", "error");
-          return;
-        }
-
-        await addDoc(collection(db, "ratings"), {
-          nama: nama,
-          bintang: nilaiBintang,
-          ulasan: ulasan,
-          warnaProfil: pilihanWarna || warnaUntukNama(nama),
-          emojiProfil: pilihanEmoji || null,
-          balasanAdmin: null,
-          balasanPada: null,
-          diciptaPada: serverTimestamp()
-        });
-
-        await deleteDoc(docRef);
-
-        kodVerification.value = "";
-        namaPelanggan.value = "";
-        ulasanPelanggan.value = "";
-        pilihanWarna = null;
-        pilihanEmoji = null;
-        document.querySelectorAll('.swatch, .emoji-opt').forEach(el => el.classList.remove('active'));
-        updateAvatarPreview();
-
-        tunjukMesej("Ulasan berjaya dihantar. Terima kasih!", "success");
-      } catch (ralat) {
-        console.error(ralat);
-        tunjukMesej("Sistem sibuk atau ralat rangkaian. Cuba lagi sebentar.", "error");
-      } finally {
-        butangHantar.disabled = false;
-        butangHantar.textContent = "Hantar Ulasan";
-      }
+  // ─── Image upload tabs ──────────────────────────────────────────
+  document.querySelectorAll(".img-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".img-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".img-tab-panel").forEach(p => p.classList.remove("show"));
+      tab.classList.add("active");
+      document.getElementById(`panel-${tab.dataset.tab}`).classList.add("show");
     });
+  });
 
-    // ---------- Admin: hantar / kemaskini balasan ----------
-    async function hantarBalasanAdmin(idDokumen, teksBalasan, btnElement) {
-      if (!teksBalasan.trim()) {
-        alert("Sila taip balasan sebelum hantar.");
+  // Clicking avatar preview triggers file input
+  avatarPreview.addEventListener("click", () => fileInput.click());
+
+  // ─── Compress image to ~80px circle (base64) ────────────────────
+  function compressImage(src, callback) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const SIZE = 80;
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = SIZE;
+      const ctx = canvas.getContext("2d");
+      // Crop square from center
+      const min = Math.min(img.naturalWidth, img.naturalHeight);
+      const sx = (img.naturalWidth  - min) / 2;
+      const sy = (img.naturalHeight - min) / 2;
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, SIZE, SIZE);
+      callback(canvas.toDataURL("image/jpeg", 0.75));
+    };
+    img.onerror = () => {
+      showToast("Gagal muatkan gambar. Cuba URL lain atau format lain.", "error");
+    };
+    img.src = src;
+  }
+
+  function applyProfileImg(b64) {
+    profileImgB64 = b64;
+    pilihanEmoji  = null;
+    document.querySelectorAll(".emoji-opt").forEach(o => o.classList.remove("active"));
+    btnClearImg.classList.add("show");
+    updatePreview();
+    showToast("Gambar profil berjaya dimuatkan!", "success");
+  }
+
+  function clearProfileImg(showMsg = true) {
+    profileImgB64 = null;
+    btnClearImg.classList.remove("show");
+    fileInput.value = "";
+    urlGambar.value = "";
+    updatePreview();
+    if (showMsg) showToast("Gambar profil dibuang.", "info");
+  }
+
+  btnClearImg.addEventListener("click", () => clearProfileImg(true));
+
+  // File input change
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast("Fail terlalu besar. Max 5MB.", "error"); return; }
+    const reader = new FileReader();
+    reader.onload = e => compressImage(e.target.result, applyProfileImg);
+    reader.readAsDataURL(file);
+  });
+
+  // Drag & drop
+  dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+  dropZone.addEventListener("drop", e => {
+    e.preventDefault(); dropZone.classList.remove("drag-over");
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith("image/")) { showToast("Fail bukan gambar.", "error"); return; }
+    if (file.size > 5 * 1024 * 1024) { showToast("Fail terlalu besar. Max 5MB.", "error"); return; }
+    const reader = new FileReader();
+    reader.onload = ev => compressImage(ev.target.result, applyProfileImg);
+    reader.readAsDataURL(file);
+  });
+
+  // URL load
+  btnLoadUrl.addEventListener("click", () => {
+    const url = urlGambar.value.trim();
+    if (!url) { showToast("Sila masukkan URL gambar.", "error"); return; }
+    if (!url.startsWith("http")) { showToast("URL tidak sah. Mesti bermula dengan http://", "error"); return; }
+    btnLoadUrl.textContent = "Memuatkan...";
+    btnLoadUrl.disabled = true;
+    compressImage(url, b64 => {
+      applyProfileImg(b64);
+      btnLoadUrl.textContent = "Muat";
+      btnLoadUrl.disabled = false;
+    });
+    // Re-enable btn after timeout if error
+    setTimeout(() => { btnLoadUrl.textContent = "Muat"; btnLoadUrl.disabled = false; }, 6000);
+  });
+
+  // ─── Dadu / suggestion system ───────────────────────────────────
+  // Ayat ikut rating — 5 variasi per rating, will pick random
+  const CADANGAN = {
+    5: [
+      "Perkhidmatan sangat memuaskan! Barang sampai cepat dan dalam keadaan sempurna. Memang akan order lagi lepas ni. Syabas H4SX STORE! 🔥",
+      "Seller sangat responsif dan barang berkualiti tinggi. Packaging cantik dan selamat. 5 bintang pun rasa tak cukup! Highly recommended! ⭐",
+      "Laju gila proses dan penghantaran. Barang sama macam dalam gambar, tiada bezanya. H4SX STORE memang boleh dipercayai 100%. Terima kasih! 🙏",
+      "First time order tapi dah terus jadi pelanggan setia. Harga berpatutan, kualiti memang top. Tak rugi langsung berurusan dengan H4SX! 💎",
+      "Best seller! Comm cepat, barang tak tipu, hantar on time. Kalau boleh bagi 10 bintang bagi je! Dah share dekat kawan-kawan semua. 🚀"
+    ],
+    4: [
+      "Keseluruhannya puas hati dengan pembelian ni. Barang okay dan seller senang nak communicate. Sedikit lambat penghantaran tapi faham la. 👍",
+      "Produk memuaskan dan sesuai dengan harga yang dibayar. Packaging standard je tapi barang selamat sampai. Overall boleh order lagi. 🙂",
+      "Seller baik dan membantu. Barang sampai dalam masa dijanjikan. Ada sikit minor issue tapi seller terus selesaikan dengan cepat. Terima kasih!",
+      "Pengalaman membeli yang menyenangkan. Komunikasi seller aktif dan barang mengikut spesifikasi. Satu bintang kurang sebab delay sikit.",
+      "H4SX STORE ada potensi besar. Kali ni 4 bintang, kalau next time lagi smooth boleh dapat 5. Akan cuba order produk lain lepas ni! 😊"
+    ],
+    3: [
+      "Barang okay tapi masa penghantaran agak lambat dari yang dijangkakan. Seller okay je tapi perlu improve dari segi komunikasi sikit.",
+      "Produk sampai dalam keadaan baik tapi packaging boleh ditingkatkan lagi. Untuk harga yang dibayar, memang sesuailah lebih kurang.",
+      "Pengalaman sederhana. Ada expectation yang tak dipenuhi tapi barang berfungsi dengan baik. Mungkin akan order lagi bergantung pada produk.",
+      "Seller respond lambat sikit bila tanye soalan. Barang pun okay-okay je, bukan luar biasa. Harap H4SX boleh improve untuk masa depan.",
+      "Neutral je. Tak terlalu kecewa, tak terlalu gembira. Barang macam dalam gambar tapi rasa ada sesuatu yang kurang. Tengok je lah next time."
+    ],
+    2: [
+      "Agak kecewa dengan pengalaman kali ni. Masa penghantaran sangat lama dan komunikasi seller pun kurang memuaskan. Harap ada penambahbaikan.",
+      "Barang sampai dalam keadaan tidak memuaskan. Seller ada tolong settle tapi proses yang panjang buat saya rasa tak selesa. Perlu improve.",
+      "Penghantaran lambat, seller lambat reply. Barang pun tak sama macam dalam gambar. Kali ni memang tak berapa puas hati. Hope to improve.",
+      "Ada masalah dengan order tapi nasib baik seller akhirnya settle. Proses yang memenatkan. Belum pasti nak order lagi ke tidak.",
+      "Kurang puas hati dengan keseluruhan pengalaman. Harap H4SX STORE ambil maklum feedback ini untuk tingkatkan perkhidmatan pada masa hadapan."
+    ],
+    1: [
+      "Sangat kecewa. Barang lambat, seller susah nak contact, dan barang yang sampai pun tak sesuai. Harap ada penambahbaikan segera.",
+      "Pengalaman yang sangat tidak memuaskan. Ini pertama dan mungkin terakhir kali order. Semoga H4SX STORE ambil serius feedback ni.",
+      "Barang langsung tak seperti yang diiklankan. Seller pun tak proaktif nak settle masalah. Tidak akan recommend kepada sesiapa pun.",
+      "Proses yang sangat menyusahkan dari awal sampai akhir. Harap ada perubahan besar dari segi sistem dan layanan pelanggan.",
+      "Satu bintang pun rasa banyak. Pengalaman terburuk berbelanja online setakat ini. Mohon H4SX perbaiki kualiti perkhidmatan segera."
+    ]
+  };
+
+  let lastDaduIndex = -1;
+  btnDadu.addEventListener("click", () => {
+    const rating = parseInt(pilihBintang.value) || 5;
+    const pool   = CADANGAN[rating] || CADANGAN[5];
+    let idx;
+    do { idx = Math.floor(Math.random() * pool.length); } while (idx === lastDaduIndex && pool.length > 1);
+    lastDaduIndex = idx;
+
+    // Animate typing
+    const teks = pool[idx];
+    ulasanPelanggan.value = "";
+    charCounter.textContent = "0 / 500";
+    ulasanPelanggan.focus();
+
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i >= teks.length) { clearInterval(interval); return; }
+      ulasanPelanggan.value += teks[i++];
+      charCounter.textContent = `${ulasanPelanggan.value.length} / 500`;
+    }, 18);
+
+    // Bounce dice icon
+    const diceEl = btnDadu.querySelector(".dice-icon");
+    diceEl.style.transform = "rotate(360deg) scale(1.3)";
+    setTimeout(() => diceEl.style.transform = "", 400);
+  });
+
+  // Char counter
+  ulasanPelanggan.addEventListener("input", () => {
+    const len = ulasanPelanggan.value.length;
+    charCounter.textContent = `${len} / 500`;
+    charCounter.classList.toggle("warn", len > 450);
+  });
+
+  // ─── Submit review ──────────────────────────────────────────────
+  butangHantar.addEventListener("click", async () => {
+    const kod    = kodVerification.value.trim().toUpperCase();
+    const nama   = namaPelanggan.value.trim();
+    const bintang = parseInt(pilihBintang.value);
+    const ulasan = ulasanPelanggan.value.trim();
+
+    if (!kod)  return showToast("Sila masukkan Kod Pengesahan.", "error");
+    if (!nama) return showToast("Sila isi nama atau username.", "error");
+    // Ulasan boleh kosong — jika kosong, simpan sebagai ""
+    // (ikut permintaan: kalau malas biar kosong pun okay)
+
+    butangHantar.disabled = true;
+    butangHantar.textContent = "Menghantar...";
+
+    try {
+      const codeSnap = await getDoc(doc(db, "review_codes", kod));
+      if (!codeSnap.exists()) {
+        showToast("Kod pengesahan tidak sah atau telah digunakan.", "error");
         return;
       }
-      btnElement.disabled = true;
-      btnElement.textContent = "Menghantar...";
-      try {
-        await updateDoc(doc(db, "ratings", idDokumen), {
-          balasanAdmin: teksBalasan.trim(),
-          balasanPada: serverTimestamp()
-        });
-      } catch (ralat) {
-        console.error(ralat);
-        alert("Gagal hantar balasan. Cuba lagi.");
-      } finally {
-        btnElement.disabled = false;
-        btnElement.textContent = "Hantar Balasan";
-      }
+
+      await addDoc(collection(db, "ratings"), {
+        nama, bintang,
+        ulasan: ulasan || "", // boleh kosong
+        warnaProfil:  pilihanWarna || warnaAuto(nama),
+        emojiProfil:  pilihanEmoji || null,
+        profileImg:   profileImgB64 || null, // base64 compressed
+        balasanAdmin: null,
+        balasanPada:  null,
+        diciptaPada:  serverTimestamp()
+      });
+
+      await deleteDoc(doc(db, "review_codes", kod));
+
+      // Reset
+      kodVerification.value = namaPelanggan.value = ulasanPelanggan.value = "";
+      pilihBintang.value = "5";
+      pilihanWarna = pilihanEmoji = null;
+      document.querySelectorAll(".swatch,.emoji-opt").forEach(el => el.classList.remove("active"));
+      clearProfileImg(false);
+      charCounter.textContent = "0 / 500";
+      updatePreview();
+
+      showToast("Ulasan berjaya dihantar! Terima kasih. 🙏", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Ralat rangkaian. Sila cuba semula.", "error");
+    } finally {
+      butangHantar.disabled = false;
+      butangHantar.textContent = "Hantar Ulasan";
+    }
+  });
+
+  // ─── Admin reply ─────────────────────────────────────────────────
+  async function hantarBalasan(id, teks, btn) {
+    if (!teks.trim()) { showToast("Taip balasan dahulu.", "error"); return; }
+    btn.disabled = true; btn.textContent = "Menghantar...";
+    try {
+      await updateDoc(doc(db, "ratings", id), {
+        balasanAdmin: teks.trim(), balasanPada: serverTimestamp()
+      });
+      showToast("Balasan berjaya dikemaskini.", "success");
+    } catch (err) {
+      console.error(err); showToast("Gagal hantar balasan.", "error");
+    } finally {
+      btn.disabled = false; btn.textContent = "Hantar Balasan";
+    }
+  }
+
+  // ─── Filter & sort ───────────────────────────────────────────────
+  let filterStar = "all", sortMode = "newest", allDocs = [];
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      filterStar = btn.dataset.filter;
+      renderReviews();
+    });
+  });
+  sortSelect.addEventListener("change", () => { sortMode = sortSelect.value; renderReviews(); });
+
+  // ─── Live snapshot ───────────────────────────────────────────────
+  const q = query(collection(db, "ratings"), orderBy("diciptaPada", "desc"));
+  onSnapshot(q, snapshot => {
+    allDocs = [];
+    let total = 0, count = 0;
+    snapshot.forEach(d => {
+      allDocs.push({ id: d.id, ...d.data() });
+      total += parseInt(d.data().bintang) || 0;
+      count++;
+    });
+    if (count === 0) {
+      purataSkor.textContent = "0.0";
+      purataBintang.textContent = "☆☆☆☆☆";
+      jumlahUlasan.textContent = "Belum ada ulasan";
+    } else {
+      const avg = (total / count).toFixed(1);
+      purataSkor.textContent = avg;
+      const r = Math.round(parseFloat(avg));
+      purataBintang.textContent = "★".repeat(r) + "☆".repeat(5 - r);
+      jumlahUlasan.textContent = `Berdasarkan ${count} ulasan pembeli sah`;
+    }
+    renderReviews();
+  });
+
+  // ─── Render reviews ──────────────────────────────────────────────
+  function renderReviews() {
+    let list = [...allDocs];
+    if (filterStar !== "all") {
+      list = filterStar === "12"
+        ? list.filter(d => d.bintang <= 2)
+        : list.filter(d => d.bintang === parseInt(filterStar));
+    }
+    if (sortMode === "highest") list.sort((a,b) => b.bintang - a.bintang);
+    else if (sortMode === "lowest") list.sort((a,b) => a.bintang - b.bintang);
+
+    kotakPaparan.innerHTML = "";
+
+    if (!list.length) {
+      kotakPaparan.innerHTML = `<div class="no-reviews"><span class="no-icon">🔍</span><span>Tiada ulasan untuk penapis ini.</span></div>`;
+      return;
     }
 
-    // ---------- Live feed + stats ----------
-    const queryRating = query(collection(db, "ratings"), orderBy("diciptaPada", "desc"));
-    onSnapshot(queryRating, (snapshot) => {
-      kotakPaparan.innerHTML = "";
+    list.forEach((data, i) => {
+      const id      = data.id;
+      const score   = parseInt(data.bintang) || 0;
+      const rawNama = data.nama || "Pelanggan Misteri";
 
-      let totalBintang = 0;
-      let count = snapshot.size;
-
-      if (snapshot.empty) {
-        kotakPaparan.innerHTML = '<div class="no-reviews">Belum ada sebarang maklum balas terkumpul.</div>';
-        purataSkor.textContent = "0.0";
-        purataBintang.textContent = "☆☆☆☆☆";
-        jumlahUlasan.textContent = "Berdasarkan 0 ulasan pembeli";
-        return;
+      let namaDisorok = rawNama;
+      if (rawNama !== "Pelanggan Misteri") {
+        if (rawNama.length <= 2)      namaDisorok = rawNama[0] + "*";
+        else if (rawNama.length === 3) namaDisorok = rawNama[0] + "*" + rawNama[2];
+        else namaDisorok = rawNama.substring(0,2) + "*".repeat(rawNama.length - 3) + rawNama.slice(-1);
       }
 
-      snapshot.forEach((docSnap) => {
-        const idDokumen = docSnap.id;
-        const data = docSnap.data();
-        const score = parseInt(data.bintang) || 0;
-        totalBintang += score;
+      const warna     = data.warnaProfil || warnaAuto(rawNama);
+      const hasImg    = !!(data.profileImg);
+      const avatarIsi = data.emojiProfil || rawNama.charAt(0).toUpperCase();
+      const adaBalasan = !!(data.balasanAdmin?.trim());
+      const adaUlasan  = !!(data.ulasan?.trim());
 
-        const bintangTeks = "⭐".repeat(score) + "☆".repeat(5 - score);
-        const rawNama = data.nama || "Pelanggan Misteri";
-        const paparanUlasan = escapeHtml(data.ulasan || "Tiada ulasan teks disediakan.");
+      let masa = "Baru sahaja";
+      if (data.diciptaPada) masa = data.diciptaPada.toDate().toLocaleString("ms-MY", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", hour12:true });
+      let masaBalasan = "";
+      if (data.balasanPada) masaBalasan = data.balasanPada.toDate().toLocaleString("ms-MY", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", hour12:true });
 
-        let namaDisorok = rawNama;
-        if (rawNama !== "Pelanggan Misteri") {
-          if (rawNama.length <= 2) {
-            namaDisorok = rawNama.charAt(0) + "*";
-          } else if (rawNama.length === 3) {
-            namaDisorok = rawNama.charAt(0) + "*" + rawNama.charAt(2);
-          } else {
-            namaDisorok = rawNama.substring(0, 2) + "*".repeat(rawNama.length - 3) + rawNama.slice(-1);
+      const starHtml = Array.from({length:5}, (_,si) =>
+        `<span style="color:${si < score ? '#c99a3b' : '#ddd'}">${si < score ? "★" : "☆"}</span>`
+      ).join("");
+
+      // Avatar HTML — image or letter/emoji
+      const avatarInner = hasImg
+        ? `<img src="${escapeHtml(data.profileImg)}" alt="">`
+        : escapeHtml(avatarIsi);
+
+      const card = document.createElement("div");
+      card.className = "review-card";
+      card.style.animationDelay = `${i * 38}ms`;
+      card.innerHTML = `
+        <div class="avatar" style="background:${warna}">${avatarInner}</div>
+        <div class="review-content">
+          <div class="review-header">
+            <div class="buyer-name-container">
+              <span class="buyer-name">${escapeHtml(namaDisorok)}</span>
+              <span class="verified-badge">✓ Verified</span>
+            </div>
+            <div class="star-display">${starHtml}</div>
+          </div>
+          <div class="buyer-time">${masa}</div>
+          ${adaUlasan
+            ? `<p class="buyer-feedback">${escapeHtml(data.ulasan)}</p>`
+            : `<p class="buyer-feedback" style="opacity:.45;font-style:italic;">— Tiada ulasan teks —</p>`
           }
-        }
-        namaDisorok = escapeHtml(namaDisorok);
-
-        const inisial = rawNama.charAt(0).toUpperCase();
-        const warnaDipilih = data.warnaProfil || warnaUntukNama(rawNama);
-        const avatarIsi = data.emojiProfil || inisial;
-
-        let paparanMasa = "Baru sahaja masuk";
-        if (data.diciptaPada) {
-          const tarikhObjek = data.diciptaPada.toDate();
-          paparanMasa = tarikhObjek.toLocaleString('ms-MY', {
-            day: 'numeric', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', hour12: true
-          });
-        }
-
-        let paparanMasaBalasan = "";
-        if (data.balasanPada) {
-          const tarikhBalasan = data.balasanPada.toDate();
-          paparanMasaBalasan = tarikhBalasan.toLocaleString('ms-MY', {
-            day: 'numeric', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', hour12: true
-          });
-        }
-
-        const adaBalasan = !!(data.balasanAdmin && data.balasanAdmin.trim());
-
-        const card = document.createElement("div");
-        card.className = "review-card";
-        card.innerHTML = `
-          <div class="avatar" style="background-color: ${warnaDipilih}">${avatarIsi}</div>
-          <div class="review-content">
-            <div class="review-header">
-              <div class="buyer-name-container">
-                <span class="buyer-name">${namaDisorok}</span>
-                <span class="verified-badge">✓ Verified Buyer</span>
-              </div>
-              <span class="buyer-stars">${bintangTeks}</span>
-            </div>
-            <div class="buyer-time">${paparanMasa}</div>
-            <p class="buyer-feedback">${paparanUlasan}</p>
-
-            <div class="admin-reply-display" data-doc-id="${idDokumen}" style="${adaBalasan ? '' : 'display:none;'}">
-              <div class="admin-reply-box">
-                <p class="admin-reply-label">💬 Balasan H4SX STORE</p>
-                <p class="admin-reply-text" class="teks-balasan-paparan">${adaBalasan ? escapeHtml(data.balasanAdmin) : ''}</p>
-                <p class="admin-reply-time">${paparanMasaBalasan}</p>
-              </div>
-            </div>
-
-            <button class="reply-toggle-btn" data-doc-id="${idDokumen}">
-              ${adaBalasan ? '✏️ Edit Balasan (Admin)' : '↩ Balas (Admin)'}
-            </button>
-
-            <div class="admin-reply-form" data-doc-id="${idDokumen}">
-              <textarea placeholder="Taip balasan rasmi H4SX STORE di sini..." maxlength="400">${adaBalasan ? escapeHtml(data.balasanAdmin) : ''}</textarea>
-              <div class="admin-reply-form-actions">
-                <button class="btn-hantar-balasan">Hantar Balasan</button>
-                <button class="btn-batal-balasan">Batal</button>
-              </div>
+          ${adaBalasan ? `
+          <div class="admin-reply-box">
+            <p class="admin-reply-label">💬 Balasan H4SX STORE</p>
+            <p class="admin-reply-text">${escapeHtml(data.balasanAdmin)}</p>
+            <p class="admin-reply-time">${masaBalasan}</p>
+          </div>` : ""}
+          <button class="reply-toggle-btn">${adaBalasan ? "✏️ Edit Balasan (Admin)" : "↩ Balas (Admin)"}</button>
+          <div class="admin-reply-form">
+            <textarea maxlength="400" placeholder="Taip balasan rasmi H4SX STORE...">${adaBalasan ? escapeHtml(data.balasanAdmin) : ""}</textarea>
+            <div class="admin-reply-form-actions">
+              <button class="btn-hantar-balasan">Hantar Balasan</button>
+              <button class="btn-batal-balasan">Batal</button>
             </div>
           </div>
-        `;
+        </div>`;
 
-        kotakPaparan.appendChild(card);
+      kotakPaparan.appendChild(card);
 
-        // ---- Wire up admin controls for this card ----
-        const togglebtn = card.querySelector(".reply-toggle-btn");
-        const formBalasan = card.querySelector(".admin-reply-form");
-        const textareaBalasan = formBalasan.querySelector("textarea");
-        const btnHantar = formBalasan.querySelector(".btn-hantar-balasan");
-        const btnBatal = formBalasan.querySelector(".btn-batal-balasan");
+      const form    = card.querySelector(".admin-reply-form");
+      const ta      = form.querySelector("textarea");
+      const btnH    = form.querySelector(".btn-hantar-balasan");
+      const btnB    = form.querySelector(".btn-batal-balasan");
+      const toggleB = card.querySelector(".reply-toggle-btn");
 
-        togglebtn.addEventListener("click", () => {
-          if (!mintaKodAdmin()) return; // gate ringkas — lihat nota di atas
-          formBalasan.classList.toggle("show");
-          if (formBalasan.classList.contains("show")) {
-            textareaBalasan.focus();
-          }
-        });
-
-        btnBatal.addEventListener("click", () => {
-          formBalasan.classList.remove("show");
-        });
-
-        btnHantar.addEventListener("click", () => {
-          hantarBalasanAdmin(idDokumen, textareaBalasan.value, btnHantar);
-        });
+      toggleB.addEventListener("click", () => {
+        if (!mintaAdmin()) return;
+        form.classList.toggle("show");
+        if (form.classList.contains("show")) ta.focus();
       });
-
-      const hasilPurata = (totalBintang / count).toFixed(1);
-      purataSkor.textContent = hasilPurata;
-      const bulatPurata = Math.round(parseFloat(hasilPurata));
-      purataBintang.textContent = "★".repeat(bulatPurata) + "☆".repeat(5 - bulatPurata);
-      jumlahUlasan.textContent = `Berdasarkan ${count} ulasan pembeli sah`;
+      btnB.addEventListener("click", () => form.classList.remove("show"));
+      btnH.addEventListener("click", () => hantarBalasan(id, ta.value, btnH));
     });
+  }
 
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-  </script>
+  function escapeHtml(str) {
+    const d = document.createElement("div");
+    d.textContent = str ?? "";
+    return d.innerHTML;
+  }
+</script>
 </body>
 </html>
