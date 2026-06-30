@@ -6,353 +6,516 @@
   <title>Ulasan Pelanggan — H4SX STORE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink: #faf6f1;
-      --panel: #ffffff;
-      --panel-soft: #fdf9f4;
-      --line: rgba(193,154,130,0.18);
-      --accent: #d98e73;
-      --accent-soft: rgba(217,142,115,0.12);
-      --gold: #c99a3b;
-      --green: #5fa88a;
-      --text: #4a3f3a;
-      --text-dim: #a08d83;
-      --blue: #7a9bb0;
-      --red: #c1554f;
-      --shadow: 0 28px 48px -24px rgba(184,130,100,0.32), 0 2px 8px rgba(184,130,100,0.05);
-      --radius: 14px;
+      /* ── Blue palette ikut website H4SX ── */
+      --bg:          #eef4fb;
+      --bg2:         #f5f9ff;
+      --panel:       #ffffff;
+      --panel-soft:  #f8fbff;
+      --line:        rgba(100,160,220,0.15);
+      --line-mid:    rgba(100,160,220,0.25);
+      --accent:      #2fa8e0;
+      --accent2:     #1a8fc7;
+      --accent-soft: rgba(47,168,224,0.10);
+      --accent-glow: rgba(47,168,224,0.22);
+      --navy:        #0f2a45;
+      --text:        #1a2d42;
+      --text-mid:    #4a6680;
+      --text-dim:    #8aa4bc;
+      --green:       #22c47a;
+      --green-soft:  rgba(34,196,122,0.10);
+      --gold:        #f0a500;
+      --red:         #e05252;
+      --shadow-sm:   0 2px 12px rgba(15,42,69,0.07);
+      --shadow:      0 8px 32px rgba(15,42,69,0.10), 0 1px 4px rgba(15,42,69,0.06);
+      --shadow-lg:   0 20px 60px rgba(15,42,69,0.13);
+      --radius:      16px;
+      --radius-sm:   10px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'Sora', 'Segoe UI', sans-serif;
-      padding: clamp(14px, 4vw, 48px) 14px;
-      background: var(--ink);
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: var(--bg);
       background-image:
-        radial-gradient(circle at 8% 0%, rgba(217,142,115,0.13), transparent 42%),
-        radial-gradient(circle at 92% 100%, rgba(95,168,138,0.09), transparent 42%);
+        radial-gradient(ellipse 70% 40% at 80% -10%, rgba(47,168,224,0.18), transparent),
+        radial-gradient(ellipse 50% 30% at -10% 90%, rgba(15,42,69,0.08), transparent);
       color: var(--text);
       min-height: 100vh;
     }
 
-    /* ─── TOAST ─── */
+    /* ══════════════════════════════════════════
+       TOP NAVBAR
+    ══════════════════════════════════════════ */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid var(--line-mid);
+      box-shadow: var(--shadow-sm);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 20px;
+      height: 60px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .topbar-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; flex-shrink: 0;
+    }
+    .topbar-logo img {
+      height: 36px; width: 36px;
+      object-fit: contain; border-radius: 8px;
+    }
+    .topbar-logo-name {
+      font-size: 17px; font-weight: 800; color: var(--navy);
+      letter-spacing: -.02em;
+    }
+    .topbar-logo-name span { color: var(--accent); }
+    .topbar-divider {
+      width: 1px; height: 24px; background: var(--line-mid); flex-shrink: 0;
+    }
+    .topbar-page-title {
+      font-size: 13px; font-weight: 600; color: var(--text-mid);
+      white-space: nowrap;
+    }
+    .topbar-spacer { flex: 1; }
+    .topbar-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--green-soft); border: 1px solid rgba(34,196,122,.28);
+      border-radius: 20px; padding: 5px 12px;
+      font-size: 11.5px; font-weight: 700; color: #1a9c60;
+      white-space: nowrap;
+    }
+    .topbar-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #22c47a; animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* Scrolling ticker */
+    .ticker-wrap {
+      background: var(--navy);
+      overflow: hidden; height: 34px;
+      display: flex; align-items: center;
+    }
+    .ticker-track {
+      display: flex; gap: 0;
+      animation: ticker 28s linear infinite;
+      white-space: nowrap;
+    }
+    .ticker-wrap:hover .ticker-track { animation-play-state: paused; }
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .ticker-item {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 0 28px;
+      font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.85);
+      border-right: 1px solid rgba(255,255,255,.12);
+    }
+    .ticker-item .ti { color: var(--accent); font-size: 13px; }
+
+    /* ══════════════════════════════════════════
+       HERO BAND
+    ══════════════════════════════════════════ */
+    .hero-band {
+      background: linear-gradient(135deg, var(--navy) 0%, #1a4470 100%);
+      padding: 36px 20px 34px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero-band::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% 120%, rgba(47,168,224,0.3), transparent);
+    }
+    .hero-band-inner { position: relative; max-width: 680px; margin: 0 auto; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(47,168,224,.18); border: 1px solid rgba(47,168,224,.35);
+      border-radius: 20px; padding: 4px 14px;
+      font-size: 11px; font-weight: 700; color: #7dd3f5; text-transform: uppercase; letter-spacing: .8px;
+      margin-bottom: 14px;
+    }
+    .hero-band h1 {
+      font-size: clamp(22px, 5vw, 32px); font-weight: 900; color: #fff;
+      letter-spacing: -.025em; line-height: 1.18;
+      margin-bottom: 8px;
+    }
+    .hero-band h1 span { color: var(--accent); }
+    .hero-sub { font-size: 13.5px; color: rgba(255,255,255,.65); font-weight: 500; }
+
+    /* ══════════════════════════════════════════
+       TOAST
+    ══════════════════════════════════════════ */
     #toastStack {
-      position: fixed; top: 18px; right: 18px;
+      position: fixed; top: 74px; right: 18px;
       z-index: 9999; display: flex; flex-direction: column;
       gap: 8px; max-width: 320px; pointer-events: none;
     }
     .toast {
       padding: 12px 16px; border-radius: 12px; font-size: 13px;
       font-weight: 600; line-height: 1.45; display: flex; align-items: center;
-      gap: 10px; box-shadow: 0 8px 24px -6px rgba(0,0,0,0.18);
-      animation: toastIn .28s cubic-bezier(.4,0,.2,1) forwards; pointer-events: all;
+      gap: 10px; box-shadow: var(--shadow);
+      animation: toastIn .26s cubic-bezier(.4,0,.2,1) forwards; pointer-events: all;
     }
-    .toast.out { animation: toastOut .22s ease forwards; }
-    .toast.success { background: #ecf7f2; color: #2f7056; border: 1px solid rgba(95,168,138,0.35); }
-    .toast.error   { background: #fdecea; color: #a33a35; border: 1px solid rgba(193,85,79,0.28); }
-    .toast.info    { background: #eef4f8; color: #4a6e82; border: 1px solid rgba(122,155,176,0.32); }
+    .toast.out { animation: toastOut .2s ease forwards; }
+    .toast.success { background: #edfaf4; color: #1a7a4a; border: 1px solid rgba(34,196,122,.3); }
+    .toast.error   { background: #fef0f0; color: #b83232; border: 1px solid rgba(224,82,82,.28); }
+    .toast.info    { background: #eef6fd; color: #1a6fa0; border: 1px solid rgba(47,168,224,.3); }
     .toast-icon { font-size: 16px; flex-shrink: 0; }
-    @keyframes toastIn  { from { opacity:0; transform:translateX(22px) scale(.95); } to { opacity:1; transform:none; } }
-    @keyframes toastOut { to   { opacity:0; transform:translateX(16px) scale(.95); } }
+    @keyframes toastIn  { from{opacity:0;transform:translateX(18px) scale(.96)} to{opacity:1;transform:none} }
+    @keyframes toastOut { to{opacity:0;transform:translateX(14px) scale(.96)} }
 
-    /* ─── SKELETON ─── */
+    /* ══════════════════════════════════════════
+       SKELETON
+    ══════════════════════════════════════════ */
     .skeleton {
-      background: linear-gradient(90deg, #f0e8de 25%, #fdf5ee 50%, #f0e8de 75%);
+      background: linear-gradient(90deg, #dce9f5 25%, #eaf3fb 50%, #dce9f5 75%);
       background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px;
     }
-    @keyframes shimmer { to { background-position: -200% 0; } }
+    @keyframes shimmer { to{background-position:-200% 0} }
 
-    /* ─── WRAPPER ─── */
-    .main-container {
-      max-width: 1060px; margin: 0 auto;
-      background: linear-gradient(180deg, var(--panel), var(--panel-soft));
-      padding: clamp(20px, 4vw, 36px); border-radius: 22px;
-      border: 1px solid var(--line); box-shadow: var(--shadow);
+    /* ══════════════════════════════════════════
+       PAGE BODY WRAPPER
+    ══════════════════════════════════════════ */
+    .page-body { padding: clamp(20px,3vw,40px) clamp(14px,3vw,20px); }
+
+    /* ══════════════════════════════════════════
+       STATS ROW
+    ══════════════════════════════════════════ */
+    .stats-row {
+      max-width: 1100px; margin: 0 auto 24px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px;
     }
-    .page-header { margin-bottom: 22px; }
-    .page-header h2 { font-size: clamp(19px,4vw,23px); font-weight: 800; color: #3a312c; letter-spacing: -.015em; }
-    .page-header .subtitle { color: var(--text-dim); font-size: 12.5px; margin-top: 3px; }
+    .stat-card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 16px 20px; box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat-card .sc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); }
+    .stat-card .sc-val   { font-size: clamp(22px,4vw,30px); font-weight: 900; color: var(--accent); font-family: 'Space Mono', monospace; letter-spacing: -.02em; line-height: 1; }
+    .stat-card .sc-sub   { font-size: 11.5px; color: var(--text-mid); font-weight: 500; }
+    .stat-card .sc-stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; }
 
-    /* ─── NOTICE ─── */
+    /* ══════════════════════════════════════════
+       MAIN CARD
+    ══════════════════════════════════════════ */
+    .main-card {
+      max-width: 1100px; margin: 0 auto;
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 20px; box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+
+    /* ── Notice inside card ── */
     .launch-notice {
-      display: flex; gap: 11px; align-items: flex-start;
-      background: var(--accent-soft); border: 1px solid rgba(217,142,115,0.28);
-      border-radius: var(--radius); padding: 13px 15px; margin-bottom: 22px;
+      display: flex; gap: 12px; align-items: flex-start;
+      background: linear-gradient(90deg, rgba(47,168,224,.08), rgba(47,168,224,.04));
+      border-bottom: 1px solid var(--line);
+      padding: 14px 24px;
     }
-    .launch-notice .icon { font-size: 16px; line-height: 1.45; flex-shrink: 0; }
-    .launch-notice p { font-size: 12.5px; line-height: 1.55; color: #6b5d55; }
-    .launch-notice strong { color: #4a3f3a; }
+    .launch-notice .icon { font-size: 16px; line-height: 1.5; flex-shrink: 0; }
+    .launch-notice p { font-size: 12.5px; line-height: 1.55; color: var(--text-mid); }
+    .launch-notice strong { color: var(--text); }
 
-    /* ─── RATING SUMMARY ─── */
-    .rating-summary {
-      display: flex; align-items: center; gap: 18px;
-      background: linear-gradient(135deg, rgba(217,142,115,0.07), rgba(95,168,138,0.05));
-      padding: 16px 20px; border-radius: var(--radius); margin-bottom: 24px; border: 1px solid var(--line);
+    /* ── Two-col layout ── */
+    .card-grid {
+      display: grid; grid-template-columns: minmax(0,1fr);
     }
-    .big-score { font-size: clamp(34px,7vw,42px); font-weight: 800; color: var(--accent); font-family: 'Space Mono', monospace; line-height: 1; }
-    .score-stars { color: var(--gold); font-size: 14px; letter-spacing: 1px; margin-top: 3px; }
-    .stats-info h4 { font-size: 14px; font-weight: 700; color: var(--text); }
-    .stats-info p  { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
-
-    /* ─── LAYOUT ─── */
-    .layout-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 28px; align-items: start; }
     @media (min-width: 860px) {
-      .layout-grid { grid-template-columns: 370px minmax(0,1fr); }
-      .reviews-col { border-left: 1px solid var(--line); padding-left: 28px; }
-      .reviews-col h3 { margin-top: 0; }
+      .card-grid { grid-template-columns: 390px minmax(0,1fr); }
+      .form-col  { border-right: 1px solid var(--line); }
     }
+    .form-col     { padding: clamp(20px,3vw,28px); }
+    .reviews-col  { padding: clamp(20px,3vw,28px); background: var(--panel-soft); }
 
-    /* ─── FORM BASICS ─── */
-    .form-group { margin-bottom: 16px; position: relative; }
+    /* ══════════════════════════════════════════
+       FORM ELEMENTS
+    ══════════════════════════════════════════ */
+    .form-section-title {
+      font-size: 13px; font-weight: 800; color: var(--navy);
+      text-transform: uppercase; letter-spacing: .5px;
+      margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title::after { content:''; flex:1; height:1px; background:var(--line-mid); }
+
+    .form-group { margin-bottom: 15px; position: relative; }
     label {
-      display: block; font-size: 11.5px; color: var(--text-dim); margin-bottom: 7px;
-      font-weight: 700; letter-spacing: .4px; text-transform: uppercase;
+      display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px;
+      font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
     }
     input[type="text"], select, textarea {
-      width: 100%; padding: 12px 14px; border-radius: 11px; border: 1px solid var(--line);
-      background: #fdfbf8; color: var(--text); font-size: 14px; font-family: inherit;
-      transition: border-color .15s, box-shadow .15s; -webkit-appearance: none;
+      width: 100%; padding: 11px 14px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--line-mid); background: #f8fbff;
+      color: var(--text); font-size: 14px; font-family: inherit;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+      -webkit-appearance: none;
     }
     input[type="text"]:focus, select:focus, textarea:focus {
-      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft); background: #fff;
     }
-    textarea { resize: vertical; min-height: 80px; padding-bottom: 28px; }
-    .code-input {
-      border: 1px dashed rgba(201,154,59,.55) !important; background: #fbf3df !important;
-      color: #97742a !important; font-weight: 700; letter-spacing: 2.5px; font-family: 'Space Mono', monospace;
-    }
-    .code-input:focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px rgba(201,154,59,.18) !important; }
+    textarea { resize: vertical; min-height: 82px; padding-bottom: 30px; }
 
-    /* ─── CHAR COUNTER ─── */
+    .code-input {
+      border: 1.5px dashed rgba(47,168,224,.55) !important;
+      background: rgba(47,168,224,.06) !important;
+      color: var(--navy) !important;
+      font-weight: 700; letter-spacing: 3px;
+      font-family: 'Space Mono', monospace;
+    }
+    .code-input::placeholder { color: var(--text-dim); letter-spacing: 1px; font-weight: 400; }
+    .code-input:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px var(--accent-soft) !important; }
+
+    /* Char counter */
     .char-counter {
-      position: absolute; bottom: 10px; right: 12px; font-size: 11px;
+      position: absolute; bottom: 9px; right: 12px; font-size: 10.5px;
       color: var(--text-dim); pointer-events: none; font-family: 'Space Mono', monospace;
     }
     .char-counter.warn { color: var(--red); }
 
-    /* ─── DADU SUGGESTION ROW ─── */
+    /* ── DADU ── */
     .dadu-row {
-      position: absolute; bottom: 8px; left: 10px;
-      display: flex; gap: 5px; align-items: center;
+      position: absolute; bottom: 7px; left: 10px;
+      display: flex; gap: 6px; align-items: center;
     }
     .btn-dadu {
-      background: linear-gradient(135deg, #d98e73, #c97a5d);
-      border: none; border-radius: 8px; padding: 3px 9px;
-      color: #fff; font-size: 13px; cursor: pointer;
+      background: linear-gradient(120deg, #2fa8e0, #1a8fc7);
+      border: none; border-radius: 7px; padding: 3px 10px;
+      color: #fff; font-size: 12.5px; cursor: pointer;
       display: flex; align-items: center; gap: 4px;
       font-weight: 700; font-family: inherit;
-      transition: filter .15s, transform .1s;
-      line-height: 1.6;
-      box-shadow: 0 2px 8px -2px rgba(217,142,115,0.5);
+      transition: filter .14s, transform .1s;
+      line-height: 1.65; box-shadow: 0 2px 8px -2px rgba(47,168,224,.45);
     }
-    .btn-dadu:hover { filter: brightness(1.07); }
-    .btn-dadu:active { transform: scale(.94) rotate(-10deg); }
-    .btn-dadu .dice-icon { font-size: 14px; display: inline-block; transition: transform .2s; }
-    .btn-dadu:hover .dice-icon { transform: rotate(20deg); }
-    .dadu-label { font-size: 10.5px; color: var(--text-dim); font-weight: 600; white-space: nowrap; }
+    .btn-dadu:hover { filter: brightness(1.08); }
+    .btn-dadu:active { transform: scale(.93) rotate(-8deg); }
+    .btn-dadu .dice-icon { font-size: 13px; display: inline-block; transition: transform .22s; }
+    .btn-dadu:hover .dice-icon { transform: rotate(22deg); }
+    .dadu-label { font-size: 10.5px; color: var(--text-dim); font-weight: 600; }
 
-    /* ─── PROFILE PICKER (upgraded) ─── */
+    /* ── STAR SELECT ── */
+    .star-select-wrap { position: relative; }
+    .star-select-wrap::after {
+      content:'▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-dim); pointer-events: none; font-size: 11px;
+    }
+    select { padding-right: 32px; cursor: pointer; }
+
+    /* ══════════════════════════════════════════
+       PROFILE PICKER
+    ══════════════════════════════════════════ */
     .profile-picker {
-      margin-bottom: 16px; padding: 14px; background: #fdfbf8;
-      border: 1px solid var(--line); border-radius: var(--radius);
+      margin-bottom: 16px; padding: 14px; background: var(--bg2);
+      border: 1.5px solid var(--line-mid); border-radius: var(--radius);
     }
     .profile-picker-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-
-    /* Avatar preview — supports image */
     .avatar-preview {
       width: 64px; height: 64px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 24px; flex-shrink: 0; color: #fff;
       transition: background-color .2s; overflow: hidden; position: relative;
-      box-shadow: 0 4px 14px -4px rgba(184,130,100,.38);
-      cursor: pointer;
+      box-shadow: 0 4px 16px -4px rgba(47,168,224,.35); cursor: pointer;
+      border: 2px solid rgba(255,255,255,.8);
     }
-    .avatar-preview img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-    .avatar-preview .av-letter { position: relative; z-index: 1; }
-    .avatar-preview .av-edit-hint {
-      position: absolute; inset: 0; background: rgba(0,0,0,.42);
+    .avatar-preview img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+    .av-letter { position: relative; z-index: 1; }
+    .av-edit-hint {
+      position: absolute; inset: 0; background: rgba(15,42,69,.45);
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px; opacity: 0; transition: opacity .15s; border-radius: 50%;
-      z-index: 2;
+      font-size: 18px; opacity: 0; transition: opacity .15s; border-radius: 50%; z-index: 2;
     }
     .avatar-preview:hover .av-edit-hint { opacity: 1; }
 
     .profile-picker-controls { flex-grow: 1; min-width: 0; }
-    .pp-section-label { font-size: 10.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .4px; font-weight: 700; margin-bottom: 7px; }
+    .pp-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; font-weight: 700; margin-bottom: 7px; }
     .swatch-row, .emoji-toggle-row { display: flex; gap: 6px; flex-wrap: wrap; }
     .emoji-toggle-row { margin-top: 7px; }
     .swatch {
-      width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+      width: 21px; height: 21px; border-radius: 50%; cursor: pointer;
       border: 2px solid transparent; transition: transform .12s, border-color .12s;
     }
-    .swatch:hover { transform: scale(1.15); }
-    .swatch.active { border-color: #8a6a52; transform: scale(1.1); }
+    .swatch:hover { transform: scale(1.18); }
+    .swatch.active { border-color: var(--navy); transform: scale(1.1); }
     .emoji-opt {
       width: 28px; height: 28px; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      background: #f5ede4; border: 1px solid var(--line); cursor: pointer;
+      background: rgba(47,168,224,.08); border: 1.5px solid var(--line-mid); cursor: pointer;
       font-size: 13px; transition: border-color .12s, background .12s;
     }
     .emoji-opt:hover { border-color: var(--accent); }
     .emoji-opt.active { border-color: var(--accent); background: var(--accent-soft); }
 
-    /* Image upload section */
-    .profile-image-section { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 2px; }
+    /* Profile image section */
+    .profile-image-section { border-top: 1px solid var(--line-mid); padding-top: 12px; margin-top: 2px; }
     .image-upload-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
     .img-tab {
-      flex: 1; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line);
-      background: #f5ede4; color: var(--text-dim); font-size: 11.5px; font-weight: 700;
+      flex: 1; padding: 6px 8px; border-radius: 8px; border: 1.5px solid var(--line-mid);
+      background: var(--bg2); color: var(--text-dim); font-size: 11.5px; font-weight: 700;
       cursor: pointer; text-align: center; transition: all .12s; text-transform: uppercase; letter-spacing: .3px;
     }
     .img-tab:hover { border-color: var(--accent); color: var(--accent); }
     .img-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-
     .img-tab-panel { display: none; }
     .img-tab-panel.show { display: block; }
-
-    /* Drop zone */
     .drop-zone {
-      border: 2px dashed rgba(217,142,115,0.4); border-radius: 11px;
+      border: 2px dashed rgba(47,168,224,.35); border-radius: 11px;
       padding: 14px 10px; text-align: center; cursor: pointer;
       transition: border-color .15s, background .15s; position: relative; overflow: hidden;
     }
     .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-soft); }
     .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
     .drop-zone-icon { font-size: 22px; margin-bottom: 4px; }
-    .drop-zone-text { font-size: 12px; color: var(--text-dim); font-weight: 600; }
-    .drop-zone-sub  { font-size: 10.5px; color: var(--text-dim); margin-top: 2px; opacity: .7; }
-
-    /* URL input */
+    .drop-zone-text { font-size: 12px; color: var(--text-mid); font-weight: 600; }
+    .drop-zone-sub  { font-size: 10.5px; color: var(--text-dim); margin-top: 2px; }
     .url-input-row { display: flex; gap: 7px; }
     .url-input-row input { flex: 1; font-size: 13px; padding: 9px 11px; }
     .btn-url-load {
-      padding: 9px 14px; border-radius: 11px; border: none;
+      padding: 9px 14px; border-radius: var(--radius-sm); border: none;
       background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 700;
-      cursor: pointer; white-space: nowrap; transition: filter .15s;
+      cursor: pointer; white-space: nowrap; transition: filter .14s;
     }
-    .btn-url-load:hover { filter: brightness(1.07); }
-
-    /* Image preview strip */
+    .btn-url-load:hover { filter: brightness(1.08); }
     .img-clear-btn {
-      display: none; margin-top: 8px; width: 100%; padding: 7px; border-radius: 9px;
-      border: 1px solid rgba(193,85,79,.3); background: rgba(193,85,79,.08);
-      color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer;
-      transition: background .12s;
+      display: none; margin-top: 8px; width: 100%; padding: 7px; border-radius: 8px;
+      border: 1.5px solid rgba(224,82,82,.28); background: rgba(224,82,82,.07);
+      color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer; transition: background .12s;
     }
     .img-clear-btn.show { display: block; }
-    .img-clear-btn:hover { background: rgba(193,85,79,.14); }
+    .img-clear-btn:hover { background: rgba(224,82,82,.13); }
 
-    /* ─── SELECT STARS ─── */
-    .star-select-wrap { position: relative; }
-    .star-select-wrap::after {
-      content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-      color: var(--text-dim); pointer-events: none; font-size: 12px;
-    }
-    select { padding-right: 32px; cursor: pointer; }
-
-    /* ─── SUBMIT BTN ─── */
+    /* ══════════════════════════════════════════
+       SUBMIT BUTTON
+    ══════════════════════════════════════════ */
     #butangHantar {
-      width: 100%; padding: 14px; border-radius: 11px;
-      background: linear-gradient(90deg, #d98e73, #c97a5d);
+      width: 100%; padding: 14px; border-radius: var(--radius-sm);
+      background: linear-gradient(90deg, #2fa8e0, #1a8fc7);
       color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; border: none;
-      transition: filter .15s, transform .12s, opacity .15s; margin-top: 6px;
-      text-transform: uppercase; letter-spacing: .7px; position: relative; overflow: hidden;
+      transition: filter .14s, transform .11s; margin-top: 8px;
+      text-transform: uppercase; letter-spacing: .7px;
+      box-shadow: 0 4px 16px -4px rgba(47,168,224,.5);
     }
-    #butangHantar:hover { filter: brightness(1.06); }
+    #butangHantar:hover { filter: brightness(1.07); }
     #butangHantar:active { transform: scale(.98); }
-    #butangHantar:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    #butangHantar:disabled { opacity: .5; cursor: not-allowed; transform: none; filter: none; }
 
-    /* ─── REVIEWS COL ─── */
-    .reviews-col h3 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-dim); font-weight: 700; margin-bottom: 12px; }
-    .filter-bar { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+    /* ══════════════════════════════════════════
+       REVIEWS COLUMN
+    ══════════════════════════════════════════ */
+    .reviews-col-title {
+      font-size: 12px; font-weight: 800; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: .6px;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .reviews-col-title::after { content:''; flex:1; height:1px; background:var(--line-mid); }
+
+    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
     .filter-btn {
-      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
-      border: 1px solid var(--line); background: #fdfbf8; color: var(--text-dim);
-      cursor: pointer; transition: background .12s, border-color .12s, color .12s;
-      text-transform: uppercase; letter-spacing: .3px;
+      padding: 5px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700;
+      border: 1.5px solid var(--line-mid); background: #fff; color: var(--text-dim);
+      cursor: pointer; transition: all .12s; text-transform: uppercase; letter-spacing: .3px;
     }
     .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
     .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
     .sort-select {
       margin-left: auto; padding: 5px 10px; border-radius: 8px; font-size: 12px;
-      font-weight: 600; border: 1px solid var(--line); background: #fdfbf8;
-      color: var(--text-dim); cursor: pointer; font-family: inherit;
+      font-weight: 600; border: 1.5px solid var(--line-mid); background: #fff;
+      color: var(--text-mid); cursor: pointer; font-family: inherit;
     }
     .sort-select:focus { outline: none; border-color: var(--accent); }
 
-    /* ─── REVIEW CARDS ─── */
-    .rating-box { border: 1px solid var(--line); background: #fdfbf8; border-radius: var(--radius); overflow: hidden; }
+    /* ── REVIEW CARDS ── */
+    .rating-box {
+      border: 1.5px solid var(--line-mid); background: #fff;
+      border-radius: var(--radius); overflow: hidden;
+    }
     @media (min-width: 860px) { .reviews-col .rating-box { max-height: 640px; overflow-y: auto; } }
     .rating-box::-webkit-scrollbar { width: 5px; }
-    .rating-box::-webkit-scrollbar-thumb { background: #e3d3c4; border-radius: 4px; }
+    .rating-box::-webkit-scrollbar-thumb { background: #c8dff0; border-radius: 4px; }
 
     .review-card {
-      padding: 16px; border-bottom: 1px solid var(--line); display: flex; gap: 12px;
-      align-items: flex-start; animation: fadeCard .32s ease-out forwards; opacity: 0;
+      padding: 16px; border-bottom: 1px solid var(--line); display: flex;
+      gap: 12px; align-items: flex-start;
+      animation: fadeCard .3s ease-out forwards; opacity: 0;
+      transition: background .15s;
     }
+    .review-card:hover { background: var(--bg2); }
     .review-card:last-child { border-bottom: none; }
-    @keyframes fadeCard { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }
+    @keyframes fadeCard { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 
     .avatar {
-      width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center;
-      justify-content: center; font-weight: 800; font-size: 17px; color: #fff; flex-shrink: 0;
-      box-shadow: 0 3px 10px -3px rgba(0,0,0,.18); overflow: hidden; position: relative;
+      width: 42px; height: 42px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 17px; color: #fff; flex-shrink: 0;
+      overflow: hidden; position: relative;
+      box-shadow: 0 3px 10px -2px rgba(15,42,69,.18);
+      border: 2px solid rgba(255,255,255,.9);
     }
-    .avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; border-radius: 50%; }
+    .avatar img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; border-radius:50%; }
     .review-content { flex-grow: 1; min-width: 0; }
     .review-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
     .buyer-name-container { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-    .buyer-name { font-weight: 700; color: #4a3f3a; font-size: 14px; }
+    .buyer-name { font-weight: 700; color: var(--text); font-size: 14px; }
     .verified-badge {
-      background: rgba(95,168,138,.12); color: var(--green); font-size: 9.5px;
-      padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(95,168,138,.28);
+      background: var(--green-soft); color: #1a9c60; font-size: 9.5px;
+      padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(34,196,122,.28);
       font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
       display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
     }
     .star-display { display: flex; gap: 2px; }
     .buyer-time { font-size: 11px; color: var(--text-dim); margin: 3px 0 7px; display: flex; align-items: center; gap: 5px; }
-    .buyer-time::before { content: '🕐'; font-size: 10px; }
-    .buyer-feedback { color: #6b5d55; font-size: 13.5px; line-height: 1.58; word-break: break-word; }
+    .buyer-time::before { content:'🕐'; font-size: 10px; }
+    .buyer-feedback { color: var(--text-mid); font-size: 13.5px; line-height: 1.58; word-break: break-word; }
+    .buyer-no-text { color: var(--text-dim); font-size: 13px; font-style: italic; }
 
-    /* ─── ADMIN REPLY ─── */
+    /* ── ADMIN REPLY ── */
     .admin-reply-box {
-      margin-top: 10px; padding: 10px 13px; background: rgba(122,155,176,.09);
-      border-left: 3px solid #7a9bb0; border-radius: 0 10px 10px 0;
+      margin-top: 10px; padding: 10px 13px;
+      background: rgba(47,168,224,.07); border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
     }
-    .admin-reply-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: #5d7e93; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
-    .admin-reply-text { font-size: 13px; color: #4a3f3a; line-height: 1.5; word-break: break-word; }
-    .admin-reply-time { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+    .admin-reply-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--accent2); margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+    .admin-reply-text  { font-size: 13px; color: var(--text); line-height: 1.5; word-break: break-word; }
+    .admin-reply-time  { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
     .reply-toggle-btn {
-      background: none; border: none; color: #7a9bb0; font-size: 11px; font-weight: 700;
+      background: none; border: none; color: var(--accent); font-size: 11px; font-weight: 700;
       cursor: pointer; padding: 5px 0; margin-top: 5px; text-transform: uppercase; letter-spacing: .4px;
       display: inline-flex; align-items: center; gap: 4px; transition: color .12s;
     }
-    .reply-toggle-btn:hover { color: #5d7e93; }
+    .reply-toggle-btn:hover { color: var(--accent2); }
     .admin-reply-form { margin-top: 8px; display: none; }
     .admin-reply-form.show { display: block; }
-    .admin-reply-form textarea { min-height: 52px; font-size: 13px; }
+    .admin-reply-form textarea { min-height: 50px; font-size: 13px; padding-bottom: 12px; }
     .admin-reply-form-actions { display: flex; gap: 7px; margin-top: 6px; }
     .admin-reply-form-actions button {
       flex: 1; padding: 8px; border-radius: 8px; border: none; font-size: 12px;
       font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: .3px; transition: filter .12s;
     }
-    .btn-hantar-balasan { background: #7a9bb0; color: #fff; }
+    .btn-hantar-balasan { background: var(--accent); color: #fff; }
     .btn-hantar-balasan:hover { filter: brightness(1.08); }
-    .btn-batal-balasan { background: #ece3d8; color: var(--text-dim); }
-    .btn-batal-balasan:hover { background: #e3d6c6; }
+    .btn-batal-balasan { background: #e4edf5; color: var(--text-dim); }
+    .btn-batal-balasan:hover { background: #d5e5f3; }
 
-    .no-reviews { text-align: center; color: var(--text-dim); font-size: 13px; padding: 40px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .no-reviews .no-icon { font-size: 28px; }
+    .no-reviews { text-align: center; color: var(--text-dim); font-size: 13px; padding: 44px 16px; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+    .no-reviews .no-icon { font-size: 30px; }
+
+    /* Skeleton */
     .skel-card { padding: 16px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; }
     .skel-avatar { width:42px; height:42px; border-radius:50%; flex-shrink:0; }
-    .skel-lines { flex:1; display:flex; flex-direction:column; gap:8px; padding-top:2px; }
+    .skel-lines { flex:1; display:flex; flex-direction:column; gap:9px; padding-top:3px; }
     .skel-line { height:11px; }
 
-    @media (max-width:440px) {
-      .main-container { padding: 16px 13px; border-radius: 18px; }
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width:480px) {
+      .topbar-badge { display: none; }
+      .topbar-page-title { display: none; }
+      .topbar-divider { display: none; }
       .url-input-row { flex-direction: column; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width:340px) {
+      .stats-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -360,145 +523,185 @@
 
 <div id="toastStack"></div>
 
-<div class="main-container">
-  <div class="page-header">
-    <h2>Ulasan &amp; Penarafan Pelanggan</h2>
-    <p class="subtitle">H4SX STORE — kongsi pengalaman anda dengan jujur</p>
+<!-- ══ TOP NAVBAR ══ -->
+<nav class="topbar">
+  <!-- Ticker -->
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="tickerTrack"></div>
   </div>
-
-  <div class="launch-notice">
-    <span class="icon">📣</span>
-    <p>
-      <strong>Sistem feedback dibuka</strong> pada 29/6/2026 jam 4–5 pagi.
-      Setiap ulasan memerlukan <strong>Kod Pengesahan</strong> unik — satu kod, satu ulasan sahaja.
-      Kami hargai pandangan jujur anda. 🙏
-    </p>
+  <div class="topbar-inner">
+    <a href="#" class="topbar-logo">
+      <img src="https://i.imgur.com/LjWuizN.png" alt="H4SX Logo" id="logoImg">
+      <span class="topbar-logo-name">H4SX <span>STORE</span></span>
+    </a>
+    <div class="topbar-divider"></div>
+    <span class="topbar-page-title">Ulasan Pelanggan</span>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-badge">Kedai Dipercayai</div>
   </div>
+</nav>
 
-  <div class="layout-grid">
-    <!-- ══ FORM COL ══ -->
-    <div class="form-col">
-      <div class="rating-summary">
-        <div>
-          <div class="big-score" id="purataSkor">—</div>
-          <div class="score-stars" id="purataBintang">☆☆☆☆☆</div>
-        </div>
-        <div class="stats-info">
-          <h4>Purata Kepuasan Pelanggan</h4>
-          <p id="jumlahUlasan">Memuatkan...</p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="kodVerification">🔐 Kod Pengesahan Pembelian</label>
-        <input type="text" id="kodVerification" class="code-input" placeholder="TAIP KOD DI SINI" autocomplete="off" maxlength="30" spellcheck="false">
-      </div>
-
-      <div class="form-group">
-        <label for="namaPelanggan">👤 Nama / Username Pembeli</label>
-        <input type="text" id="namaPelanggan" placeholder="Contoh: H4SX" autocomplete="off" maxlength="40">
-      </div>
-
-      <!-- ══ PROFILE PICKER UPGRADED ══ -->
-      <div class="profile-picker">
-        <div class="profile-picker-top">
-          <!-- Clickable avatar preview -->
-          <div class="avatar-preview" id="avatarPreview" title="Klik untuk upload gambar">
-            <span class="av-letter">H</span>
-            <div class="av-edit-hint">📷</div>
-          </div>
-          <div class="profile-picker-controls">
-            <p class="pp-section-label">Warna Profil</p>
-            <div class="swatch-row" id="swatchRow"></div>
-            <div class="emoji-toggle-row" id="emojiRow"></div>
-          </div>
-        </div>
-
-        <!-- Image upload section -->
-        <div class="profile-image-section">
-          <p class="pp-section-label" style="margin-bottom:10px;">📸 Gambar Profil (pilihan)</p>
-          <div class="image-upload-tabs">
-            <div class="img-tab active" data-tab="gallery">📁 Galeri / Phone</div>
-            <div class="img-tab" data-tab="url">🔗 URL Gambar</div>
-          </div>
-
-          <!-- Tab: Gallery upload -->
-          <div class="img-tab-panel show" id="panel-gallery">
-            <div class="drop-zone" id="dropZone">
-              <input type="file" id="fileInput" accept="image/*">
-              <div class="drop-zone-icon">🖼️</div>
-              <div class="drop-zone-text">Klik atau seret gambar ke sini</div>
-              <div class="drop-zone-sub">JPG, PNG, WEBP, GIF · Max 5MB · Auto-crop bulat</div>
-            </div>
-          </div>
-
-          <!-- Tab: URL -->
-          <div class="img-tab-panel" id="panel-url">
-            <div class="url-input-row">
-              <input type="text" id="urlGambar" placeholder="https://example.com/gambar.jpg">
-              <button class="btn-url-load" id="btnLoadUrl">Muat</button>
-            </div>
-          </div>
-
-          <button class="img-clear-btn" id="btnClearImg">✕ Buang Gambar Profil</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="pilihBintang">⭐ Skor Perkhidmatan</label>
-        <div class="star-select-wrap">
-          <select id="pilihBintang">
-            <option value="5">⭐⭐⭐⭐⭐  5 — Sangat Puas Hati</option>
-            <option value="4">⭐⭐⭐⭐  4 — Baik &amp; Memuaskan</option>
-            <option value="3">⭐⭐⭐  3 — Sederhana</option>
-            <option value="2">⭐⭐  2 — Kurang Memuaskan</option>
-            <option value="1">⭐  1 — Lemah</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="ulasanPelanggan">💬 Ulasan Anda</label>
-        <textarea id="ulasanPelanggan" rows="3"
-          placeholder="Kongsi pengalaman anda... atau tekan 🎲 untuk idea ayat!"
-          maxlength="500"></textarea>
-        <!-- Dadu + char counter -->
-        <div class="dadu-row">
-          <button class="btn-dadu" id="btnDadu" type="button" title="Jana ayat cadangan">
-            <span class="dice-icon">🎲</span> Cadangan
-          </button>
-          <span class="dadu-label">Malas taip? Tekan je!</span>
-        </div>
-        <span class="char-counter" id="charCounter">0 / 500</span>
-      </div>
-
-      <button id="butangHantar">Hantar Ulasan</button>
-    </div>
-
-    <!-- ══ REVIEWS COL ══ -->
-    <div class="reviews-col">
-      <h3>Ulasan Pelanggan Terkini</h3>
-      <div class="filter-bar">
-        <button class="filter-btn active" data-filter="all">Semua</button>
-        <button class="filter-btn" data-filter="5">⭐⭐⭐⭐⭐</button>
-        <button class="filter-btn" data-filter="4">⭐⭐⭐⭐</button>
-        <button class="filter-btn" data-filter="3">⭐⭐⭐</button>
-        <button class="filter-btn" data-filter="12">⭐⭐ &amp; ⭐</button>
-        <select class="sort-select" id="sortSelect">
-          <option value="newest">Terbaru</option>
-          <option value="highest">Tertinggi</option>
-          <option value="lowest">Terendah</option>
-        </select>
-      </div>
-      <div id="kotakPaparan" class="rating-box">
-        <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:55%"></div><div class="skel-line skeleton" style="width:80%"></div><div class="skel-line skeleton" style="width:65%"></div></div></div>
-        <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:45%"></div><div class="skel-line skeleton" style="width:72%"></div></div></div>
-        <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:60%"></div><div class="skel-line skeleton" style="width:50%"></div></div></div>
-      </div>
-    </div>
+<!-- ══ HERO ══ -->
+<div class="hero-band">
+  <div class="hero-band-inner">
+    <div class="hero-eyebrow">⭐ Sistem Ulasan Rasmi</div>
+    <h1>Ulasan &amp; Penarafan<br><span>Pelanggan H4SX</span></h1>
+    <p class="hero-sub">Berkongsi pengalaman anda membantu pembeli lain membuat keputusan lebih baik</p>
   </div>
 </div>
 
+<div class="page-body">
+
+  <!-- ══ STATS ROW ══ -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="sc-label">Purata Rating</span>
+      <span class="sc-val" id="purataSkor">—</span>
+      <span class="sc-stars" id="purataBintang">☆☆☆☆☆</span>
+    </div>
+    <div class="stat-card">
+      <span class="sc-label">Jumlah Ulasan</span>
+      <span class="sc-val" id="jumlahUlasanVal">0</span>
+      <span class="sc-sub">Ulasan pembeli sah</span>
+    </div>
+    <div class="stat-card">
+      <span class="sc-label">5 Bintang</span>
+      <span class="sc-val" id="pctLima">—</span>
+      <span class="sc-sub">Sangat puas hati</span>
+    </div>
+    <div class="stat-card">
+      <span class="sc-label">Status</span>
+      <span class="sc-val" style="font-size:18px;color:var(--green)">✓ LIVE</span>
+      <span class="sc-sub">Sistem aktif 24/7</span>
+    </div>
+  </div>
+
+  <!-- ══ MAIN CARD ══ -->
+  <div class="main-card">
+    <!-- Notice -->
+    <div class="launch-notice">
+      <span class="icon">📣</span>
+      <p>
+        <strong>Sistem feedback rasmi H4SX STORE.</strong>
+        Setiap ulasan memerlukan <strong>Kod Pengesahan</strong> unik — satu kod, satu ulasan.
+        Ulasan teks adalah <strong>pilihan</strong> — jika anda malas taip, boleh hantar rating sahaja.
+        Kami hargai kejujuran anda. 🙏
+      </p>
+    </div>
+
+    <div class="card-grid">
+      <!-- ════ FORM COLUMN ════ -->
+      <div class="form-col">
+        <p class="form-section-title">✍️ Hantar Ulasan</p>
+
+        <div class="form-group">
+          <label for="kodVerification">🔐 Kod Pengesahan Pembelian *</label>
+          <input type="text" id="kodVerification" class="code-input" placeholder="TAIP KOD DI SINI" autocomplete="off" maxlength="30" spellcheck="false">
+        </div>
+
+        <div class="form-group">
+          <label for="namaPelanggan">👤 Nama / Username Pembeli *</label>
+          <input type="text" id="namaPelanggan" placeholder="Contoh: H4SX" autocomplete="off" maxlength="40">
+        </div>
+
+        <!-- Profile picker -->
+        <div class="profile-picker">
+          <div class="profile-picker-top">
+            <div class="avatar-preview" id="avatarPreview" title="Klik untuk upload gambar">
+              <span class="av-letter">H</span>
+              <div class="av-edit-hint">📷</div>
+            </div>
+            <div class="profile-picker-controls">
+              <p class="pp-label">Warna Profil</p>
+              <div class="swatch-row" id="swatchRow"></div>
+              <div class="emoji-toggle-row" id="emojiRow"></div>
+            </div>
+          </div>
+          <div class="profile-image-section">
+            <p class="pp-label" style="margin-bottom:10px;">📸 Gambar Profil (pilihan)</p>
+            <div class="image-upload-tabs">
+              <div class="img-tab active" data-tab="gallery">📁 Galeri / Phone</div>
+              <div class="img-tab" data-tab="url">🔗 URL Gambar</div>
+            </div>
+            <div class="img-tab-panel show" id="panel-gallery">
+              <div class="drop-zone" id="dropZone">
+                <input type="file" id="fileInput" accept="image/*">
+                <div class="drop-zone-icon">🖼️</div>
+                <div class="drop-zone-text">Klik atau seret gambar ke sini</div>
+                <div class="drop-zone-sub">JPG, PNG, WEBP · Max 5MB · Auto-crop bulat</div>
+              </div>
+            </div>
+            <div class="img-tab-panel" id="panel-url">
+              <div class="url-input-row">
+                <input type="text" id="urlGambar" placeholder="https://i.imgur.com/abc.jpg">
+                <button class="btn-url-load" id="btnLoadUrl">Muat</button>
+              </div>
+            </div>
+            <button class="img-clear-btn" id="btnClearImg">✕ Buang Gambar Profil</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="pilihBintang">⭐ Skor Perkhidmatan</label>
+          <div class="star-select-wrap">
+            <select id="pilihBintang">
+              <option value="5">⭐⭐⭐⭐⭐  5 — Sangat Puas Hati</option>
+              <option value="4">⭐⭐⭐⭐  4 — Baik &amp; Memuaskan</option>
+              <option value="3">⭐⭐⭐  3 — Sederhana</option>
+              <option value="2">⭐⭐  2 — Kurang Memuaskan</option>
+              <option value="1">⭐  1 — Lemah</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="ulasanPelanggan">💬 Ulasan Anda <span style="font-weight:400;text-transform:none;letter-spacing:0">(pilihan — boleh kosong)</span></label>
+          <textarea id="ulasanPelanggan" rows="3"
+            placeholder="Kongsi pengalaman... atau tekan 🎲 untuk idea, atau biar kosong je pun okay!"
+            maxlength="500"></textarea>
+          <div class="dadu-row">
+            <button class="btn-dadu" id="btnDadu" type="button">
+              <span class="dice-icon">🎲</span> Cadangan
+            </button>
+            <span class="dadu-label">Malas taip?</span>
+          </div>
+          <span class="char-counter" id="charCounter">0 / 500</span>
+        </div>
+
+        <button id="butangHantar">🚀 Hantar Ulasan</button>
+      </div>
+
+      <!-- ════ REVIEWS COLUMN ════ -->
+      <div class="reviews-col">
+        <p class="reviews-col-title">💬 Ulasan Terkini</p>
+
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all">Semua</button>
+          <button class="filter-btn" data-filter="5">⭐⭐⭐⭐⭐</button>
+          <button class="filter-btn" data-filter="4">⭐⭐⭐⭐</button>
+          <button class="filter-btn" data-filter="3">⭐⭐⭐</button>
+          <button class="filter-btn" data-filter="12">⭐&amp;⭐⭐</button>
+          <select class="sort-select" id="sortSelect">
+            <option value="newest">Terbaru</option>
+            <option value="highest">Tertinggi</option>
+            <option value="lowest">Terendah</option>
+          </select>
+        </div>
+
+        <div id="kotakPaparan" class="rating-box">
+          <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:52%"></div><div class="skel-line skeleton" style="width:78%"></div><div class="skel-line skeleton" style="width:62%"></div></div></div>
+          <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:44%"></div><div class="skel-line skeleton" style="width:70%"></div></div></div>
+          <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:58%"></div><div class="skel-line skeleton" style="width:48%"></div></div></div>
+        </div>
+      </div>
+    </div><!-- end card-grid -->
+  </div><!-- end main-card -->
+
+</div><!-- end page-body -->
+
+<!-- ════════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════════ -->
 <script type="module">
   import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import {
@@ -507,20 +710,20 @@
     doc, getDoc, deleteDoc, updateDoc
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // ─── Firebase ───────────────────────────────────────────────────
+  // ── Firebase ──────────────────────────────────────────────────
   const app = initializeApp({
-    apiKey:            "AIzaSyBOkyPe2f1tHu9OQiwHHpgfJTYM-KM7cuU",
-    authDomain:        "h4sx-6712c.firebaseapp.com",
-    projectId:         "h4sx-6712c",
-    storageBucket:     "h4sx-6712c.firebasestorage.app",
-    messagingSenderId: "416803081247",
-    appId:             "1:416803081247:web:e201174233b953e539992a",
-    measurementId:     "G-J9QWB39V87"
+    apiKey:"AIzaSyBOkyPe2f1tHu9OQiwHHpgfJTYM-KM7cuU",
+    authDomain:"h4sx-6712c.firebaseapp.com",
+    projectId:"h4sx-6712c",
+    storageBucket:"h4sx-6712c.firebasestorage.app",
+    messagingSenderId:"416803081247",
+    appId:"1:416803081247:web:e201174233b953e539992a",
+    measurementId:"G-J9QWB39V87"
   });
   const db = getFirestore(app);
 
-  // ─── Admin gate ─────────────────────────────────────────────────
-  const KOD_ADMIN = "H4SXADMIN2026"; // TUKAR sebelum deploy!
+  // ── Admin gate ────────────────────────────────────────────────
+  const KOD_ADMIN = "H4SXADMIN2026"; // TUKAR sebelum guna!
   const adminOk   = () => sessionStorage.getItem("h4sx_admin_ok") === "1";
   function mintaAdmin() {
     if (adminOk()) return true;
@@ -530,20 +733,38 @@
     showToast("Kod admin salah.", "error"); return false;
   }
 
-  // ─── Toast ──────────────────────────────────────────────────────
+  // ── Ticker ────────────────────────────────────────────────────
+  const tickerItems = [
+    { icon:"⚡", text:"Penghantaran Pantas 5–25 Minit" },
+    { icon:"⭐", text:"300+ Pelanggan Berpuas Hati" },
+    { icon:"💬", text:"Bantuan Terus Melalui WhatsApp" },
+    { icon:"🔒", text:"Semak Detail Sebelum Bayar" },
+    { icon:"🎮", text:"Item Roblox Terpilih" },
+    { icon:"🛡️", text:"Pembelian Lebih Selamat" },
+    { icon:"🌟", text:"Kedai Dipercayai Sejak 2024" },
+    { icon:"📦", text:"Stock Sentiasa Ada" },
+  ];
+  const track = document.getElementById("tickerTrack");
+  const buildTicker = (items) => items.map(i =>
+    `<span class="ticker-item"><span class="ti">${i.icon}</span>${i.text}</span>`
+  ).join("");
+  // Duplicate for seamless loop
+  track.innerHTML = buildTicker(tickerItems) + buildTicker(tickerItems);
+
+  // ── Toast ─────────────────────────────────────────────────────
   const toastStack = document.getElementById("toastStack");
-  function showToast(msg, type = "info") {
-    const icons = { success:"✅", error:"❌", info:"ℹ️" };
+  function showToast(msg, type="info") {
+    const icons = {success:"✅",error:"❌",info:"ℹ️"};
     const t = document.createElement("div");
     t.className = `toast ${type}`;
     t.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${escapeHtml(msg)}</span>`;
     toastStack.appendChild(t);
-    const rm = () => { t.classList.add("out"); t.addEventListener("animationend", () => t.remove(), {once:true}); };
+    const rm = () => { t.classList.add("out"); t.addEventListener("animationend",()=>t.remove(),{once:true}); };
     const tid = setTimeout(rm, 3800);
-    t.addEventListener("click", () => { clearTimeout(tid); rm(); });
+    t.addEventListener("click", ()=>{ clearTimeout(tid); rm(); });
   }
 
-  // ─── DOM ────────────────────────────────────────────────────────
+  // ── DOM ───────────────────────────────────────────────────────
   const kodVerification = document.getElementById("kodVerification");
   const namaPelanggan   = document.getElementById("namaPelanggan");
   const pilihBintang    = document.getElementById("pilihBintang");
@@ -552,7 +773,8 @@
   const kotakPaparan    = document.getElementById("kotakPaparan");
   const purataSkor      = document.getElementById("purataSkor");
   const purataBintang   = document.getElementById("purataBintang");
-  const jumlahUlasan    = document.getElementById("jumlahUlasan");
+  const jumlahUlasanVal = document.getElementById("jumlahUlasanVal");
+  const pctLima         = document.getElementById("pctLima");
   const avatarPreview   = document.getElementById("avatarPreview");
   const swatchRow       = document.getElementById("swatchRow");
   const emojiRow        = document.getElementById("emojiRow");
@@ -565,241 +787,189 @@
   const btnClearImg     = document.getElementById("btnClearImg");
   const btnDadu         = document.getElementById("btnDadu");
 
-  // ─── Profile state ──────────────────────────────────────────────
-  const WARNA = ['#d98e73','#b87fa0','#5fa88a','#c99a3b','#7a9bb0','#c1554f','#8c8a5e','#a487c2'];
+  // ── Profile ───────────────────────────────────────────────────
+  const WARNA = ['#2fa8e0','#7c5cbf','#22c47a','#f0a500','#e05252','#1a4470','#48a89e','#d96fb0'];
   const EMOJI  = ['😀','😎','🔥','🎮','👾','🐉','⚡','💎'];
-  let pilihanWarna  = null;
-  let pilihanEmoji  = null;
-  let profileImgB64 = null; // compressed base64 of uploaded/url image
+  let pilihanWarna = null, pilihanEmoji = null, profileImgB64 = null;
 
-  // Build swatches
   WARNA.forEach(w => {
     const sw = document.createElement("div");
     sw.className = "swatch"; sw.style.backgroundColor = w;
     sw.onclick = () => {
       pilihanWarna = w;
-      document.querySelectorAll(".swatch").forEach(s => s.classList.remove("active"));
-      sw.classList.add("active");
-      updatePreview();
+      document.querySelectorAll(".swatch").forEach(s=>s.classList.remove("active"));
+      sw.classList.add("active"); updatePreview();
     };
     swatchRow.appendChild(sw);
   });
 
-  // Build emoji opts
   EMOJI.forEach(em => {
     const opt = document.createElement("div");
     opt.className = "emoji-opt"; opt.textContent = em;
     opt.onclick = () => {
       pilihanEmoji = pilihanEmoji === em ? null : em;
-      document.querySelectorAll(".emoji-opt").forEach(o => o.classList.remove("active"));
-      if (pilihanEmoji) opt.classList.add("active");
-      // If emoji selected, clear image
-      if (pilihanEmoji) clearProfileImg(false);
+      document.querySelectorAll(".emoji-opt").forEach(o=>o.classList.remove("active"));
+      if (pilihanEmoji) { opt.classList.add("active"); clearProfileImg(false); }
       updatePreview();
     };
     emojiRow.appendChild(opt);
   });
 
   function warnaAuto(nama) {
-    const n = (nama || "").trim();
+    const n = (nama||"").trim();
     return n ? WARNA[n.length % WARNA.length] : WARNA[0];
   }
-
   function updatePreview() {
-    const nama = namaPelanggan.value.trim();
+    const nama  = namaPelanggan.value.trim();
     const warna = pilihanWarna || warnaAuto(nama);
     const letter = avatarPreview.querySelector(".av-letter");
-
     avatarPreview.style.backgroundColor = warna;
-
-    // Remove old img if any
     const oldImg = avatarPreview.querySelector("img.av-img");
     if (oldImg) oldImg.remove();
-
     if (profileImgB64) {
-      // Show image
       const img = document.createElement("img");
-      img.className = "av-img";
-      img.src = profileImgB64;
+      img.className = "av-img"; img.src = profileImgB64;
       avatarPreview.insertBefore(img, avatarPreview.querySelector(".av-edit-hint"));
       letter.textContent = "";
     } else {
       letter.textContent = pilihanEmoji || (nama ? nama.charAt(0).toUpperCase() : "H");
     }
   }
-
   namaPelanggan.addEventListener("input", updatePreview);
   updatePreview();
 
-  // ─── Image upload tabs ──────────────────────────────────────────
+  // Image upload tabs
   document.querySelectorAll(".img-tab").forEach(tab => {
     tab.addEventListener("click", () => {
-      document.querySelectorAll(".img-tab").forEach(t => t.classList.remove("active"));
-      document.querySelectorAll(".img-tab-panel").forEach(p => p.classList.remove("show"));
+      document.querySelectorAll(".img-tab").forEach(t=>t.classList.remove("active"));
+      document.querySelectorAll(".img-tab-panel").forEach(p=>p.classList.remove("show"));
       tab.classList.add("active");
       document.getElementById(`panel-${tab.dataset.tab}`).classList.add("show");
     });
   });
 
-  // Clicking avatar preview triggers file input
   avatarPreview.addEventListener("click", () => fileInput.click());
 
-  // ─── Compress image to ~80px circle (base64) ────────────────────
-  function compressImage(src, callback) {
+  function compressImage(src, cb) {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      const SIZE = 80;
-      const canvas = document.createElement("canvas");
-      canvas.width = canvas.height = SIZE;
-      const ctx = canvas.getContext("2d");
-      // Crop square from center
+      const SIZE = 80, c = document.createElement("canvas");
+      c.width = c.height = SIZE;
+      const ctx = c.getContext("2d");
       const min = Math.min(img.naturalWidth, img.naturalHeight);
-      const sx = (img.naturalWidth  - min) / 2;
-      const sy = (img.naturalHeight - min) / 2;
+      const sx = (img.naturalWidth - min)/2, sy = (img.naturalHeight - min)/2;
       ctx.drawImage(img, sx, sy, min, min, 0, 0, SIZE, SIZE);
-      callback(canvas.toDataURL("image/jpeg", 0.75));
+      cb(c.toDataURL("image/jpeg", 0.75));
     };
-    img.onerror = () => {
-      showToast("Gagal muatkan gambar. Cuba URL lain atau format lain.", "error");
-    };
+    img.onerror = () => showToast("Gagal muatkan gambar. Cuba URL lain.", "error");
     img.src = src;
   }
-
   function applyProfileImg(b64) {
-    profileImgB64 = b64;
-    pilihanEmoji  = null;
-    document.querySelectorAll(".emoji-opt").forEach(o => o.classList.remove("active"));
-    btnClearImg.classList.add("show");
-    updatePreview();
-    showToast("Gambar profil berjaya dimuatkan!", "success");
+    profileImgB64 = b64; pilihanEmoji = null;
+    document.querySelectorAll(".emoji-opt").forEach(o=>o.classList.remove("active"));
+    btnClearImg.classList.add("show"); updatePreview();
+    showToast("Gambar profil berjaya dimuatkan! 📸", "success");
   }
-
-  function clearProfileImg(showMsg = true) {
-    profileImgB64 = null;
-    btnClearImg.classList.remove("show");
-    fileInput.value = "";
-    urlGambar.value = "";
-    updatePreview();
+  function clearProfileImg(showMsg=true) {
+    profileImgB64 = null; btnClearImg.classList.remove("show");
+    fileInput.value = ""; urlGambar.value = ""; updatePreview();
     if (showMsg) showToast("Gambar profil dibuang.", "info");
   }
-
-  btnClearImg.addEventListener("click", () => clearProfileImg(true));
-
-  // File input change
+  btnClearImg.addEventListener("click", ()=>clearProfileImg(true));
   fileInput.addEventListener("change", () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { showToast("Fail terlalu besar. Max 5MB.", "error"); return; }
-    const reader = new FileReader();
-    reader.onload = e => compressImage(e.target.result, applyProfileImg);
-    reader.readAsDataURL(file);
+    const f = fileInput.files[0];
+    if (!f) return;
+    if (f.size > 5*1024*1024) { showToast("Fail terlalu besar. Max 5MB.", "error"); return; }
+    const r = new FileReader();
+    r.onload = e => compressImage(e.target.result, applyProfileImg);
+    r.readAsDataURL(f);
   });
-
-  // Drag & drop
   dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
   dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
   dropZone.addEventListener("drop", e => {
     e.preventDefault(); dropZone.classList.remove("drag-over");
-    const file = e.dataTransfer.files[0];
-    if (!file || !file.type.startsWith("image/")) { showToast("Fail bukan gambar.", "error"); return; }
-    if (file.size > 5 * 1024 * 1024) { showToast("Fail terlalu besar. Max 5MB.", "error"); return; }
-    const reader = new FileReader();
-    reader.onload = ev => compressImage(ev.target.result, applyProfileImg);
-    reader.readAsDataURL(file);
+    const f = e.dataTransfer.files[0];
+    if (!f || !f.type.startsWith("image/")) { showToast("Bukan gambar.", "error"); return; }
+    if (f.size > 5*1024*1024) { showToast("Fail terlalu besar.", "error"); return; }
+    const r = new FileReader();
+    r.onload = ev => compressImage(ev.target.result, applyProfileImg);
+    r.readAsDataURL(f);
   });
-
-  // URL load
   btnLoadUrl.addEventListener("click", () => {
     const url = urlGambar.value.trim();
-    if (!url) { showToast("Sila masukkan URL gambar.", "error"); return; }
-    if (!url.startsWith("http")) { showToast("URL tidak sah. Mesti bermula dengan http://", "error"); return; }
-    btnLoadUrl.textContent = "Memuatkan...";
-    btnLoadUrl.disabled = true;
-    compressImage(url, b64 => {
-      applyProfileImg(b64);
-      btnLoadUrl.textContent = "Muat";
-      btnLoadUrl.disabled = false;
-    });
-    // Re-enable btn after timeout if error
-    setTimeout(() => { btnLoadUrl.textContent = "Muat"; btnLoadUrl.disabled = false; }, 6000);
+    if (!url || !url.startsWith("http")) { showToast("URL tidak sah.", "error"); return; }
+    btnLoadUrl.textContent = "Memuatkan..."; btnLoadUrl.disabled = true;
+    compressImage(url, b64 => { applyProfileImg(b64); btnLoadUrl.textContent="Muat"; btnLoadUrl.disabled=false; });
+    setTimeout(()=>{ btnLoadUrl.textContent="Muat"; btnLoadUrl.disabled=false; }, 7000);
   });
 
-  // ─── Dadu / suggestion system ───────────────────────────────────
-  // Ayat ikut rating — 5 variasi per rating, will pick random
+  // ── Dadu ──────────────────────────────────────────────────────
   const CADANGAN = {
-    5: [
-      "Perkhidmatan sangat memuaskan! Barang sampai cepat dan dalam keadaan sempurna. Memang akan order lagi lepas ni. Syabas H4SX STORE! 🔥",
+    5:[
+      "Perkhidmatan sangat memuaskan! Barang sampai cepat dan dalam keadaan sempurna. Memang akan order lagi. Syabas H4SX STORE! 🔥",
       "Seller sangat responsif dan barang berkualiti tinggi. Packaging cantik dan selamat. 5 bintang pun rasa tak cukup! Highly recommended! ⭐",
-      "Laju gila proses dan penghantaran. Barang sama macam dalam gambar, tiada bezanya. H4SX STORE memang boleh dipercayai 100%. Terima kasih! 🙏",
-      "First time order tapi dah terus jadi pelanggan setia. Harga berpatutan, kualiti memang top. Tak rugi langsung berurusan dengan H4SX! 💎",
-      "Best seller! Comm cepat, barang tak tipu, hantar on time. Kalau boleh bagi 10 bintang bagi je! Dah share dekat kawan-kawan semua. 🚀"
+      "Laju gila proses dan penghantaran. Barang sama macam dalam gambar. H4SX STORE memang boleh dipercayai 100%. Terima kasih! 🙏",
+      "First time order tapi dah terus jadi pelanggan setia. Harga berpatutan, kualiti memang top. Tak rugi langsung! 💎",
+      "Best seller! Comm cepat, barang tak tipu, hantar on time. Kalau boleh bagi 10 bintang bagi je! 🚀"
     ],
-    4: [
-      "Keseluruhannya puas hati dengan pembelian ni. Barang okay dan seller senang nak communicate. Sedikit lambat penghantaran tapi faham la. 👍",
-      "Produk memuaskan dan sesuai dengan harga yang dibayar. Packaging standard je tapi barang selamat sampai. Overall boleh order lagi. 🙂",
-      "Seller baik dan membantu. Barang sampai dalam masa dijanjikan. Ada sikit minor issue tapi seller terus selesaikan dengan cepat. Terima kasih!",
-      "Pengalaman membeli yang menyenangkan. Komunikasi seller aktif dan barang mengikut spesifikasi. Satu bintang kurang sebab delay sikit.",
-      "H4SX STORE ada potensi besar. Kali ni 4 bintang, kalau next time lagi smooth boleh dapat 5. Akan cuba order produk lain lepas ni! 😊"
+    4:[
+      "Keseluruhannya puas hati. Barang okay dan seller senang nak communicate. Sedikit lambat tapi faham la. 👍",
+      "Produk memuaskan dan sesuai dengan harga. Packaging standard tapi barang selamat. Boleh order lagi. 🙂",
+      "Seller baik dan membantu. Barang sampai dalam masa dijanjikan. Ada minor issue tapi seller selesaikan cepat.",
+      "Pengalaman membeli yang menyenangkan. Komunikasi aktif dan barang mengikut spesifikasi. Satu bintang kurang sebab delay sikit.",
+      "H4SX STORE ada potensi besar. Kali ni 4 bintang, next time boleh dapat 5! 😊"
     ],
-    3: [
-      "Barang okay tapi masa penghantaran agak lambat dari yang dijangkakan. Seller okay je tapi perlu improve dari segi komunikasi sikit.",
-      "Produk sampai dalam keadaan baik tapi packaging boleh ditingkatkan lagi. Untuk harga yang dibayar, memang sesuailah lebih kurang.",
-      "Pengalaman sederhana. Ada expectation yang tak dipenuhi tapi barang berfungsi dengan baik. Mungkin akan order lagi bergantung pada produk.",
-      "Seller respond lambat sikit bila tanye soalan. Barang pun okay-okay je, bukan luar biasa. Harap H4SX boleh improve untuk masa depan.",
-      "Neutral je. Tak terlalu kecewa, tak terlalu gembira. Barang macam dalam gambar tapi rasa ada sesuatu yang kurang. Tengok je lah next time."
+    3:[
+      "Barang okay tapi masa penghantaran agak lambat. Seller okay tapi perlu improve komunikasi sikit.",
+      "Produk sampai dalam keadaan baik tapi packaging boleh ditingkatkan. Untuk harga yang dibayar, sesuailah.",
+      "Pengalaman sederhana. Ada expectation yang tak dipenuhi tapi barang berfungsi. Mungkin order lagi.",
+      "Seller respond lambat sikit. Barang pun okay-okay je. Harap H4SX boleh improve.",
+      "Neutral je. Tak terlalu kecewa, tak terlalu gembira. Ada sesuatu yang kurang tapi okay lah."
     ],
-    2: [
-      "Agak kecewa dengan pengalaman kali ni. Masa penghantaran sangat lama dan komunikasi seller pun kurang memuaskan. Harap ada penambahbaikan.",
-      "Barang sampai dalam keadaan tidak memuaskan. Seller ada tolong settle tapi proses yang panjang buat saya rasa tak selesa. Perlu improve.",
-      "Penghantaran lambat, seller lambat reply. Barang pun tak sama macam dalam gambar. Kali ni memang tak berapa puas hati. Hope to improve.",
-      "Ada masalah dengan order tapi nasib baik seller akhirnya settle. Proses yang memenatkan. Belum pasti nak order lagi ke tidak.",
-      "Kurang puas hati dengan keseluruhan pengalaman. Harap H4SX STORE ambil maklum feedback ini untuk tingkatkan perkhidmatan pada masa hadapan."
+    2:[
+      "Agak kecewa. Masa penghantaran sangat lama dan komunikasi kurang memuaskan. Harap ada penambahbaikan.",
+      "Barang sampai dalam keadaan tidak memuaskan. Seller ada tolong tapi proses panjang. Perlu improve.",
+      "Penghantaran lambat, seller lambat reply. Barang tak sama macam gambar. Memang tak berapa puas hati.",
+      "Ada masalah dengan order tapi nasib baik seller akhirnya settle. Belum pasti nak order lagi.",
+      "Kurang puas hati. Harap H4SX ambil maklum feedback ini untuk tingkatkan perkhidmatan."
     ],
-    1: [
-      "Sangat kecewa. Barang lambat, seller susah nak contact, dan barang yang sampai pun tak sesuai. Harap ada penambahbaikan segera.",
-      "Pengalaman yang sangat tidak memuaskan. Ini pertama dan mungkin terakhir kali order. Semoga H4SX STORE ambil serius feedback ni.",
-      "Barang langsung tak seperti yang diiklankan. Seller pun tak proaktif nak settle masalah. Tidak akan recommend kepada sesiapa pun.",
-      "Proses yang sangat menyusahkan dari awal sampai akhir. Harap ada perubahan besar dari segi sistem dan layanan pelanggan.",
-      "Satu bintang pun rasa banyak. Pengalaman terburuk berbelanja online setakat ini. Mohon H4SX perbaiki kualiti perkhidmatan segera."
+    1:[
+      "Sangat kecewa. Barang lambat, seller susah nak contact, dan barang tak sesuai. Harap ada penambahbaikan segera.",
+      "Pengalaman yang sangat tidak memuaskan. Semoga H4SX ambil serius feedback ni.",
+      "Barang langsung tak seperti yang diiklankan. Tidak akan recommend kepada sesiapa.",
+      "Proses yang sangat menyusahkan dari awal sampai akhir. Harap ada perubahan besar.",
+      "Satu bintang pun rasa banyak. Pengalaman terburuk. Mohon H4SX perbaiki kualiti segera."
     ]
   };
-
-  let lastDaduIndex = -1;
+  let lastDaduIdx = -1;
   btnDadu.addEventListener("click", () => {
-    const rating = parseInt(pilihBintang.value) || 5;
+    const rating = parseInt(pilihBintang.value)||5;
     const pool   = CADANGAN[rating] || CADANGAN[5];
     let idx;
-    do { idx = Math.floor(Math.random() * pool.length); } while (idx === lastDaduIndex && pool.length > 1);
-    lastDaduIndex = idx;
-
-    // Animate typing
+    do { idx = Math.floor(Math.random()*pool.length); } while (idx===lastDaduIdx && pool.length>1);
+    lastDaduIdx = idx;
     const teks = pool[idx];
-    ulasanPelanggan.value = "";
-    charCounter.textContent = "0 / 500";
+    ulasanPelanggan.value = ""; charCounter.textContent = "0 / 500";
     ulasanPelanggan.focus();
-
     let i = 0;
-    const interval = setInterval(() => {
-      if (i >= teks.length) { clearInterval(interval); return; }
+    const iv = setInterval(()=>{
+      if (i >= teks.length) { clearInterval(iv); return; }
       ulasanPelanggan.value += teks[i++];
       charCounter.textContent = `${ulasanPelanggan.value.length} / 500`;
-    }, 18);
-
-    // Bounce dice icon
-    const diceEl = btnDadu.querySelector(".dice-icon");
-    diceEl.style.transform = "rotate(360deg) scale(1.3)";
-    setTimeout(() => diceEl.style.transform = "", 400);
+    }, 16);
+    const d = btnDadu.querySelector(".dice-icon");
+    d.style.transform="rotate(360deg) scale(1.3)";
+    setTimeout(()=>d.style.transform="",420);
   });
 
-  // Char counter
-  ulasanPelanggan.addEventListener("input", () => {
-    const len = ulasanPelanggan.value.length;
-    charCounter.textContent = `${len} / 500`;
-    charCounter.classList.toggle("warn", len > 450);
+  ulasanPelanggan.addEventListener("input", ()=>{
+    const l = ulasanPelanggan.value.length;
+    charCounter.textContent = `${l} / 500`;
+    charCounter.classList.toggle("warn", l>450);
   });
 
-  // ─── Submit review ──────────────────────────────────────────────
+  // ── Submit ────────────────────────────────────────────────────
   butangHantar.addEventListener("click", async () => {
     const kod    = kodVerification.value.trim().toUpperCase();
     const nama   = namaPelanggan.value.trim();
@@ -808,157 +978,131 @@
 
     if (!kod)  return showToast("Sila masukkan Kod Pengesahan.", "error");
     if (!nama) return showToast("Sila isi nama atau username.", "error");
-    // Ulasan boleh kosong — jika kosong, simpan sebagai ""
-    // (ikut permintaan: kalau malas biar kosong pun okay)
+    // Ulasan BOLEH kosong — hanya nama & kod wajib
 
     butangHantar.disabled = true;
     butangHantar.textContent = "Menghantar...";
-
     try {
-      const codeSnap = await getDoc(doc(db, "review_codes", kod));
+      const codeSnap = await getDoc(doc(db,"review_codes",kod));
       if (!codeSnap.exists()) {
-        showToast("Kod pengesahan tidak sah atau telah digunakan.", "error");
-        return;
+        showToast("Kod pengesahan tidak sah atau telah digunakan.", "error"); return;
       }
-
-      await addDoc(collection(db, "ratings"), {
-        nama, bintang,
-        ulasan: ulasan || "", // boleh kosong
-        warnaProfil:  pilihanWarna || warnaAuto(nama),
-        emojiProfil:  pilihanEmoji || null,
-        profileImg:   profileImgB64 || null, // base64 compressed
-        balasanAdmin: null,
-        balasanPada:  null,
-        diciptaPada:  serverTimestamp()
+      await addDoc(collection(db,"ratings"), {
+        nama, bintang, ulasan: ulasan||"",
+        warnaProfil: pilihanWarna||warnaAuto(nama),
+        emojiProfil: pilihanEmoji||null,
+        profileImg:  profileImgB64||null,
+        balasanAdmin:null, balasanPada:null,
+        diciptaPada: serverTimestamp()
       });
-
-      await deleteDoc(doc(db, "review_codes", kod));
+      await deleteDoc(doc(db,"review_codes",kod));
 
       // Reset
       kodVerification.value = namaPelanggan.value = ulasanPelanggan.value = "";
       pilihBintang.value = "5";
       pilihanWarna = pilihanEmoji = null;
-      document.querySelectorAll(".swatch,.emoji-opt").forEach(el => el.classList.remove("active"));
-      clearProfileImg(false);
-      charCounter.textContent = "0 / 500";
-      updatePreview();
+      document.querySelectorAll(".swatch,.emoji-opt").forEach(el=>el.classList.remove("active"));
+      clearProfileImg(false); charCounter.textContent = "0 / 500"; updatePreview();
 
       showToast("Ulasan berjaya dihantar! Terima kasih. 🙏", "success");
-    } catch (err) {
+    } catch(err) {
       console.error(err);
       showToast("Ralat rangkaian. Sila cuba semula.", "error");
     } finally {
-      butangHantar.disabled = false;
-      butangHantar.textContent = "Hantar Ulasan";
+      butangHantar.disabled = false; butangHantar.textContent = "🚀 Hantar Ulasan";
     }
   });
 
-  // ─── Admin reply ─────────────────────────────────────────────────
+  // ── Admin reply ───────────────────────────────────────────────
   async function hantarBalasan(id, teks, btn) {
     if (!teks.trim()) { showToast("Taip balasan dahulu.", "error"); return; }
-    btn.disabled = true; btn.textContent = "Menghantar...";
+    btn.disabled=true; btn.textContent="Menghantar...";
     try {
-      await updateDoc(doc(db, "ratings", id), {
-        balasanAdmin: teks.trim(), balasanPada: serverTimestamp()
-      });
+      await updateDoc(doc(db,"ratings",id), { balasanAdmin:teks.trim(), balasanPada:serverTimestamp() });
       showToast("Balasan berjaya dikemaskini.", "success");
-    } catch (err) {
+    } catch(err) {
       console.error(err); showToast("Gagal hantar balasan.", "error");
-    } finally {
-      btn.disabled = false; btn.textContent = "Hantar Balasan";
-    }
+    } finally { btn.disabled=false; btn.textContent="Hantar Balasan"; }
   }
 
-  // ─── Filter & sort ───────────────────────────────────────────────
-  let filterStar = "all", sortMode = "newest", allDocs = [];
-  document.querySelectorAll(".filter-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      filterStar = btn.dataset.filter;
-      renderReviews();
+  // ── Filter & sort ─────────────────────────────────────────────
+  let filterStar="all", sortMode="newest", allDocs=[];
+  document.querySelectorAll(".filter-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active"); filterStar=btn.dataset.filter; renderReviews();
     });
   });
-  sortSelect.addEventListener("change", () => { sortMode = sortSelect.value; renderReviews(); });
+  sortSelect.addEventListener("change",()=>{ sortMode=sortSelect.value; renderReviews(); });
 
-  // ─── Live snapshot ───────────────────────────────────────────────
-  const q = query(collection(db, "ratings"), orderBy("diciptaPada", "desc"));
-  onSnapshot(q, snapshot => {
-    allDocs = [];
-    let total = 0, count = 0;
-    snapshot.forEach(d => {
-      allDocs.push({ id: d.id, ...d.data() });
-      total += parseInt(d.data().bintang) || 0;
-      count++;
+  // ── Live snapshot ─────────────────────────────────────────────
+  const q = query(collection(db,"ratings"), orderBy("diciptaPada","desc"));
+  onSnapshot(q, snapshot=>{
+    allDocs=[];
+    let total=0, count=0, lima=0;
+    snapshot.forEach(d=>{
+      const data = { id:d.id, ...d.data() };
+      allDocs.push(data);
+      const b = parseInt(d.data().bintang)||0;
+      total+=b; count++;
+      if (b===5) lima++;
     });
-    if (count === 0) {
-      purataSkor.textContent = "0.0";
-      purataBintang.textContent = "☆☆☆☆☆";
-      jumlahUlasan.textContent = "Belum ada ulasan";
+    if (count===0) {
+      purataSkor.textContent="0.0"; purataBintang.textContent="☆☆☆☆☆";
+      jumlahUlasanVal.textContent="0"; pctLima.textContent="—";
     } else {
-      const avg = (total / count).toFixed(1);
-      purataSkor.textContent = avg;
-      const r = Math.round(parseFloat(avg));
-      purataBintang.textContent = "★".repeat(r) + "☆".repeat(5 - r);
-      jumlahUlasan.textContent = `Berdasarkan ${count} ulasan pembeli sah`;
+      const avg=(total/count).toFixed(1);
+      purataSkor.textContent=avg;
+      const r=Math.round(parseFloat(avg));
+      purataBintang.textContent="★".repeat(r)+"☆".repeat(5-r);
+      jumlahUlasanVal.textContent=count;
+      pctLima.textContent=Math.round((lima/count)*100)+"%";
     }
     renderReviews();
   });
 
-  // ─── Render reviews ──────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────
   function renderReviews() {
-    let list = [...allDocs];
-    if (filterStar !== "all") {
-      list = filterStar === "12"
-        ? list.filter(d => d.bintang <= 2)
-        : list.filter(d => d.bintang === parseInt(filterStar));
+    let list=[...allDocs];
+    if (filterStar!=="all") {
+      list = filterStar==="12" ? list.filter(d=>d.bintang<=2) : list.filter(d=>d.bintang===parseInt(filterStar));
     }
-    if (sortMode === "highest") list.sort((a,b) => b.bintang - a.bintang);
-    else if (sortMode === "lowest") list.sort((a,b) => a.bintang - b.bintang);
+    if (sortMode==="highest") list.sort((a,b)=>b.bintang-a.bintang);
+    else if (sortMode==="lowest") list.sort((a,b)=>a.bintang-b.bintang);
 
-    kotakPaparan.innerHTML = "";
-
+    kotakPaparan.innerHTML="";
     if (!list.length) {
-      kotakPaparan.innerHTML = `<div class="no-reviews"><span class="no-icon">🔍</span><span>Tiada ulasan untuk penapis ini.</span></div>`;
+      kotakPaparan.innerHTML=`<div class="no-reviews"><span class="no-icon">🔍</span><span>Tiada ulasan untuk penapis ini.</span></div>`;
       return;
     }
 
-    list.forEach((data, i) => {
-      const id      = data.id;
-      const score   = parseInt(data.bintang) || 0;
-      const rawNama = data.nama || "Pelanggan Misteri";
-
-      let namaDisorok = rawNama;
-      if (rawNama !== "Pelanggan Misteri") {
-        if (rawNama.length <= 2)      namaDisorok = rawNama[0] + "*";
-        else if (rawNama.length === 3) namaDisorok = rawNama[0] + "*" + rawNama[2];
-        else namaDisorok = rawNama.substring(0,2) + "*".repeat(rawNama.length - 3) + rawNama.slice(-1);
+    list.forEach((data,i)=>{
+      const id=data.id, score=parseInt(data.bintang)||0;
+      const rawNama=data.nama||"Pelanggan Misteri";
+      let namaDisorok=rawNama;
+      if (rawNama!=="Pelanggan Misteri") {
+        if (rawNama.length<=2) namaDisorok=rawNama[0]+"*";
+        else if (rawNama.length===3) namaDisorok=rawNama[0]+"*"+rawNama[2];
+        else namaDisorok=rawNama.substring(0,2)+"*".repeat(rawNama.length-3)+rawNama.slice(-1);
       }
+      const warna=data.warnaProfil||warnaAuto(rawNama);
+      const hasImg=!!(data.profileImg);
+      const avatarIsi=data.emojiProfil||rawNama.charAt(0).toUpperCase();
+      const adaBalasan=!!(data.balasanAdmin?.trim());
+      const adaUlasan=!!(data.ulasan?.trim());
 
-      const warna     = data.warnaProfil || warnaAuto(rawNama);
-      const hasImg    = !!(data.profileImg);
-      const avatarIsi = data.emojiProfil || rawNama.charAt(0).toUpperCase();
-      const adaBalasan = !!(data.balasanAdmin?.trim());
-      const adaUlasan  = !!(data.ulasan?.trim());
+      let masa="Baru sahaja";
+      if (data.diciptaPada) masa=data.diciptaPada.toDate().toLocaleString("ms-MY",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
+      let masaBalasan="";
+      if (data.balasanPada) masaBalasan=data.balasanPada.toDate().toLocaleString("ms-MY",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
 
-      let masa = "Baru sahaja";
-      if (data.diciptaPada) masa = data.diciptaPada.toDate().toLocaleString("ms-MY", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", hour12:true });
-      let masaBalasan = "";
-      if (data.balasanPada) masaBalasan = data.balasanPada.toDate().toLocaleString("ms-MY", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", hour12:true });
+      const starHtml=Array.from({length:5},(_,si)=>`<span style="color:${si<score?"#f0a500":"#cde"}">${si<score?"★":"☆"}</span>`).join("");
+      const avatarInner=hasImg?`<img src="${escapeHtml(data.profileImg)}" alt="">`:escapeHtml(avatarIsi);
 
-      const starHtml = Array.from({length:5}, (_,si) =>
-        `<span style="color:${si < score ? '#c99a3b' : '#ddd'}">${si < score ? "★" : "☆"}</span>`
-      ).join("");
-
-      // Avatar HTML — image or letter/emoji
-      const avatarInner = hasImg
-        ? `<img src="${escapeHtml(data.profileImg)}" alt="">`
-        : escapeHtml(avatarIsi);
-
-      const card = document.createElement("div");
-      card.className = "review-card";
-      card.style.animationDelay = `${i * 38}ms`;
-      card.innerHTML = `
+      const card=document.createElement("div");
+      card.className="review-card";
+      card.style.animationDelay=`${i*36}ms`;
+      card.innerHTML=`
         <div class="avatar" style="background:${warna}">${avatarInner}</div>
         <div class="review-content">
           <div class="review-header">
@@ -970,47 +1114,38 @@
           </div>
           <div class="buyer-time">${masa}</div>
           ${adaUlasan
-            ? `<p class="buyer-feedback">${escapeHtml(data.ulasan)}</p>`
-            : `<p class="buyer-feedback" style="opacity:.45;font-style:italic;">— Tiada ulasan teks —</p>`
-          }
-          ${adaBalasan ? `
+            ?`<p class="buyer-feedback">${escapeHtml(data.ulasan)}</p>`
+            :`<p class="buyer-no-text">— Tiada ulasan teks —</p>`}
+          ${adaBalasan?`
           <div class="admin-reply-box">
             <p class="admin-reply-label">💬 Balasan H4SX STORE</p>
             <p class="admin-reply-text">${escapeHtml(data.balasanAdmin)}</p>
             <p class="admin-reply-time">${masaBalasan}</p>
-          </div>` : ""}
-          <button class="reply-toggle-btn">${adaBalasan ? "✏️ Edit Balasan (Admin)" : "↩ Balas (Admin)"}</button>
+          </div>`:""}
+          <button class="reply-toggle-btn">${adaBalasan?"✏️ Edit Balasan (Admin)":"↩ Balas (Admin)"}</button>
           <div class="admin-reply-form">
-            <textarea maxlength="400" placeholder="Taip balasan rasmi H4SX STORE...">${adaBalasan ? escapeHtml(data.balasanAdmin) : ""}</textarea>
+            <textarea maxlength="400" placeholder="Taip balasan rasmi H4SX STORE...">${adaBalasan?escapeHtml(data.balasanAdmin):""}</textarea>
             <div class="admin-reply-form-actions">
               <button class="btn-hantar-balasan">Hantar Balasan</button>
               <button class="btn-batal-balasan">Batal</button>
             </div>
           </div>
         </div>`;
-
       kotakPaparan.appendChild(card);
 
-      const form    = card.querySelector(".admin-reply-form");
-      const ta      = form.querySelector("textarea");
-      const btnH    = form.querySelector(".btn-hantar-balasan");
-      const btnB    = form.querySelector(".btn-batal-balasan");
-      const toggleB = card.querySelector(".reply-toggle-btn");
-
-      toggleB.addEventListener("click", () => {
-        if (!mintaAdmin()) return;
-        form.classList.toggle("show");
-        if (form.classList.contains("show")) ta.focus();
-      });
-      btnB.addEventListener("click", () => form.classList.remove("show"));
-      btnH.addEventListener("click", () => hantarBalasan(id, ta.value, btnH));
+      const form=card.querySelector(".admin-reply-form");
+      const ta=form.querySelector("textarea");
+      const btnH=form.querySelector(".btn-hantar-balasan");
+      const btnB=form.querySelector(".btn-batal-balasan");
+      const toggleB=card.querySelector(".reply-toggle-btn");
+      toggleB.addEventListener("click",()=>{ if(!mintaAdmin())return; form.classList.toggle("show"); if(form.classList.contains("show"))ta.focus(); });
+      btnB.addEventListener("click",()=>form.classList.remove("show"));
+      btnH.addEventListener("click",()=>hantarBalasan(id,ta.value,btnH));
     });
   }
 
   function escapeHtml(str) {
-    const d = document.createElement("div");
-    d.textContent = str ?? "";
-    return d.innerHTML;
+    const d=document.createElement("div"); d.textContent=str??""; return d.innerHTML;
   }
 </script>
 </body>
