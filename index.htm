@@ -438,10 +438,30 @@
       gap: 12px; align-items: flex-start;
       animation: fadeCard .3s ease-out forwards; opacity: 0;
       transition: background .15s;
+      position: relative;
     }
     .review-card:hover { background: var(--bg2); }
     .review-card:last-child { border-bottom: none; }
     @keyframes fadeCard { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+    .review-card.is-pinned {
+      background: linear-gradient(90deg, rgba(240,165,0,.07), transparent 40%);
+      border-left: 3px solid var(--accent);
+      padding-left: 13px;
+    }
+    .pin-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: linear-gradient(90deg,#f0a500,#e0891a); color: #fff;
+      font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px;
+      padding: 2px 7px; border-radius: 5px; white-space: nowrap;
+    }
+    .btn-pin-ulasan {
+      background: #fff6e0; color: #a67c00; border: 1px solid rgba(240,165,0,.35);
+      border-radius: 8px; padding: 6px 12px; font-size: 11.5px; font-weight: 700;
+      cursor: pointer; transition: background .12s;
+    }
+    .btn-pin-ulasan:hover { background: #ffedbb; }
+    .btn-pin-ulasan.is-active { background: linear-gradient(90deg,#f0a500,#e0891a); color: #fff; border-color: transparent; }
 
     .avatar {
       width: 42px; height: 42px; border-radius: 50%;
@@ -826,7 +846,7 @@
   const db = getFirestore(app);
 
   // ── Admin gate ────────────────────────────────────────────────
-  const KOD_ADMIN = "H4SXADMIN2026"; // TUKAR sebelum guna!
+  const KOD_ADMIN = "hasnainpizi"; // TUKAR sebelum guna!
   const adminOk   = () => sessionStorage.getItem("h4sx_admin_ok") === "1";
   function mintaAdmin() {
     if (adminOk()) return true;
@@ -843,59 +863,78 @@
     // Refresh page selepas 1 saat supaya ui/inspect element block update
     setTimeout(() => window.location.reload(), 1000); 
   }
+  // PENTING: fungsi dalam <script type="module"> tidak boleh dipanggil terus
+  // dari atribut onclick="" dalam HTML sebab ia bukan skop global.
+  // Kena "daftar" ke window supaya onclick="logoutAdmin()" dapat cari fungsi ni.
+  window.logoutAdmin = logoutAdmin;
 
   // ── Shop Closed Status (Gist) ─────────────────────────────────
+  const HARI_MS = ["ahad","isnin","selasa","rabu","khamis","jumaat","sabtu"];
+
+  function semakDalamWaktu(bukaJam, tutupJam) {
+    if (!bukaJam || !tutupJam) return true; // takde had waktu = anggap buka
+    const now = new Date();
+    const myTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
+    const mins = myTime.getHours()*60 + myTime.getMinutes();
+    const [bh,bm] = bukaJam.split(":").map(Number);
+    const [th,tm] = tutupJam.split(":").map(Number);
+    const bukaMins = bh*60 + (bm||0), tutupMins = th*60 + (tm||0);
+    if (bukaMins === tutupMins) return true; // 24 jam
+    if (bukaMins < tutupMins) {
+      return mins >= bukaMins && mins < tutupMins;
+    } else {
+      // merentas tengah malam (cth: buka 09:00, tutup 04:00 esok)
+      return mins >= bukaMins || mins < tutupMins;
+    }
+  }
+
+  function paparKedaiTutup(icon, tajuk, mesej, jamTeks) {
+    const iconEl = document.querySelector('#shopClosedOverlay > div > div:first-child');
+    if (iconEl) iconEl.textContent = icon;
+    document.querySelector('.shop-closed-title').textContent = tajuk;
+    document.getElementById('shopClosedMsg').textContent = mesej;
+    const timeEl = document.getElementById('shopClosedTime');
+    if (jamTeks) {
+      timeEl.textContent = '🕐 ' + jamTeks;
+      timeEl.style.display = 'inline-block';
+    } else {
+      timeEl.style.display = 'none';
+    }
+    document.getElementById('shopClosedOverlay').classList.add('active');
+  }
+
   async function semakStatusKedai() {
     try {
-      const res = await fetch('https://gist.githubusercontent.com/amirpoyo1982-a11y/5ed3872290715d7833e788c7b0014f79/raw/kedai.json?t=' + Date.now());
+      const res = await fetch('https://gist.githubusercontent.com/amirpoyo1982-a11y/5ed3872290715d7833e788c7b0014f79/raw/kedai.json?t=' + Date.now(), { cache: "no-store" });
       const data = await res.json();
-      
-      let isTutup = false;
-      
-      // 1. Cek secara manual kalau admin set "tutup": true
-      if (data && data.tutup === true) {
-        isTutup = true;
-      }
-      
-      // 2. Cek auto tutup ikut waktu (waktuTutup & waktuBuka) dalam format HH:MM (24 jam)
-      // Contoh dalam gist: { "waktuTutup": "23:00", "waktuBuka": "08:00" }
-      if (data && data.waktuTutup && data.waktuBuka) {
-        const now = new Date();
-        // Waktu Malaysia (GMT+8)
-        const myTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
-        const currentHour = myTime.getHours();
-        const currentMinute = myTime.getMinutes();
-        const currentTime = currentHour + (currentMinute / 60);
-        
-        const tutupParts = data.waktuTutup.split(':');
-        const bukaParts = data.waktuBuka.split(':');
-        const tutupTime = parseInt(tutupParts[0]) + (parseInt(tutupParts[1]||0) / 60);
-        const bukaTime = parseInt(bukaParts[0]) + (parseInt(bukaParts[1]||0) / 60);
-        
-        if (tutupTime > bukaTime) {
-          // Tutup merentas tengah malam (cth: 23:00 ke 08:00)
-          if (currentTime >= tutupTime || currentTime < bukaTime) {
-            isTutup = true;
-          }
-        } else {
-          // Tutup pada hari yang sama (cth: 13:00 ke 14:00)
-          if (currentTime >= tutupTime && currentTime < bukaTime) {
-            isTutup = true;
-          }
-        }
+
+      // 1. Mod penyelenggaraan — paling utama
+      if (data && data.maintenance === true) {
+        paparKedaiTutup('🛠️', 'Dalam Penyelenggaraan', 'Kedai sedang dalam penyelenggaraan buat masa ini. Sila cuba lagi sebentar lagi.', data.business_hours_text);
+        return;
       }
 
-      if (isTutup) {
-        if (data.mesej) document.getElementById('shopClosedMsg').textContent = data.mesej;
-        if (data.masa) {
-          const timeEl = document.getElementById('shopClosedTime');
-          timeEl.textContent = 'Dibuka semula: ' + data.masa;
-          timeEl.style.display = 'inline-block';
-        }
-        document.getElementById('shopClosedOverlay').classList.add('active');
-      } else {
-        document.getElementById('shopClosedOverlay').classList.remove('active');
+      // 2. Suis manual admin — bukakedai:false = tutup terus, tak kira jam
+      if (data && data.bukakedai === false) {
+        paparKedaiTutup('🚫', 'Kedai Ditutup Sementara', 'Kami sedang berehat. Sila kembali kemudian.', data.business_hours_text);
+        return;
       }
+
+      // 3. Hari cuti (tutup_hari)
+      const hariIni = HARI_MS[new Date().getDay()];
+      if (data && Array.isArray(data.tutup_hari) && data.tutup_hari.some(h => (h||"").toLowerCase() === hariIni)) {
+        paparKedaiTutup('📅', 'Kedai Tutup Hari Ini', 'Kami tidak beroperasi pada hari ini.', data.business_hours_text);
+        return;
+      }
+
+      // 4. Di luar waktu operasi (buka_jam / tutup_jam)
+      if (data && !semakDalamWaktu(data.buka_jam, data.tutup_jam)) {
+        paparKedaiTutup('🕐', 'Di Luar Waktu Operasi', 'Kami sedang tutup buat masa ini. Sila kembali semasa waktu operasi kami.', data.business_hours_text);
+        return;
+      }
+
+      // Semua ok — kedai buka
+      document.getElementById('shopClosedOverlay').classList.remove('active');
     } catch (e) { console.log('Gagal semak status kedai', e); }
   }
   semakStatusKedai();
@@ -1081,19 +1120,32 @@
 
   avatarPreview.addEventListener("click", () => fileInput.click());
 
-  function compressImage(src, cb) {
+  function compressImage(src, cb, onFail) {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      const SIZE = 80, c = document.createElement("canvas");
-      c.width = c.height = SIZE;
-      const ctx = c.getContext("2d");
-      const min = Math.min(img.naturalWidth, img.naturalHeight);
-      const sx = (img.naturalWidth - min)/2, sy = (img.naturalHeight - min)/2;
-      ctx.drawImage(img, sx, sy, min, min, 0, 0, SIZE, SIZE);
-      cb(c.toDataURL("image/jpeg", 0.75));
+      try {
+        const SIZE = 80, c = document.createElement("canvas");
+        c.width = c.height = SIZE;
+        const ctx = c.getContext("2d");
+        const min = Math.min(img.naturalWidth, img.naturalHeight);
+        const sx = (img.naturalWidth - min)/2, sy = (img.naturalHeight - min)/2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, SIZE, SIZE);
+        // toDataURL akan throw SecurityError kalau canvas "tainted" —
+        // ini berlaku bila server URL gambar tu tak bagi header CORS
+        // (Access-Control-Allow-Origin). Byk website block ni secara default.
+        const dataUrl = c.toDataURL("image/jpeg", 0.75);
+        cb(dataUrl);
+      } catch (e) {
+        console.error("Gagal proses gambar (kemungkinan sekatan CORS):", e);
+        if (onFail) onFail(e);
+        else showToast("Gambar dari URL ni tak boleh dimuatkan sebab sekatan pelayan (CORS). Cuba host lain (cth: i.imgur.com) atau upload terus dari galeri.", "error");
+      }
     };
-    img.onerror = () => showToast("Gagal muatkan gambar. Cuba URL lain.", "error");
+    img.onerror = () => {
+      if (onFail) onFail(new Error("load-failed"));
+      else showToast("Gagal muatkan gambar. Cuba URL lain.", "error");
+    };
     img.src = src;
   }
   function applyProfileImg(b64) {
@@ -1131,8 +1183,22 @@
     const url = urlGambar.value.trim();
     if (!url || !url.startsWith("http")) { showToast("URL tidak sah.", "error"); return; }
     btnLoadUrl.textContent = "Memuatkan..."; btnLoadUrl.disabled = true;
-    compressImage(url, b64 => { applyProfileImg(b64); btnLoadUrl.textContent="Muat"; btnLoadUrl.disabled=false; });
-    setTimeout(()=>{ btnLoadUrl.textContent="Muat"; btnLoadUrl.disabled=false; }, 7000);
+    let selesai = false;
+    const tamatkan = () => { selesai = true; btnLoadUrl.textContent = "Muat"; btnLoadUrl.disabled = false; };
+    compressImage(
+      url,
+      b64 => { if (selesai) return; applyProfileImg(b64); tamatkan(); },
+      err => {
+        if (selesai) return;
+        tamatkan();
+        if (err && err.message === "load-failed") {
+          showToast("Gagal muatkan gambar. Semak URL tu betul & terus ke fail gambar (.jpg/.png).", "error");
+        } else {
+          showToast("URL ni tak boleh dimuatkan sebab sekatan pelayan (CORS). Cuba host lain (cth: i.imgur.com) atau upload terus dari galeri.", "error");
+        }
+      }
+    );
+    setTimeout(()=>{ if (!selesai) { tamatkan(); showToast("Muat gambar mengambil masa terlalu lama. Cuba lagi.", "error"); } }, 8000);
   });
 
   // ── Dadu ──────────────────────────────────────────────────────
@@ -1233,12 +1299,30 @@
         ulasan: ulasan || "Tiada ulasan ditinggalkan.",
         diciptaPada: serverTimestamp(),
         balasanAdmin: null,
-        balasanPada: null
+        balasanPada: null,
+        // Avatar/profil — sebelum ni field ni TAK dihantar langsung ke Firestore,
+        // jadi gambar/warna/emoji yang dipilih hilang lepas submit. Dah tambah balik.
+        profileImg: profileImgB64 || null,
+        warnaProfil: pilihanWarna || warnaAuto(nama),
+        emojiProfil: pilihanEmoji || null
       };
       console.log("Data yang cuba disimpan:", dataToSave);
       
-      await addDoc(collection(db,"ratings"), dataToSave);
+      const refBaru = await addDoc(collection(db,"ratings"), dataToSave);
       await deleteDoc(doc(db,"review_codes",kod));
+
+      // ── Auto-reply "terima kasih" untuk setiap ulasan baru ──────
+      // Nota: rules 'create' sengaja block balasanAdmin (kena null semasa create),
+      // jadi auto-reply ni kena dihantar sebagai 'update' selepas create berjaya —
+      // sah ikut rules 'update' sebab nama/bintang/ulasan/diciptaPada tak diubah.
+      try {
+        await updateDoc(doc(db,"ratings",refBaru.id), {
+          balasanAdmin: "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙",
+          balasanPada: serverTimestamp()
+        });
+      } catch(errBalasan) {
+        console.error("Auto-reply gagal (ulasan tetap tersimpan):", errBalasan);
+      }
 
       // Reset
       kodVerification.value = namaPelanggan.value = ulasanPelanggan.value = "";
@@ -1250,7 +1334,9 @@
       showToast("Ulasan berjaya dihantar! Terima kasih. 🙏", "success");
     } catch(err) {
       console.error("Ralat Firebase (Details):", err.code, err.message, err);
-      showToast("Ralat rangkaian. Sila semak console (F12).", "error");
+      // Papar sebab sebenar terus dalam toast supaya senang debug tanpa F12
+      const sebab = err.code ? `(${err.code})` : (err.message || "");
+      showToast(`Gagal hantar ulasan ${sebab}. Cuba lagi.`, "error");
     } finally {
       butangHantar.disabled = false; butangHantar.textContent = "🚀 Hantar Ulasan";
     }
@@ -1278,6 +1364,15 @@
   });
   sortSelect.addEventListener("change",()=>{ sortMode=sortSelect.value; renderReviews(); });
 
+  // Selamatkan diri drpd data rosak/prank (cth: bintang disave sbg 999 terus
+  // dari Firebase console) — sentiasa clamp ke julat sah 0–5 sebelum digunakan.
+  function clampBintang(n) {
+    n = parseInt(n) || 0;
+    if (n < 0) return 0;
+    if (n > 5) return 5;
+    return n;
+  }
+
   // ── Live snapshot ─────────────────────────────────────────────
   const q = query(collection(db,"ratings"), orderBy("diciptaPada","desc"));
   onSnapshot(q, snapshot=>{
@@ -1286,7 +1381,7 @@
     snapshot.forEach(d=>{
       const data = { id:d.id, ...d.data() };
       allDocs.push(data);
-      const b = parseInt(d.data().bintang)||0;
+      const b = clampBintang(d.data().bintang);
       total+=b; count++;
       if (b===5) lima++;
     });
@@ -1296,7 +1391,7 @@
     } else {
       const avg=(total/count).toFixed(1);
       purataSkor.textContent=avg;
-      const r=Math.round(parseFloat(avg));
+      const r=clampBintang(Math.round(parseFloat(avg)));
       purataBintang.textContent="★".repeat(r)+"☆".repeat(5-r);
       jumlahUlasanVal.textContent=count;
       pctLima.textContent=Math.round((lima/count)*100)+"%";
@@ -1308,10 +1403,17 @@
   function renderReviews() {
     let list=[...allDocs];
     if (filterStar!=="all") {
-      list = filterStar==="12" ? list.filter(d=>d.bintang<=2) : list.filter(d=>d.bintang===parseInt(filterStar));
+      list = filterStar==="12" ? list.filter(d=>clampBintang(d.bintang)<=2) : list.filter(d=>clampBintang(d.bintang)===parseInt(filterStar));
     }
-    if (sortMode==="highest") list.sort((a,b)=>b.bintang-a.bintang);
-    else if (sortMode==="lowest") list.sort((a,b)=>a.bintang-b.bintang);
+    if (sortMode==="highest") list.sort((a,b)=>clampBintang(b.bintang)-clampBintang(a.bintang));
+    else if (sortMode==="lowest") list.sort((a,b)=>clampBintang(a.bintang)-clampBintang(b.bintang));
+
+    // Ulasan yang di-pin sentiasa naik ke atas (pin terbaru dulu),
+    // ikutan yang lain kekal ikut sortMode yang dipilih.
+    const dipin = list.filter(d=>d.pinned===true)
+      .sort((a,b)=>(b.pinnedAt?.toMillis?.()||0)-(a.pinnedAt?.toMillis?.()||0));
+    const takDipin = list.filter(d=>d.pinned!==true);
+    list = [...dipin, ...takDipin];
 
     kotakPaparan.innerHTML="";
     if (!list.length) {
@@ -1320,7 +1422,8 @@
     }
 
     list.forEach((data,i)=>{
-      const id=data.id, score=parseInt(data.bintang)||0;
+      const id=data.id, score=clampBintang(data.bintang);
+      const rawBintang=parseInt(data.bintang)||0;
       const rawNama=data.nama||"Pelanggan Misteri";
       let namaDisorok=rawNama;
       
@@ -1353,14 +1456,16 @@
         : `<span class="verified-badge">✓ Verified</span>`;
 
       const card=document.createElement("div");
-      card.className="review-card";
+      card.className="review-card"+(data.pinned===true?" is-pinned":"");
       card.style.animationDelay=`${i*36}ms`;
       card.innerHTML=`
         <div class="avatar" style="background:${warna}">${avatarInner}</div>
         <div class="review-content">
           <div class="review-header">
             <div class="buyer-name-container">
+              ${data.pinned===true?`<span class="pin-badge">📌 Disematkan</span>`:""}
               <span class="buyer-name" style="${isReviewAdmin ? 'color: var(--accent);' : ''}">${escapeHtml(namaDisorok)}</span>
+              ${(rawBintang<0||rawBintang>5)?`<span style="background:linear-gradient(90deg,#f0a500,#e05252);color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.3px;">${rawBintang} Bintang</span>`:""}
               ${verifiedTag}
             </div>
             <div class="star-display">${starHtml}</div>
@@ -1378,7 +1483,11 @@
             <p class="admin-reply-text">${escapeHtml(data.balasanAdmin)}</p>
             <p class="admin-reply-time">${masaBalasan}</p>
           </div>`:""}
-          <button class="reply-toggle-btn">${adaBalasan?"✏️ Edit Balasan (Admin)":"↩ Balas (Admin)"}</button>
+          <div class="admin-reply-form-actions" style="margin-top:6px;">
+            <button class="reply-toggle-btn">${adaBalasan?"✏️ Edit Balasan (Admin)":"↩ Balas (Admin)"}</button>
+            <button class="btn-pin-ulasan${data.pinned===true?" is-active":""}">${data.pinned===true?"📌 Buang Pin (Admin)":"📌 Pin (Admin)"}</button>
+            <button class="btn-padam-ulasan" style="background:#fef0f0;color:#b83232;border:1px solid rgba(224,82,82,.28);border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;">🗑️ Padam (Admin)</button>
+          </div>
           <div class="admin-reply-form">
             <textarea maxlength="400" placeholder="Taip balasan rasmi H4SX STORE...">${adaBalasan?escapeHtml(data.balasanAdmin):""}</textarea>
             <div class="admin-reply-form-actions">
@@ -1394,9 +1503,48 @@
       const btnH=form.querySelector(".btn-hantar-balasan");
       const btnB=form.querySelector(".btn-batal-balasan");
       const toggleB=card.querySelector(".reply-toggle-btn");
+      const btnPadam=card.querySelector(".btn-padam-ulasan");
+      const btnPin=card.querySelector(".btn-pin-ulasan");
       toggleB.addEventListener("click",()=>{ if(!mintaAdmin())return; form.classList.toggle("show"); if(form.classList.contains("show"))ta.focus(); });
       btnB.addEventListener("click",()=>form.classList.remove("show"));
       btnH.addEventListener("click",()=>hantarBalasan(id,ta.value,btnH));
+      btnPin.addEventListener("click", async ()=>{
+        if(!mintaAdmin())return;
+        const nakPin = data.pinned!==true;
+        btnPin.disabled=true; btnPin.textContent = nakPin ? "Menyemat..." : "Membuang pin...";
+        try {
+          const payload = nakPin
+            ? { pinned:true, pinnedAt:serverTimestamp() }
+            : { pinned:false, pinnedAt:null };
+          // Rules 'update' anda wajibkan balasanAdmin sentiasa string sah (1-400 aksara).
+          // Kalau ulasan lama ni tak pernah dapat balasan lagi, isi dulu auto-reply
+          // supaya update pin ni tak ditolak oleh Firestore rules.
+          if (!data.balasanAdmin?.trim()) {
+            payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+            payload.balasanPada = serverTimestamp();
+          }
+          await updateDoc(doc(db,"ratings",id), payload);
+          showToast(nakPin ? "Ulasan berjaya disematkan. 📌" : "Pin dibuang.", "success");
+        } catch(err) {
+          console.error(err);
+          showToast("Gagal kemaskini pin.", "error");
+        } finally {
+          btnPin.disabled=false;
+        }
+      });
+      btnPadam.addEventListener("click", async ()=>{
+        if(!mintaAdmin())return;
+        if(!confirm(`Padam ulasan daripada "${rawNama}" ni? Tindakan ni tak boleh diundur.`)) return;
+        btnPadam.disabled=true; btnPadam.textContent="Memadam...";
+        try {
+          await deleteDoc(doc(db,"ratings",id));
+          showToast("Ulasan berjaya dipadam.", "success");
+        } catch(err) {
+          console.error(err);
+          showToast("Gagal padam ulasan.", "error");
+          btnPadam.disabled=false; btnPadam.textContent="🗑️ Padam (Admin)";
+        }
+      });
     });
   }
 
