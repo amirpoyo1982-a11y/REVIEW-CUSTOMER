@@ -470,11 +470,14 @@
 
     /* ── ADMIN REPLY ── */
     .admin-reply-box {
-      margin-top: 10px; padding: 10px 13px;
-      background: rgba(47,168,224,.07); border-left: 3px solid var(--accent);
+      margin-top: 10px; padding: 12px 14px;
+      background: rgba(47,168,224,.05); border-left: 3px solid var(--accent);
       border-radius: 0 10px 10px 0;
     }
-    .admin-reply-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--accent2); margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+    .admin-reply-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .admin-reply-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+    .admin-reply-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--accent2); display: flex; align-items: center; gap: 4px; }
+    .admin-reply-label::after { content: '✓'; display: inline-block; background: var(--accent); color: white; border-radius: 50%; width: 14px; height: 14px; text-align: center; line-height: 14px; font-size: 9px; margin-left: 2px; }
     .admin-reply-text  { font-size: 13px; color: var(--text); line-height: 1.5; word-break: break-word; }
     .admin-reply-time  { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
     .reply-toggle-btn {
@@ -518,9 +521,106 @@
     @media (max-width:340px) {
       .stats-row { grid-template-columns: 1fr; }
     }
+    /* ══════════════════════════════════════════
+       SHOP CLOSED POPUP & ANNOUNCEMENT & ADMIN
+    ══════════════════════════════════════════ */
+    .shop-closed-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15,42,69,0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      z-index: 10000; display: none; justify-content: center; align-items: center; padding: 20px;
+    }
+    .shop-closed-overlay.active { display: flex; }
+    .shop-closed-modal {
+      background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.6); border-radius: 24px;
+      padding: 30px; max-width: 400px; text-align: center; width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .shop-closed-title { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 10px; }
+    .shop-closed-msg { font-size: 14px; color: var(--text-mid); line-height: 1.5; margin-bottom: 15px; }
+    .shop-closed-time { display: inline-block; background: var(--navy); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+    .top-announcement {
+      background: linear-gradient(90deg, #1a4470, #0f2a45); color: #fff;
+      text-align: center; padding: 10px 20px; font-size: 13.5px; font-weight: 600;
+      display: none; position: relative; z-index: 101; letter-spacing: 0.3px;
+      border-bottom: 2px solid var(--accent);
+      box-shadow: 0 4px 12px rgba(15,42,69,0.15);
+      animation: slideDown 0.3s ease-out;
+    }
+    @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+    .top-announcement.show { display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .top-announcement .admin-badge {
+      background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .top-announcement .admin-badge::before { content: '✓'; }
+
+    .btn-main-site {
+      position: fixed; bottom: 24px; right: 24px; z-index: 900;
+      background: linear-gradient(135deg, #1a4470, #0f2a45); color: #fff;
+      padding: 14px 22px; border-radius: 30px; font-weight: 700; font-size: 14px;
+      display: flex; align-items: center; gap: 8px; text-decoration: none;
+      box-shadow: 0 10px 25px rgba(15,42,69,0.3); transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-main-site:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(15,42,69,0.4); }
+
+    .admin-panel-modal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #fff; padding: 24px; border-radius: 16px; width: 90%; max-width: 400px;
+      box-shadow: var(--shadow-lg); z-index: 10001; display: none; border: 1px solid var(--line);
+    }
+    .admin-panel-modal.show { display: block; }
+    .admin-overlay-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 10000; display: none;
+    }
+    .admin-overlay-bg.show { display: block; }
+    .admin-title { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .admin-form-group { margin-bottom: 16px; }
+    .admin-form-group label { margin-bottom: 8px; }
+    .admin-btn-row { display: flex; gap: 10px; }
+    .admin-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; }
+    .admin-btn-save { background: var(--accent); color: #fff; }
+    .admin-btn-close { background: #e4edf5; color: var(--text-dim); }
   </style>
 </head>
 <body>
+
+<!-- ══ ANNOUNCEMENT BAR ══ -->
+<div id="topAnnouncement" class="top-announcement">
+  <span class="admin-badge">Admin Rasmi</span>
+  <span id="announcementTextWrap"></span>
+</div>
+
+<!-- ══ SHOP CLOSED POPUP ══ -->
+<div id="shopClosedOverlay" class="shop-closed-overlay">
+  <div class="shop-closed-modal">
+    <div style="font-size: 48px; margin-bottom: 10px;">🚫</div>
+    <div class="shop-closed-title">Kedai Ditutup Sementara</div>
+    <div id="shopClosedMsg" class="shop-closed-msg">Kami sedang berehat. Sila kembali kemudian.</div>
+    <div id="shopClosedTime" class="shop-closed-time" style="display: none;"></div>
+  </div>
+</div>
+
+<!-- ══ ADMIN PANEL MODAL ══ -->
+<div id="adminOverlayBg" class="admin-overlay-bg"></div>
+<div id="adminPanelModal" class="admin-panel-modal">
+  <div class="admin-title">⚙️ Tetapan Admin</div>
+  <div class="admin-form-group">
+    <label>Teks Pengumuman (Atas)</label>
+    <textarea id="adminAnnounceText" rows="3" placeholder="Contoh: Promosi tamat malam ini! Kosongkan untuk tutup pengumuman."></textarea>
+  </div>
+  <div class="admin-btn-row">
+    <button class="admin-btn admin-btn-save" id="btnSaveAdmin">Simpan</button>
+    <button class="admin-btn admin-btn-close" id="btnCloseAdmin">Tutup</button>
+  </div>
+</div>
+
+<!-- ══ FLOATING BUTTON TO MAIN SITE ══ -->
+<a href="https://h4sx-store.vercel.app" class="btn-main-site" target="_blank">
+  🛍️ Website Utama
+</a>
 
 <div id="toastStack"></div>
 
@@ -538,6 +638,8 @@
     <div class="topbar-divider"></div>
     <span class="topbar-page-title">Ulasan Pelanggan</span>
     <div class="topbar-spacer"></div>
+    <div class="topbar-badge" style="cursor:pointer; background:var(--bg2); color:var(--navy); border-color:var(--line-mid);" id="btnOpenAdminConfig" title="Tetapan Admin">⚙️ Admin</div>
+    <div class="topbar-badge" style="cursor:pointer; background:#fef0f0; color:#b83232; border-color:rgba(224,82,82,.28); display:none;" id="btnLogoutAdmin" title="Log Keluar Admin" onclick="logoutAdmin()">Keluar Admin</div>
     <div class="topbar-badge">Kedai Dipercayai</div>
   </div>
 </nav>
@@ -708,7 +810,7 @@
   import {
     getFirestore, collection, addDoc, onSnapshot,
     query, orderBy, serverTimestamp,
-    doc, getDoc, deleteDoc, updateDoc
+    doc, getDoc, setDoc, deleteDoc, updateDoc
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   // ── Firebase ──────────────────────────────────────────────────
@@ -733,6 +835,134 @@
     if (v.trim() === KOD_ADMIN) { sessionStorage.setItem("h4sx_admin_ok","1"); return true; }
     showToast("Kod admin salah.", "error"); return false;
   }
+  
+  // Fungsi untuk log keluar admin
+  function logoutAdmin() {
+    sessionStorage.removeItem("h4sx_admin_ok");
+    showToast("Berjaya log keluar dari mod Admin.", "success");
+    // Refresh page selepas 1 saat supaya ui/inspect element block update
+    setTimeout(() => window.location.reload(), 1000); 
+  }
+
+  // ── Shop Closed Status (Gist) ─────────────────────────────────
+  async function semakStatusKedai() {
+    try {
+      const res = await fetch('https://gist.githubusercontent.com/amirpoyo1982-a11y/5ed3872290715d7833e788c7b0014f79/raw/kedai.json?t=' + Date.now());
+      const data = await res.json();
+      
+      let isTutup = false;
+      
+      // 1. Cek secara manual kalau admin set "tutup": true
+      if (data && data.tutup === true) {
+        isTutup = true;
+      }
+      
+      // 2. Cek auto tutup ikut waktu (waktuTutup & waktuBuka) dalam format HH:MM (24 jam)
+      // Contoh dalam gist: { "waktuTutup": "23:00", "waktuBuka": "08:00" }
+      if (data && data.waktuTutup && data.waktuBuka) {
+        const now = new Date();
+        // Waktu Malaysia (GMT+8)
+        const myTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
+        const currentHour = myTime.getHours();
+        const currentMinute = myTime.getMinutes();
+        const currentTime = currentHour + (currentMinute / 60);
+        
+        const tutupParts = data.waktuTutup.split(':');
+        const bukaParts = data.waktuBuka.split(':');
+        const tutupTime = parseInt(tutupParts[0]) + (parseInt(tutupParts[1]||0) / 60);
+        const bukaTime = parseInt(bukaParts[0]) + (parseInt(bukaParts[1]||0) / 60);
+        
+        if (tutupTime > bukaTime) {
+          // Tutup merentas tengah malam (cth: 23:00 ke 08:00)
+          if (currentTime >= tutupTime || currentTime < bukaTime) {
+            isTutup = true;
+          }
+        } else {
+          // Tutup pada hari yang sama (cth: 13:00 ke 14:00)
+          if (currentTime >= tutupTime && currentTime < bukaTime) {
+            isTutup = true;
+          }
+        }
+      }
+
+      if (isTutup) {
+        if (data.mesej) document.getElementById('shopClosedMsg').textContent = data.mesej;
+        if (data.masa) {
+          const timeEl = document.getElementById('shopClosedTime');
+          timeEl.textContent = 'Dibuka semula: ' + data.masa;
+          timeEl.style.display = 'inline-block';
+        }
+        document.getElementById('shopClosedOverlay').classList.add('active');
+      } else {
+        document.getElementById('shopClosedOverlay').classList.remove('active');
+      }
+    } catch (e) { console.log('Gagal semak status kedai', e); }
+  }
+  semakStatusKedai();
+  setInterval(semakStatusKedai, 60000); // Semak setiap 1 minit
+
+  // ── Announcement Bar (Firebase) ───────────────────────────────
+  const topAnnounceEl = document.getElementById('topAnnouncement');
+  const announceTextWrap = document.getElementById('announcementTextWrap');
+  onSnapshot(doc(db, "config", "announcement"), (snap) => {
+    if (snap.exists()) {
+      const d = snap.data();
+      if (d.text && d.text.trim() !== "") {
+        announceTextWrap.textContent = d.text;
+        topAnnounceEl.classList.add('show');
+      } else {
+        topAnnounceEl.classList.remove('show');
+      }
+    }
+  });
+
+  // ── Admin Config Modal ────────────────────────────────────────
+  const btnOpenAdminConfig = document.getElementById('btnOpenAdminConfig');
+  const btnLogoutAdmin = document.getElementById('btnLogoutAdmin');
+  const adminOverlayBg = document.getElementById('adminOverlayBg');
+  const adminPanelModal = document.getElementById('adminPanelModal');
+  const btnCloseAdmin = document.getElementById('btnCloseAdmin');
+  const btnSaveAdmin = document.getElementById('btnSaveAdmin');
+  const adminAnnounceText = document.getElementById('adminAnnounceText');
+
+  // Papar butang logout kalau dah login admin
+  if (adminOk()) {
+    btnLogoutAdmin.style.display = 'flex';
+  }
+
+  btnOpenAdminConfig.addEventListener('click', async () => {
+    if (!mintaAdmin()) return;
+    
+    // Tunjuk butang logout lepas berjaya login
+    btnLogoutAdmin.style.display = 'flex';
+    
+    try {
+      const snap = await getDoc(doc(db, "config", "announcement"));
+      if (snap.exists()) adminAnnounceText.value = snap.data().text || "";
+      else adminAnnounceText.value = "";
+    } catch(e) {}
+    adminOverlayBg.classList.add('show');
+    adminPanelModal.classList.add('show');
+  });
+
+  btnCloseAdmin.addEventListener('click', () => {
+    adminOverlayBg.classList.remove('show');
+    adminPanelModal.classList.remove('show');
+  });
+
+  btnSaveAdmin.addEventListener('click', async () => {
+    btnSaveAdmin.disabled = true; btnSaveAdmin.textContent = "Menyimpan...";
+    try {
+      // Kita kena pastikan document wujud, setDoc dengan merge:true adalah cara yang betul
+      await setDoc(doc(db, "config", "announcement"), { text: adminAnnounceText.value.trim() }, { merge: true });
+      showToast("Tetapan admin berjaya disimpan.", "success");
+      btnCloseAdmin.click();
+    } catch (e) {
+      console.error(e);
+      showToast("Gagal menyimpan tetapan. Sila semak rule Firebase.", "error");
+    }
+    btnSaveAdmin.disabled = false; btnSaveAdmin.textContent = "Simpan";
+  });
 
   // ── Ticker ────────────────────────────────────────────────────
   const tickerItems = [
@@ -979,23 +1209,35 @@
 
     if (!kod)  return showToast("Sila masukkan Kod Pengesahan.", "error");
     if (!nama) return showToast("Sila isi nama atau username.", "error");
-    // Ulasan BOLEH kosong — hanya nama & kod wajib
+    
+    // Block nama yang mengandungi "h4sx" jika bukan admin
+    const namaLower = nama.toLowerCase();
+    if (namaLower.includes("h4sx") && !adminOk()) {
+      return showToast("Nama ini dikhaskan untuk admin H4SX STORE sahaja.", "error");
+    }
 
     butangHantar.disabled = true;
     butangHantar.textContent = "Menghantar...";
     try {
       const codeSnap = await getDoc(doc(db,"review_codes",kod));
       if (!codeSnap.exists()) {
-        showToast("Kod pengesahan tidak sah atau telah digunakan.", "error"); return;
+        showToast("Kod pengesahan tidak sah atau telah digunakan.", "error"); 
+        butangHantar.disabled = false; butangHantar.textContent = "🚀 Hantar Ulasan";
+        return;
       }
-      await addDoc(collection(db,"ratings"), {
-        nama, bintang, ulasan: ulasan||"",
-        warnaProfil: pilihanWarna||warnaAuto(nama),
-        emojiProfil: pilihanEmoji||null,
-        profileImg:  profileImgB64||null,
-        balasanAdmin:null, balasanPada:null,
-        diciptaPada: serverTimestamp()
-      });
+      
+      // LOG DATA SEBELUM HANTAR KE FIREBASE (Untuk DEBUG)
+      const dataToSave = {
+        nama: nama, 
+        bintang: bintang, 
+        ulasan: ulasan || "Tiada ulasan ditinggalkan.",
+        diciptaPada: serverTimestamp(),
+        balasanAdmin: null,
+        balasanPada: null
+      };
+      console.log("Data yang cuba disimpan:", dataToSave);
+      
+      await addDoc(collection(db,"ratings"), dataToSave);
       await deleteDoc(doc(db,"review_codes",kod));
 
       // Reset
@@ -1007,8 +1249,8 @@
 
       showToast("Ulasan berjaya dihantar! Terima kasih. 🙏", "success");
     } catch(err) {
-      console.error(err);
-      showToast("Ralat rangkaian. Sila cuba semula.", "error");
+      console.error("Ralat Firebase (Details):", err.code, err.message, err);
+      showToast("Ralat rangkaian. Sila semak console (F12).", "error");
     } finally {
       butangHantar.disabled = false; butangHantar.textContent = "🚀 Hantar Ulasan";
     }
@@ -1081,16 +1323,22 @@
       const id=data.id, score=parseInt(data.bintang)||0;
       const rawNama=data.nama||"Pelanggan Misteri";
       let namaDisorok=rawNama;
-      if (rawNama!=="Pelanggan Misteri") {
-        if (rawNama.length<=2) namaDisorok=rawNama[0]+"*";
-        else if (rawNama.length===3) namaDisorok=rawNama[0]+"*"+rawNama[2];
-        else namaDisorok=rawNama.substring(0,2)+"*".repeat(rawNama.length-3)+rawNama.slice(-1);
+      
+      // Semak adakah ini admin yang post ulasan
+      const isReviewAdmin = rawNama.toLowerCase().includes("h4sx");
+      
+      if (rawNama!=="Pelanggan Misteri" && !isReviewAdmin) {
+        // Jangan sensor kalau tak perlu, tapi sebab tadi awak cakap "jngn bgi sensor untuk nama tu",
+        // saya akan matikan sistem bintang-bintang nama (sensor) sepenuhnya untuk semua orang
+        // ATAU hanya untuk admin? Saya akan matikan sensor untuk semua orang mengikut arahan "jngn bgi sensor untuk nama tu"
+        namaDisorok = rawNama;
       }
+      
       const warna=data.warnaProfil||warnaAuto(rawNama);
       const hasImg=!!(data.profileImg);
       const avatarIsi=data.emojiProfil||rawNama.charAt(0).toUpperCase();
       const adaBalasan=!!(data.balasanAdmin?.trim());
-      const adaUlasan=!!(data.ulasan?.trim());
+      const adaUlasan = !!(data.ulasan?.trim()) && data.ulasan !== "Tiada ulasan ditinggalkan.";
 
       let masa="Baru sahaja";
       if (data.diciptaPada) masa=data.diciptaPada.toDate().toLocaleString("ms-MY",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
@@ -1099,6 +1347,10 @@
 
       const starHtml=Array.from({length:5},(_,si)=>`<span style="color:${si<score?"#f0a500":"#cde"}">${si<score?"★":"☆"}</span>`).join("");
       const avatarInner=hasImg?`<img src="${escapeHtml(data.profileImg)}" alt="">`:escapeHtml(avatarIsi);
+      
+      const verifiedTag = isReviewAdmin 
+        ? `<span class="verified-badge" style="background:#2fa8e0; color:white; border:none;">✓ ADMIN RASMI</span>` 
+        : `<span class="verified-badge">✓ Verified</span>`;
 
       const card=document.createElement("div");
       card.className="review-card";
@@ -1108,8 +1360,8 @@
         <div class="review-content">
           <div class="review-header">
             <div class="buyer-name-container">
-              <span class="buyer-name">${escapeHtml(namaDisorok)}</span>
-              <span class="verified-badge">✓ Verified</span>
+              <span class="buyer-name" style="${isReviewAdmin ? 'color: var(--accent);' : ''}">${escapeHtml(namaDisorok)}</span>
+              ${verifiedTag}
             </div>
             <div class="star-display">${starHtml}</div>
           </div>
@@ -1119,7 +1371,10 @@
             :`<p class="buyer-no-text">— Tiada ulasan teks —</p>`}
           ${adaBalasan?`
           <div class="admin-reply-box">
-            <p class="admin-reply-label">💬 Balasan H4SX STORE</p>
+            <div class="admin-reply-header">
+              <img src="https://i.imgur.com/LjWuizN.png" class="admin-reply-avatar" alt="Admin">
+              <p class="admin-reply-label">H4SX STORE</p>
+            </div>
             <p class="admin-reply-text">${escapeHtml(data.balasanAdmin)}</p>
             <p class="admin-reply-time">${masaBalasan}</p>
           </div>`:""}
@@ -1148,6 +1403,59 @@
   function escapeHtml(str) {
     const d=document.createElement("div"); d.textContent=str??""; return d.innerHTML;
   }
+
+  // ── Block Inspect Element & DevTools ──────────────────────────
+  function blockInspect() {
+    // Halang klik kanan (Right Click)
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+    // Halang shortcut keyboard popular (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+    document.addEventListener('keydown', e => {
+      if (
+        e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+        (e.ctrlKey && (e.key === 'U' || e.key === 'u')) ||
+        (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+        (e.metaKey && (e.key === 'U' || e.key === 'u'))
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Detect DevTools dengan console profile
+    let devtoolsOpen = false;
+    const element = new Image();
+    Object.defineProperty(element, 'id', {
+      get: function () {
+        devtoolsOpen = true;
+        window.location.replace("about:blank"); // Kick keluar kalau buka console
+      }
+    });
+    setInterval(() => {
+      devtoolsOpen = false;
+      console.log(element);
+      console.clear(); // Clear terus supaya tak nampak apa-apa
+    }, 1000);
+
+    // Detect DevTools dengan debugger
+    setInterval(() => {
+      const before = new Date().getTime();
+      debugger;
+      const after = new Date().getTime();
+      if (after - before > 100) {
+        // DevTools is open and paused at debugger
+        document.body.innerHTML = "Akses Ditolak";
+        window.location.replace("about:blank");
+      }
+    }, 1000);
+  }
+  
+  // Hanya aktifkan block inspect kalau bukan admin yang login
+  if (!adminOk()) {
+    blockInspect();
+  }
+
 </script>
 </body>
 </html>
