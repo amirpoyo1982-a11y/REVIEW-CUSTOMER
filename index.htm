@@ -143,6 +143,17 @@
     }
     .hero-band h1 span { color: var(--accent); }
     .hero-sub { font-size: 13.5px; color: rgba(255,255,255,.65); font-weight: 500; }
+    .btn-scroll-reviews {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 16px; background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(4px);
+      color: #fff; font-size: 12.5px; font-weight: 700;
+      padding: 10px 18px; border-radius: 30px; cursor: pointer;
+      transition: background .15s, transform .15s;
+    }
+    .btn-scroll-reviews:hover { background: rgba(255,255,255,.2); transform: translateY(1px); }
+    .btn-scroll-reviews .arrow { transition: transform .2s; }
+    .btn-scroll-reviews:hover .arrow { transform: translateY(2px); }
 
     /* ══════════════════════════════════════════
        TOAST
@@ -462,6 +473,12 @@
     }
     .btn-pin-ulasan:hover { background: #ffedbb; }
     .btn-pin-ulasan.is-active { background: linear-gradient(90deg,#f0a500,#e0891a); color: #fff; border-color: transparent; }
+    .btn-badge-ulasan {
+      background: #eef2ff; color: #4550b8; border: 1px solid rgba(69,80,184,.28);
+      border-radius: 8px; padding: 6px 12px; font-size: 11.5px; font-weight: 700;
+      cursor: pointer; transition: background .12s;
+    }
+    .btn-badge-ulasan:hover { background: #e0e5ff; }
 
     .avatar {
       width: 42px; height: 42px; border-radius: 50%;
@@ -637,6 +654,28 @@
   </div>
 </div>
 
+<!-- ══ BADGE EDITOR MODAL (Admin) ══ -->
+<div id="badgeOverlayBg" class="admin-overlay-bg"></div>
+<div id="badgePanelModal" class="admin-panel-modal">
+  <div class="admin-title">🏷️ Custom Badge Ulasan</div>
+  <div class="admin-form-group">
+    <label>Teks Badge</label>
+    <input type="text" id="badgeTextInput" maxlength="24" placeholder="Cth: ADMIN RASMI, STAFF, PEMBELI VIP..." style="width:100%;padding:10px 12px;border:1.5px solid var(--line-mid);border-radius:8px;font-size:13px;font-family:inherit;">
+  </div>
+  <div class="admin-form-group">
+    <label>Warna Badge</label>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <input type="color" id="badgeColorInput" value="#2fa8e0" style="width:46px;height:38px;border:1.5px solid var(--line-mid);border-radius:8px;cursor:pointer;padding:2px;">
+      <span class="verified-badge" id="badgeLivePreview" style="background:#2fa8e0;color:#fff;border:none;">✓ Preview</span>
+    </div>
+  </div>
+  <div class="admin-btn-row">
+    <button class="admin-btn admin-btn-save" id="btnSaveBadge">Simpan</button>
+    <button class="admin-btn" id="btnRemoveBadge" style="background:#fef0f0;color:#b83232;">Buang Badge</button>
+    <button class="admin-btn admin-btn-close" id="btnCancelBadge">Batal</button>
+  </div>
+</div>
+
 <!-- ══ FLOATING BUTTON TO MAIN SITE ══ -->
 <a href="https://h4sx-store.vercel.app" class="btn-main-site" target="_blank">
   🛍️ Website Utama
@@ -670,6 +709,7 @@
     <div class="hero-eyebrow">⭐ Sistem Ulasan Rasmi</div>
     <h1>Ulasan &amp; Penarafan<br><span>Pelanggan H4SX</span></h1>
     <p class="hero-sub">Berkongsi pengalaman anda membantu pembeli lain membuat keputusan lebih baik</p>
+    <button class="btn-scroll-reviews" id="btnScrollUlasan">Lihat Ulasan Pelanggan <span class="arrow">↓</span></button>
   </div>
 </div>
 
@@ -845,14 +885,23 @@
   });
   const db = getFirestore(app);
 
+  // ── Butang scroll terus ke bahagian ulasan ──────────────────────
+  document.getElementById('btnScrollUlasan')?.addEventListener('click', () => {
+    const sasaran = document.querySelector('.reviews-col-title') || document.getElementById('kotakPaparan');
+    sasaran?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
   // ── Admin gate ────────────────────────────────────────────────
-  const KOD_ADMIN = "hasnainpizi"; // TUKAR sebelum guna!
-  const adminOk   = () => sessionStorage.getItem("h4sx_admin_ok") === "1";
+  const KOD_ADMIN = "H4SXADMIN2026"; // TUKAR sebelum guna!
+  // Sesi admin disimpan bersama PIN semasa (bukan flag "1" je).
+  // Jadi kalau KOD_ADMIN ditukar dalam kod ni, sesi lama (PIN lama)
+  // automatik terbatal — sesiapa yang dah login kena login semula.
+  const adminOk   = () => sessionStorage.getItem("h4sx_admin_ok") === KOD_ADMIN;
   function mintaAdmin() {
     if (adminOk()) return true;
     const v = prompt("Masukkan Kod Admin:");
     if (!v) return false;
-    if (v.trim() === KOD_ADMIN) { sessionStorage.setItem("h4sx_admin_ok","1"); return true; }
+    if (v.trim() === KOD_ADMIN) { sessionStorage.setItem("h4sx_admin_ok", KOD_ADMIN); return true; }
     showToast("Kod admin salah.", "error"); return false;
   }
   
@@ -955,6 +1004,69 @@
     }
   });
 
+  // ── Custom Badge Editor (Admin) ─────────────────────────────────
+  const badgeOverlayBg    = document.getElementById('badgeOverlayBg');
+  const badgePanelModal   = document.getElementById('badgePanelModal');
+  const badgeTextInput    = document.getElementById('badgeTextInput');
+  const badgeColorInput   = document.getElementById('badgeColorInput');
+  const badgeLivePreview  = document.getElementById('badgeLivePreview');
+  const btnSaveBadge      = document.getElementById('btnSaveBadge');
+  const btnRemoveBadge    = document.getElementById('btnRemoveBadge');
+  const btnCancelBadge    = document.getElementById('btnCancelBadge');
+  let editingBadgeId = null;
+
+  function bukaBadgeModal(id, teksSedia, warnaSedia) {
+    editingBadgeId = id;
+    badgeTextInput.value = teksSedia || "";
+    badgeColorInput.value = warnaSedia || "#2fa8e0";
+    kemaskiniBadgePreview();
+    badgeOverlayBg.classList.add('show');
+    badgePanelModal.classList.add('show');
+    badgeTextInput.focus();
+  }
+  function tutupBadgeModal() {
+    badgeOverlayBg.classList.remove('show');
+    badgePanelModal.classList.remove('show');
+    editingBadgeId = null;
+  }
+  function kemaskiniBadgePreview() {
+    const teks = badgeTextInput.value.trim() || "Preview";
+    badgeLivePreview.textContent = "✓ " + teks;
+    badgeLivePreview.style.background = badgeColorInput.value;
+  }
+  badgeTextInput.addEventListener('input', kemaskiniBadgePreview);
+  badgeColorInput.addEventListener('input', kemaskiniBadgePreview);
+  badgeOverlayBg.addEventListener('click', tutupBadgeModal);
+  btnCancelBadge.addEventListener('click', tutupBadgeModal);
+
+  async function simpanBadgePayload(payload, mesejBerjaya, dataDoc) {
+    if (!editingBadgeId) return;
+    try {
+      // Rules 'update' wajibkan balasanAdmin sentiasa string sah — isi auto-reply
+      // dulu kalau ulasan ni belum pernah dapat balasan.
+      if (!dataDoc.balasanAdmin?.trim()) {
+        payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+        payload.balasanPada = serverTimestamp();
+      }
+      await updateDoc(doc(db,"ratings",editingBadgeId), payload);
+      showToast(mesejBerjaya, "success");
+      tutupBadgeModal();
+    } catch(err) {
+      console.error(err);
+      showToast("Gagal kemaskini badge.", "error");
+    }
+  }
+  btnSaveBadge.addEventListener('click', () => {
+    const teks = badgeTextInput.value.trim();
+    if (!teks) { showToast("Taip teks badge dulu, atau guna 'Buang Badge'.", "error"); return; }
+    const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
+    simpanBadgePayload({ badgeText: teks, badgeColor: badgeColorInput.value }, "Badge berjaya disimpan! 🏷️", dataDoc);
+  });
+  btnRemoveBadge.addEventListener('click', () => {
+    const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
+    simpanBadgePayload({ badgeText: null, badgeColor: null }, "Badge dibuang, kembali ke default.", dataDoc);
+  });
+
   // ── Admin Config Modal ────────────────────────────────────────
   const btnOpenAdminConfig = document.getElementById('btnOpenAdminConfig');
   const btnLogoutAdmin = document.getElementById('btnLogoutAdmin');
@@ -974,6 +1086,8 @@
     
     // Tunjuk butang logout lepas berjaya login
     btnLogoutAdmin.style.display = 'flex';
+    // Tunjuk balik butang admin (balas/pin/padam) kat setiap kad ulasan serta-merta
+    renderReviews();
     
     try {
       const snap = await getDoc(doc(db, "config", "announcement"));
@@ -1451,9 +1565,11 @@
       const starHtml=Array.from({length:5},(_,si)=>`<span style="color:${si<score?"#f0a500":"#cde"}">${si<score?"★":"☆"}</span>`).join("");
       const avatarInner=hasImg?`<img src="${escapeHtml(data.profileImg)}" alt="">`:escapeHtml(avatarIsi);
       
-      const verifiedTag = isReviewAdmin 
-        ? `<span class="verified-badge" style="background:#2fa8e0; color:white; border:none;">✓ ADMIN RASMI</span>` 
-        : `<span class="verified-badge">✓ Verified</span>`;
+      const verifiedTag = data.badgeText?.trim()
+        ? `<span class="verified-badge" style="background:${escapeHtml(data.badgeColor||"#2fa8e0")}; color:#fff; border:none;">✓ ${escapeHtml(data.badgeText)}</span>`
+        : isReviewAdmin 
+          ? `<span class="verified-badge" style="background:#2fa8e0; color:white; border:none;">✓ ADMIN RASMI</span>` 
+          : `<span class="verified-badge">✓ Verified</span>`;
 
       const card=document.createElement("div");
       card.className="review-card"+(data.pinned===true?" is-pinned":"");
@@ -1483,9 +1599,10 @@
             <p class="admin-reply-text">${escapeHtml(data.balasanAdmin)}</p>
             <p class="admin-reply-time">${masaBalasan}</p>
           </div>`:""}
-          <div class="admin-reply-form-actions" style="margin-top:6px;">
+          <div class="admin-reply-form-actions" style="margin-top:6px;${adminOk()?"":"display:none;"}" data-admin-ctrl-row>
             <button class="reply-toggle-btn">${adaBalasan?"✏️ Edit Balasan (Admin)":"↩ Balas (Admin)"}</button>
             <button class="btn-pin-ulasan${data.pinned===true?" is-active":""}">${data.pinned===true?"📌 Buang Pin (Admin)":"📌 Pin (Admin)"}</button>
+            <button class="btn-badge-ulasan">🏷️ Badge (Admin)</button>
             <button class="btn-padam-ulasan" style="background:#fef0f0;color:#b83232;border:1px solid rgba(224,82,82,.28);border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;">🗑️ Padam (Admin)</button>
           </div>
           <div class="admin-reply-form">
@@ -1505,9 +1622,14 @@
       const toggleB=card.querySelector(".reply-toggle-btn");
       const btnPadam=card.querySelector(".btn-padam-ulasan");
       const btnPin=card.querySelector(".btn-pin-ulasan");
+      const btnBadge=card.querySelector(".btn-badge-ulasan");
       toggleB.addEventListener("click",()=>{ if(!mintaAdmin())return; form.classList.toggle("show"); if(form.classList.contains("show"))ta.focus(); });
       btnB.addEventListener("click",()=>form.classList.remove("show"));
       btnH.addEventListener("click",()=>hantarBalasan(id,ta.value,btnH));
+      btnBadge.addEventListener("click", ()=>{
+        if(!mintaAdmin())return;
+        bukaBadgeModal(id, data.badgeText, data.badgeColor);
+      });
       btnPin.addEventListener("click", async ()=>{
         if(!mintaAdmin())return;
         const nakPin = data.pinned!==true;
