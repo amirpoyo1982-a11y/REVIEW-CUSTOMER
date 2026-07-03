@@ -861,6 +861,9 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
         ulasan: ulasan || "Tiada ulasan ditinggalkan.",
         diciptaPada: serverTimestamp()
       };
+      if (pilihanWarna) dataToSave.warnaProfil = pilihanWarna;
+      if (pilihanEmoji) dataToSave.emojiProfil = pilihanEmoji;
+      if (profileImgB64) dataToSave.profileImg = profileImgB64;
       if (feedbackImgB64) dataToSave.feedbackImg = feedbackImgB64;
       console.log("Data yang cuba disimpan:", dataToSave);
       
