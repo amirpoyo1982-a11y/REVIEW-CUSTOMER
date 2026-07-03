@@ -989,7 +989,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
           <button class="admin-reply-view-toggle" type="button" aria-expanded="false">Balasan admin ↓</button>
           <div class="admin-reply-box">
             <div class="admin-reply-header">
-              <img src="https://i.imgur.com/85rrjiC.png" class="admin-reply-avatar" alt="Admin">
+              <img src="https://i.imgur.com/cLPulXQ.png" class="admin-reply-avatar" alt="Admin">
               <p class="admin-reply-label">H4SX STORE</p>
             </div>
             <p class="admin-reply-text">${escapeHtml(data.balasanAdmin)}</p>
@@ -1157,7 +1157,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       board.className = "ss-capture-board";
       board.innerHTML = `
         <div class="ss-board-head">
-          <img src="https://i.imgur.com/85rrjiC.png alt="H4SX">
+          <img src="https://i.imgur.com/cLPulXQ.png" alt="H4SX">
           <div>
             <div class="ss-board-title">H4SX STORE Reviews</div>
             <div class="ss-board-sub">Feedback pelanggan terkini</div>
