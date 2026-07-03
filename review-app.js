@@ -84,6 +84,10 @@
   function flagOff(value) {
     return value === false || String(value).toLowerCase() === "false" || String(value).toLowerCase() === "close" || String(value).toLowerCase() === "off";
   }
+  function isPreviewBypass() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("preview") === "1" || params.get("preview") === "true";
+  }
 
   function semakDalamWaktu(bukaJam, tutupJam) {
     if (!bukaJam || !tutupJam) return true; // takde had waktu = anggap buka
@@ -118,6 +122,10 @@
   }
 
   async function semakStatusKedai() {
+    if (isPreviewBypass()) {
+      document.getElementById('shopClosedOverlay').classList.remove('active');
+      return;
+    }
     try {
       const res = await fetch(KEDAI_GIST_URL + '?t=' + Date.now(), { cache: "no-store" });
       const data = await res.json();
