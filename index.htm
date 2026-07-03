@@ -17,6 +17,7 @@
     })();
   </script>
   <link rel="stylesheet" href="review-style.css">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -302,7 +303,10 @@
 
       <!-- ════ REVIEWS COLUMN ════ -->
       <div class="reviews-col">
-        <p class="reviews-col-title">💬 Ulasan Terkini</p>
+        <div class="reviews-col-head">
+          <p class="reviews-col-title">💬 Ulasan Terkini</p>
+          <button class="btn-review-ss" id="btnReviewScreenshot" type="button">SS Review</button>
+        </div>
 
         <div class="filter-bar">
           <button class="filter-btn active" data-filter="all">Semua</button>

@@ -428,6 +428,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const emojiRow        = document.getElementById("emojiRow");
   const charCounter     = document.getElementById("charCounter");
   const sortSelect      = document.getElementById("sortSelect");
+  const btnReviewScreenshot = document.getElementById("btnReviewScreenshot");
   const fileInput       = document.getElementById("fileInput");
   const dropZone        = document.getElementById("dropZone");
   const urlGambar       = document.getElementById("urlGambar");
@@ -856,7 +857,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   });
 
   // ── Render ────────────────────────────────────────────────────
-  function renderReviews() {
+  function getCurrentReviewList() {
     let list=[...allDocs];
     if (filterStar!=="all") {
       list = filterStar==="12" ? list.filter(d=>clampBintang(d.bintang)<=2) : list.filter(d=>clampBintang(d.bintang)===parseInt(filterStar));
@@ -870,6 +871,11 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       .sort((a,b)=>(b.pinnedAt?.toMillis?.()||0)-(a.pinnedAt?.toMillis?.()||0));
     const takDipin = list.filter(d=>d.pinned!==true);
     list = [...dipin, ...takDipin];
+    return list;
+  }
+
+  function renderReviews() {
+    const list = getCurrentReviewList();
 
     kotakPaparan.innerHTML="";
     if (!list.length) {
@@ -937,6 +943,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
             :`<p class="buyer-no-text">— Tiada ulasan teks —</p>`}
           ${adaFeedbackImg?`<button class="btn-see-feedback" type="button">See image</button>`:""}
           ${adaBalasan?`
+          <button class="admin-reply-view-toggle" type="button" aria-expanded="false">Balasan admin ↓</button>
           <div class="admin-reply-box">
             <div class="admin-reply-header">
               <img src="https://i.imgur.com/LjWuizN.png" class="admin-reply-avatar" alt="Admin">
@@ -970,7 +977,16 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       const btnPin=card.querySelector(".btn-pin-ulasan");
       const btnBadge=card.querySelector(".btn-badge-ulasan");
       const btnSeeFeedback=card.querySelector(".btn-see-feedback");
+      const btnReplyView=card.querySelector(".admin-reply-view-toggle");
       if (btnSeeFeedback) btnSeeFeedback.addEventListener("click", () => openFeedbackImage(data.feedbackImg));
+      if (btnReplyView) {
+        const replyBox = card.querySelector(".admin-reply-box");
+        btnReplyView.addEventListener("click", () => {
+          const open = replyBox.classList.toggle("show");
+          btnReplyView.setAttribute("aria-expanded", open ? "true" : "false");
+          btnReplyView.textContent = open ? "Tutup balasan ↑" : "Balasan admin ↓";
+        });
+      }
       toggleB.addEventListener("click",()=>{ if(!mintaAdmin())return; form.classList.toggle("show"); if(form.classList.contains("show"))ta.focus(); });
       btnB.addEventListener("click",()=>form.classList.remove("show"));
       btnH.addEventListener("click",()=>hantarBalasan(id,ta.value,btnH));
@@ -1017,6 +1033,94 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       });
     });
   }
+
+  function reviewDateText(data) {
+    if (!data.diciptaPada) return "Baru sahaja";
+    try {
+      return data.diciptaPada.toDate().toLocaleDateString("ms-MY", { day:"numeric", month:"short", year:"numeric" });
+    } catch(e) {
+      return "Baru sahaja";
+    }
+  }
+  function makeScreenshotReviewCard(data) {
+    const rawNama = data.nama || "Pelanggan Misteri";
+    const score = clampBintang(data.bintang);
+    const warna = data.warnaProfil || warnaAuto(rawNama);
+    const avatarIsi = data.emojiProfil || rawNama.charAt(0).toUpperCase();
+    const avatar = data.profileImg ? `<img src="${escapeHtml(data.profileImg)}" alt="">` : escapeHtml(avatarIsi);
+    const stars = "★".repeat(score) + "☆".repeat(5-score);
+    const text = data.ulasan && data.ulasan !== "Tiada ulasan ditinggalkan."
+      ? data.ulasan
+      : "Rating sahaja, tiada ulasan teks.";
+    const badge = data.badgeText?.trim() ? data.badgeText : "Verified";
+    const replied = !!(data.balasanAdmin?.trim());
+    const cleanText = text.length > 150 ? text.slice(0, 150).trim() + "..." : text;
+    return `
+      <div class="ss-review-card">
+        <div class="ss-review-top">
+          <div class="ss-avatar" style="background:${warna}">${avatar}</div>
+          <div class="ss-review-meta">
+            <div class="ss-review-name">${escapeHtml(rawNama)}</div>
+            <div class="ss-review-date">${reviewDateText(data)}</div>
+          </div>
+          <span class="ss-badge">${escapeHtml(badge)}</span>
+        </div>
+        <div class="ss-stars">${stars}</div>
+        <div class="ss-review-text">${escapeHtml(cleanText)}</div>
+        ${replied ? `<div class="ss-admin-responded">Admin responded</div>` : ""}
+      </div>`;
+  }
+  async function downloadReviewScreenshot() {
+    if (!window.html2canvas) {
+      showToast("Library screenshot belum siap dimuat. Cuba tekan sekali lagi.", "error");
+      return;
+    }
+    const list = getCurrentReviewList().slice(0, 6);
+    if (!list.length) {
+      showToast("Tiada review untuk screenshot.", "error");
+      return;
+    }
+    btnReviewScreenshot.disabled = true;
+    btnReviewScreenshot.textContent = "Membuat...";
+    try {
+      const board = document.createElement("div");
+      board.className = "ss-capture-board";
+      board.innerHTML = `
+        <div class="ss-board-head">
+          <img src="https://i.imgur.com/LjWuizN.png" alt="H4SX">
+          <div>
+            <div class="ss-board-title">H4SX STORE Reviews</div>
+            <div class="ss-board-sub">Feedback pelanggan terkini</div>
+          </div>
+          <div class="ss-board-stats">
+            <strong>${escapeHtml(purataSkor.textContent || "0.0")}</strong>
+            <span>${escapeHtml(jumlahUlasanVal.textContent || "0")} ulasan</span>
+          </div>
+        </div>
+        <div class="ss-review-grid">${list.map(makeScreenshotReviewCard).join("")}</div>
+        <div class="ss-board-foot">h4sx-store.vercel.app</div>`;
+      document.body.appendChild(board);
+      const canvas = await html2canvas(board, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+      board.remove();
+      const a = document.createElement("a");
+      a.download = `h4sx-reviews-${Date.now()}.png`;
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+      showToast("Screenshot review siap dimuat turun.", "success");
+    } catch(e) {
+      console.error(e);
+      showToast("Gagal buat screenshot review.", "error");
+    } finally {
+      btnReviewScreenshot.disabled = false;
+      btnReviewScreenshot.textContent = "SS Review";
+    }
+  }
+  btnReviewScreenshot.addEventListener("click", downloadReviewScreenshot);
 
   function escapeHtml(str) {
     const d=document.createElement("div"); d.textContent=str??""; return d.innerHTML;
