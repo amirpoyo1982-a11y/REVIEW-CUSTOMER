@@ -499,6 +499,52 @@
       font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
       display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
     }
+    .verified-badge.custom-badge {
+      position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,.42) !important;
+      box-shadow: 0 4px 14px -8px rgba(15,42,69,.55), inset 0 1px 0 rgba(255,255,255,.24);
+      text-shadow: 0 1px 2px rgba(15,42,69,.18);
+    }
+    .verified-badge.custom-badge::after {
+      content: ''; position: absolute; inset: -40% -80%; pointer-events: none;
+      background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.42) 50%, transparent 62%);
+      transform: translateX(-65%); opacity: .72;
+    }
+    .verified-badge.custom-badge.is-animated {
+      background-size: 230% 230% !important;
+      animation: badgeGradientMove 3.6s linear infinite;
+    }
+    .verified-badge.custom-badge.is-animated::after { animation: badgeShine 2.4s ease-in-out infinite; }
+    @keyframes badgeGradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes badgeShine { 0%, 18% { transform: translateX(-75%); } 52%, 100% { transform: translateX(75%); } }
+
+    .badge-designer {
+      display: grid; gap: 12px; padding: 12px; background: linear-gradient(180deg,#f8fbff,#eef6fd);
+      border: 1px solid var(--line-mid); border-radius: 12px;
+    }
+    .badge-color-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+    .badge-color-field { display: grid; gap: 6px; }
+    .badge-color-field label { margin: 0; }
+    .badge-color-field input[type="color"] {
+      width: 100%; height: 40px; border: 1.5px solid var(--line-mid); border-radius: 9px;
+      cursor: pointer; padding: 2px; background: #fff;
+    }
+    .badge-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .badge-toggle-row label { margin: 0; }
+    .badge-switch {
+      display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 999px;
+      background: #fff; border: 1px solid var(--line-mid); color: var(--text-mid);
+      font-size: 12px; font-weight: 800; cursor: pointer; user-select: none;
+    }
+    .badge-switch input { accent-color: var(--accent); }
+    .badge-preview-shell {
+      display: flex; align-items: center; justify-content: center; min-height: 48px;
+      border-radius: 12px; background: rgba(255,255,255,.72); border: 1px dashed var(--line-mid);
+    }
+    @media (max-width:480px) { .badge-color-grid { grid-template-columns: 1fr; } }
     .star-display { display: flex; gap: 2px; }
     .buyer-time { font-size: 11px; color: var(--text-dim); margin: 3px 0 7px; display: flex; align-items: center; gap: 5px; }
     .buyer-time::before { content:'🕐'; font-size: 10px; }
@@ -657,16 +703,37 @@
 <!-- ══ BADGE EDITOR MODAL (Admin) ══ -->
 <div id="badgeOverlayBg" class="admin-overlay-bg"></div>
 <div id="badgePanelModal" class="admin-panel-modal">
-  <div class="admin-title">🏷️ Custom Badge Ulasan</div>
+  <div class="admin-title">Role / Badge Designer</div>
   <div class="admin-form-group">
     <label>Teks Badge</label>
     <input type="text" id="badgeTextInput" maxlength="24" placeholder="Cth: ADMIN RASMI, STAFF, PEMBELI VIP..." style="width:100%;padding:10px 12px;border:1.5px solid var(--line-mid);border-radius:8px;font-size:13px;font-family:inherit;">
   </div>
-  <div class="admin-form-group">
-    <label>Warna Badge</label>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <input type="color" id="badgeColorInput" value="#2fa8e0" style="width:46px;height:38px;border:1.5px solid var(--line-mid);border-radius:8px;cursor:pointer;padding:2px;">
-      <span class="verified-badge" id="badgeLivePreview" style="background:#2fa8e0;color:#fff;border:none;">✓ Preview</span>
+  <div class="admin-form-group badge-designer">
+    <div class="badge-color-grid">
+      <div class="badge-color-field">
+        <label>Warna 1</label>
+        <input type="color" id="badgeColorInput" value="#2fa8e0">
+      </div>
+      <div class="badge-color-field">
+        <label>Warna 2 Gradient</label>
+        <input type="color" id="badgeColorInput2" value="#7c3aed">
+      </div>
+      <div class="badge-color-field">
+        <label>Warna Text</label>
+        <input type="color" id="badgeTextColorInput" value="#ffffff">
+      </div>
+      <div class="badge-color-field">
+        <label>Border Glow</label>
+        <input type="color" id="badgeGlowColorInput" value="#2fa8e0">
+      </div>
+    </div>
+    <div class="badge-toggle-row">
+      <label>Effect Badge</label>
+      <span class="badge-switch"><input type="checkbox" id="badgeGradientToggle" checked> Gradient combo</span>
+      <span class="badge-switch"><input type="checkbox" id="badgeAnimatedToggle" checked> Warna bergerak</span>
+    </div>
+    <div class="badge-preview-shell">
+      <span class="verified-badge custom-badge" id="badgeLivePreview">Preview</span>
     </div>
   </div>
   <div class="admin-btn-row">
@@ -675,7 +742,6 @@
     <button class="admin-btn admin-btn-close" id="btnCancelBadge">Batal</button>
   </div>
 </div>
-
 <!-- ══ FLOATING BUTTON TO MAIN SITE ══ -->
 <a href="https://h4sx-store.vercel.app" class="btn-main-site" target="_blank">
   🛍️ Website Utama
@@ -1004,21 +1070,43 @@
     }
   });
 
-  // ── Custom Badge Editor (Admin) ─────────────────────────────────
-  const badgeOverlayBg    = document.getElementById('badgeOverlayBg');
-  const badgePanelModal   = document.getElementById('badgePanelModal');
-  const badgeTextInput    = document.getElementById('badgeTextInput');
-  const badgeColorInput   = document.getElementById('badgeColorInput');
-  const badgeLivePreview  = document.getElementById('badgeLivePreview');
-  const btnSaveBadge      = document.getElementById('btnSaveBadge');
-  const btnRemoveBadge    = document.getElementById('btnRemoveBadge');
-  const btnCancelBadge    = document.getElementById('btnCancelBadge');
+  // -- Custom Badge Editor (Admin) ---------------------------------
+  const badgeOverlayBg       = document.getElementById('badgeOverlayBg');
+  const badgePanelModal      = document.getElementById('badgePanelModal');
+  const badgeTextInput       = document.getElementById('badgeTextInput');
+  const badgeColorInput      = document.getElementById('badgeColorInput');
+  const badgeColorInput2     = document.getElementById('badgeColorInput2');
+  const badgeTextColorInput  = document.getElementById('badgeTextColorInput');
+  const badgeGlowColorInput  = document.getElementById('badgeGlowColorInput');
+  const badgeGradientToggle  = document.getElementById('badgeGradientToggle');
+  const badgeAnimatedToggle  = document.getElementById('badgeAnimatedToggle');
+  const badgeLivePreview     = document.getElementById('badgeLivePreview');
+  const btnSaveBadge         = document.getElementById('btnSaveBadge');
+  const btnRemoveBadge       = document.getElementById('btnRemoveBadge');
+  const btnCancelBadge       = document.getElementById('btnCancelBadge');
   let editingBadgeId = null;
 
-  function bukaBadgeModal(id, teksSedia, warnaSedia) {
+  function warnaHexSah(nilai, fallback) {
+    return /^#[0-9a-f]{6}$/i.test(nilai || '') ? nilai : fallback;
+  }
+  function badgeStyle(data = {}) {
+    const c1 = warnaHexSah(data.badgeColor, '#2fa8e0');
+    const c2 = warnaHexSah(data.badgeColor2, '#7c3aed');
+    const text = warnaHexSah(data.badgeTextColor, '#ffffff');
+    const glow = warnaHexSah(data.badgeGlowColor, c1);
+    const gradient = data.badgeGradient !== false;
+    const bg = gradient ? `linear-gradient(120deg, ${c1}, ${c2}, ${c1})` : c1;
+    return `background:${bg}; color:${text}; --badge-glow:${glow}; box-shadow:0 4px 16px -8px ${glow}, inset 0 1px 0 rgba(255,255,255,.26); border:none;`;
+  }
+  function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia) {
     editingBadgeId = id;
-    badgeTextInput.value = teksSedia || "";
-    badgeColorInput.value = warnaSedia || "#2fa8e0";
+    badgeTextInput.value = teksSedia || '';
+    badgeColorInput.value = warnaHexSah(warnaSedia, '#2fa8e0');
+    badgeColorInput2.value = warnaHexSah(warnaKeduaSedia, '#7c3aed');
+    badgeTextColorInput.value = warnaHexSah(warnaTextSedia, '#ffffff');
+    badgeGlowColorInput.value = warnaHexSah(glowSedia, warnaHexSah(warnaSedia, '#2fa8e0'));
+    badgeGradientToggle.checked = gradientSedia !== false;
+    badgeAnimatedToggle.checked = animasiSedia !== false;
     kemaskiniBadgePreview();
     badgeOverlayBg.classList.add('show');
     badgePanelModal.classList.add('show');
@@ -1030,19 +1118,26 @@
     editingBadgeId = null;
   }
   function kemaskiniBadgePreview() {
-    const teks = badgeTextInput.value.trim() || "Preview";
-    badgeLivePreview.textContent = "✓ " + teks;
-    badgeLivePreview.style.background = badgeColorInput.value;
+    const teks = badgeTextInput.value.trim() || 'Preview';
+    badgeLivePreview.textContent = teks;
+    badgeLivePreview.className = 'verified-badge custom-badge' + (badgeAnimatedToggle.checked ? ' is-animated' : '');
+    badgeLivePreview.style.cssText = badgeStyle({
+      badgeColor: badgeColorInput.value,
+      badgeColor2: badgeColorInput2.value,
+      badgeTextColor: badgeTextColorInput.value,
+      badgeGlowColor: badgeGlowColorInput.value,
+      badgeGradient: badgeGradientToggle.checked
+    });
   }
-  badgeTextInput.addEventListener('input', kemaskiniBadgePreview);
-  badgeColorInput.addEventListener('input', kemaskiniBadgePreview);
+  [badgeTextInput, badgeColorInput, badgeColorInput2, badgeTextColorInput, badgeGlowColorInput, badgeGradientToggle, badgeAnimatedToggle]
+    .forEach(el => el.addEventListener('input', kemaskiniBadgePreview));
   badgeOverlayBg.addEventListener('click', tutupBadgeModal);
   btnCancelBadge.addEventListener('click', tutupBadgeModal);
 
   async function simpanBadgePayload(payload, mesejBerjaya, dataDoc) {
     if (!editingBadgeId) return;
     try {
-      // Rules 'update' wajibkan balasanAdmin sentiasa string sah — isi auto-reply
+      // Rules 'update' wajibkan balasanAdmin sentiasa string sah - isi auto-reply
       // dulu kalau ulasan ni belum pernah dapat balasan.
       if (!dataDoc.balasanAdmin?.trim()) {
         payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
@@ -1060,14 +1155,30 @@
     const teks = badgeTextInput.value.trim();
     if (!teks) { showToast("Taip teks badge dulu, atau guna 'Buang Badge'.", "error"); return; }
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
-    simpanBadgePayload({ badgeText: teks, badgeColor: badgeColorInput.value }, "Badge berjaya disimpan! 🏷️", dataDoc);
+    simpanBadgePayload({
+      badgeText: teks,
+      badgeColor: badgeColorInput.value,
+      badgeColor2: badgeColorInput2.value,
+      badgeTextColor: badgeTextColorInput.value,
+      badgeGlowColor: badgeGlowColorInput.value,
+      badgeGradient: badgeGradientToggle.checked,
+      badgeAnimated: badgeAnimatedToggle.checked
+    }, "Badge berjaya disimpan!", dataDoc);
   });
   btnRemoveBadge.addEventListener('click', () => {
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
-    simpanBadgePayload({ badgeText: null, badgeColor: null }, "Badge dibuang, kembali ke default.", dataDoc);
+    simpanBadgePayload({
+      badgeText: null,
+      badgeColor: null,
+      badgeColor2: null,
+      badgeTextColor: null,
+      badgeGlowColor: null,
+      badgeGradient: null,
+      badgeAnimated: null
+    }, "Badge dibuang, kembali ke default.", dataDoc);
   });
 
-  // ── Admin Config Modal ────────────────────────────────────────
+  // -- Admin Config Modal ────────────────────────────────────────
   const btnOpenAdminConfig = document.getElementById('btnOpenAdminConfig');
   const btnLogoutAdmin = document.getElementById('btnLogoutAdmin');
   const adminOverlayBg = document.getElementById('adminOverlayBg');
@@ -1565,11 +1676,13 @@
       const starHtml=Array.from({length:5},(_,si)=>`<span style="color:${si<score?"#f0a500":"#cde"}">${si<score?"★":"☆"}</span>`).join("");
       const avatarInner=hasImg?`<img src="${escapeHtml(data.profileImg)}" alt="">`:escapeHtml(avatarIsi);
       
+      const customBadgeStyle = badgeStyle(data);
+      const customBadgeClass = "verified-badge custom-badge" + (data.badgeAnimated === false ? "" : " is-animated");
       const verifiedTag = data.badgeText?.trim()
-        ? `<span class="verified-badge" style="background:${escapeHtml(data.badgeColor||"#2fa8e0")}; color:#fff; border:none;">✓ ${escapeHtml(data.badgeText)}</span>`
+        ? `<span class="${customBadgeClass}" style="${customBadgeStyle}">${escapeHtml(data.badgeText)}</span>`
         : isReviewAdmin 
-          ? `<span class="verified-badge" style="background:#2fa8e0; color:white; border:none;">✓ ADMIN RASMI</span>` 
-          : `<span class="verified-badge">✓ Verified</span>`;
+          ? `<span class="verified-badge custom-badge is-animated" style="${badgeStyle({ badgeColor:'#2fa8e0', badgeColor2:'#0f2a45', badgeTextColor:'#ffffff', badgeGlowColor:'#2fa8e0', badgeGradient:true })}">ADMIN RASMI</span>` 
+          : `<span class="verified-badge">Verified</span>`;
 
       const card=document.createElement("div");
       card.className="review-card"+(data.pinned===true?" is-pinned":"");
@@ -1628,7 +1741,7 @@
       btnH.addEventListener("click",()=>hantarBalasan(id,ta.value,btnH));
       btnBadge.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
-        bukaBadgeModal(id, data.badgeText, data.badgeColor);
+        bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor);
       });
       btnPin.addEventListener("click", async ()=>{
         if(!mintaAdmin())return;
