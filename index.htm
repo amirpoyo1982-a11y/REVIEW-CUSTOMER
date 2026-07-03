@@ -22,8 +22,15 @@
 
 <!-- ══ ANNOUNCEMENT BAR ══ -->
 <div id="topAnnouncement" class="top-announcement">
-  <span class="admin-badge">Admin Rasmi</span>
-  <span id="announcementTextWrap"></span>
+  <div class="announce-inner">
+    <span class="admin-badge">Admin Rasmi</span>
+    <div class="announce-copy">
+      <div class="announce-title" id="announcementTitle">KEMASKINI SISTEM H4SX STORE</div>
+      <div class="announce-summary" id="announcementTextWrap"></div>
+      <div class="announce-full" id="announcementFullText"></div>
+    </div>
+    <button class="announce-toggle" id="announcementToggle" type="button">Baca</button>
+  </div>
 </div>
 
 <!-- ══ SHOP CLOSED POPUP ══ -->
@@ -42,7 +49,7 @@
   <div class="admin-title">⚙️ Tetapan Admin</div>
   <div class="admin-form-group">
     <label>Teks Pengumuman (Atas)</label>
-    <textarea id="adminAnnounceText" rows="3" placeholder="Contoh: Promosi tamat malam ini! Kosongkan untuk tutup pengumuman."></textarea>
+    <textarea id="adminAnnounceText" rows="8" placeholder="KEMASKINI SISTEM H4SX STORE&#10;&#10;Kami telah melancarkan sistem ulasan yang lebih mantap! Sebagai tanda penghargaan kepada pelanggan setia yang telah menyokong kami sejak awal, kini setiap pembeli lama akan diberikan lencana khas: &quot;OLD SUPPORTER&quot;.&#10;&#10;Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adalah keutamaan kami! 💙"></textarea>
   </div>
   <div class="admin-btn-row">
     <button class="admin-btn admin-btn-save" id="btnSaveAdmin">Simpan</button>

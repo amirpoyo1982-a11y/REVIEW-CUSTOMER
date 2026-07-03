@@ -841,6 +841,101 @@ input[type="text"], input[type="email"], input[type="password"], select, textare
 }
 @media (max-width: 520px) {
   .name-input-row { grid-template-columns: 1fr; }
-  .btn-generate-name { width: 100%; }
+.btn-generate-name { width: 100%; }
   .review-card { margin: 8px; }
+}
+
+/* Announcement panel for long text */
+.top-announcement {
+  padding: 10px 16px;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(47,168,224,.28), transparent 24%),
+    linear-gradient(90deg, #0f2a45, #163a61 58%, #0f2a45);
+}
+.top-announcement.show {
+  display: block;
+}
+.announce-inner {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.top-announcement .admin-badge {
+  border-radius: 999px;
+  padding: 5px 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.24);
+}
+.announce-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+.announce-title {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.announce-summary {
+  color: rgba(255,255,255,.82);
+  font-size: 12.5px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.announce-full {
+  display: none;
+  color: rgba(255,255,255,.9);
+  font-size: 13px;
+  line-height: 1.62;
+  white-space: pre-line;
+  max-width: 900px;
+  padding: 8px 0 2px;
+}
+.top-announcement.expanded .announce-full {
+  display: block;
+}
+.top-announcement.expanded .announce-summary {
+  display: none;
+}
+.announce-toggle {
+  border: 1px solid rgba(255,255,255,.28);
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .14s, transform .14s;
+}
+.announce-toggle:hover {
+  background: rgba(255,255,255,.2);
+  transform: translateY(-1px);
+}
+@media (max-width: 680px) {
+  .announce-inner {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+  .top-announcement .admin-badge {
+    display: none;
+  }
+  .announce-title {
+    font-size: 11px;
+  }
+  .announce-summary,
+  .announce-full {
+    font-size: 12px;
+  }
 }
