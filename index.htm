@@ -587,6 +587,48 @@
     .buyer-time::before { content:'🕐'; font-size: 10px; }
     .buyer-feedback { color: var(--text-mid); font-size: 13.5px; line-height: 1.58; word-break: break-word; }
     .buyer-no-text { color: var(--text-dim); font-size: 13px; font-style: italic; }
+    .feedback-image-picker { border-top: 1px solid var(--line-mid); padding-top: 12px; }
+    .feedback-image-control { display: flex; gap: 8px; flex-wrap: wrap; }
+    .feedback-image-control input[type="file"] { display: none; }
+    .feedback-image-btn,
+    .feedback-image-clear,
+    .btn-see-feedback {
+      border: 1.5px solid var(--line-mid); background: var(--bg2); color: var(--accent2);
+      border-radius: 999px; padding: 8px 12px; font-size: 12px; font-weight: 800;
+      cursor: pointer; transition: border-color .12s, background .12s, transform .12s;
+    }
+    .feedback-image-btn:hover,
+    .feedback-image-clear:hover,
+    .btn-see-feedback:hover { border-color: var(--accent); background: var(--accent-soft); transform: translateY(-1px); }
+    .feedback-image-clear { display: none; color: var(--red); border-color: rgba(224,82,82,.28); }
+    .feedback-image-clear.show { display: inline-flex; }
+    .feedback-image-preview { margin-top: 8px; font-size: 11.5px; color: var(--text-dim); }
+    .btn-see-feedback { margin-top: 9px; padding: 7px 11px; }
+    .feedback-modal {
+      display: none; position: fixed; inset: 0; z-index: 999999;
+      background: rgba(15,42,69,.68); backdrop-filter: blur(10px);
+      align-items: center; justify-content: center; padding: 18px;
+    }
+    .feedback-modal.show { display: flex; }
+    .feedback-modal-box {
+      width: min(720px, 100%); max-height: 88vh; border-radius: 18px;
+      background: var(--panel); border: 1px solid var(--line-mid);
+      box-shadow: 0 24px 80px rgba(15,42,69,.32); overflow: hidden;
+    }
+    .feedback-modal-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 12px 14px; border-bottom: 1px solid var(--line-mid);
+      color: var(--navy); font-weight: 800; font-size: 13px;
+    }
+    .feedback-modal-close {
+      border: none; background: rgba(224,82,82,.1); color: var(--red);
+      width: 32px; height: 32px; border-radius: 50%; font-size: 18px;
+      cursor: pointer; font-weight: 900;
+    }
+    .feedback-modal-img {
+      display: block; width: 100%; max-height: calc(88vh - 58px);
+      object-fit: contain; background: #061426;
+    }
 
     /* ── ADMIN REPLY ── */
     .admin-reply-box {
@@ -816,6 +858,17 @@
     <button class="admin-btn admin-btn-close" id="btnCancelBadge">Batal</button>
   </div>
 </div>
+
+<!-- ══ FEEDBACK IMAGE VIEWER ══ -->
+<div id="feedbackImageModal" class="feedback-modal">
+  <div class="feedback-modal-box">
+    <div class="feedback-modal-head">
+      <span>Gambar Feedback</span>
+      <button class="feedback-modal-close" id="btnCloseFeedbackImage" type="button">×</button>
+    </div>
+    <img id="feedbackImageModalImg" class="feedback-modal-img" alt="Gambar feedback">
+  </div>
+</div>
 <!-- ══ FLOATING BUTTON TO MAIN SITE ══ -->
 <a href="https://h4sx-store.vercel.app" class="btn-main-site" target="_blank">
   🛍️ Website Utama
@@ -970,6 +1023,16 @@
             <span class="dadu-label">Malas taip?</span>
           </div>
           <span class="char-counter" id="charCounter">0 / 500</span>
+        </div>
+
+        <div class="form-group feedback-image-picker">
+          <label for="feedbackImageInput">🖼️ Gambar Feedback <span style="font-weight:400;text-transform:none;letter-spacing:0">(pilihan)</span></label>
+          <div class="feedback-image-control">
+            <input type="file" id="feedbackImageInput" accept="image/*">
+            <button class="feedback-image-btn" id="btnPickFeedbackImage" type="button">Pilih Gambar</button>
+            <button class="feedback-image-clear" id="btnClearFeedbackImage" type="button">Buang</button>
+          </div>
+          <div class="feedback-image-preview" id="feedbackImagePreview"></div>
         </div>
 
         <button id="butangHantar">🚀 Hantar Ulasan</button>
@@ -1369,11 +1432,18 @@
   const btnLoadUrl      = document.getElementById("btnLoadUrl");
   const btnClearImg     = document.getElementById("btnClearImg");
   const btnDadu         = document.getElementById("btnDadu");
+  const feedbackImageInput   = document.getElementById("feedbackImageInput");
+  const btnPickFeedbackImage = document.getElementById("btnPickFeedbackImage");
+  const btnClearFeedbackImage = document.getElementById("btnClearFeedbackImage");
+  const feedbackImagePreview = document.getElementById("feedbackImagePreview");
+  const feedbackImageModal = document.getElementById("feedbackImageModal");
+  const feedbackImageModalImg = document.getElementById("feedbackImageModalImg");
+  const btnCloseFeedbackImage = document.getElementById("btnCloseFeedbackImage");
 
   // ── Profile ───────────────────────────────────────────────────
   const WARNA = ['#2fa8e0','#7c5cbf','#22c47a','#f0a500','#e05252','#1a4470','#48a89e','#d96fb0'];
   const EMOJI  = ['😀','😎','🔥','🎮','👾','🐉','⚡','💎'];
-  let pilihanWarna = null, pilihanEmoji = null, profileImgB64 = null;
+  let pilihanWarna = null, pilihanEmoji = null, profileImgB64 = null, feedbackImgB64 = null;
 
   WARNA.forEach(w => {
     const sw = document.createElement("div");
@@ -1514,6 +1584,59 @@
     setTimeout(()=>{ if (!selesai) { tamatkan(); showToast("Muat gambar mengambil masa terlalu lama. Cuba lagi.", "error"); } }, 8000);
   });
 
+  function compressFeedbackImage(src, cb) {
+    const img = new Image();
+    img.onload = () => {
+      const maxSide = 900;
+      const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * scale));
+      const h = Math.max(1, Math.round(img.naturalHeight * scale));
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      cb(c.toDataURL("image/jpeg", 0.72));
+    };
+    img.onerror = () => showToast("Gagal proses gambar feedback. Cuba gambar lain.", "error");
+    img.src = src;
+  }
+  function setFeedbackImage(b64) {
+    feedbackImgB64 = b64;
+    btnClearFeedbackImage.classList.add("show");
+    feedbackImagePreview.textContent = "Gambar feedback sudah dipilih. Ia hanya muncul bila orang tekan See image.";
+    showToast("Gambar feedback berjaya dimuatkan.", "success");
+  }
+  function clearFeedbackImage(showMsg=true) {
+    feedbackImgB64 = null;
+    feedbackImageInput.value = "";
+    btnClearFeedbackImage.classList.remove("show");
+    feedbackImagePreview.textContent = "";
+    if (showMsg) showToast("Gambar feedback dibuang.", "info");
+  }
+  function openFeedbackImage(src) {
+    if (!src) return;
+    feedbackImageModalImg.src = src;
+    feedbackImageModal.classList.add("show");
+  }
+  function closeFeedbackImage() {
+    feedbackImageModal.classList.remove("show");
+    feedbackImageModalImg.src = "";
+  }
+  btnPickFeedbackImage.addEventListener("click", () => feedbackImageInput.click());
+  btnClearFeedbackImage.addEventListener("click", () => clearFeedbackImage(true));
+  feedbackImageInput.addEventListener("change", () => {
+    const f = feedbackImageInput.files[0];
+    if (!f) return;
+    if (!f.type.startsWith("image/")) { showToast("Fail feedback mesti gambar.", "error"); return; }
+    if (f.size > 5*1024*1024) { showToast("Gambar feedback terlalu besar. Max 5MB.", "error"); return; }
+    const r = new FileReader();
+    r.onload = e => compressFeedbackImage(e.target.result, setFeedbackImage);
+    r.readAsDataURL(f);
+  });
+  btnCloseFeedbackImage.addEventListener("click", closeFeedbackImage);
+  feedbackImageModal.addEventListener("click", e => {
+    if (e.target === feedbackImageModal) closeFeedbackImage();
+  });
+
   // ── Dadu ──────────────────────────────────────────────────────
   const CADANGAN = {
     5:[
@@ -1616,6 +1739,7 @@
         ulasan: ulasan || "Tiada ulasan ditinggalkan.",
         diciptaPada: serverTimestamp()
       };
+      if (feedbackImgB64) dataToSave.feedbackImg = feedbackImgB64;
       console.log("Data yang cuba disimpan:", dataToSave);
       
       const refBaru = await addDoc(collection(db,"ratings"), dataToSave);
@@ -1639,7 +1763,7 @@
       pilihBintang.value = "5";
       pilihanWarna = pilihanEmoji = null;
       document.querySelectorAll(".swatch,.emoji-opt").forEach(el=>el.classList.remove("active"));
-      clearProfileImg(false); charCounter.textContent = "0 / 500"; updatePreview();
+      clearProfileImg(false); clearFeedbackImage(false); charCounter.textContent = "0 / 500"; updatePreview();
 
       showToast("Ulasan berjaya dihantar! Terima kasih. 🙏", "success");
     } catch(err) {
@@ -1752,6 +1876,7 @@
       const avatarIsi=data.emojiProfil||rawNama.charAt(0).toUpperCase();
       const adaBalasan=!!(data.balasanAdmin?.trim());
       const adaUlasan = !!(data.ulasan?.trim()) && data.ulasan !== "Tiada ulasan ditinggalkan.";
+      const adaFeedbackImg = !!(data.feedbackImg);
 
       let masa="Baru sahaja";
       if (data.diciptaPada) masa=data.diciptaPada.toDate().toLocaleString("ms-MY",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
@@ -1788,6 +1913,7 @@
           ${adaUlasan
             ?`<p class="buyer-feedback">${escapeHtml(data.ulasan)}</p>`
             :`<p class="buyer-no-text">— Tiada ulasan teks —</p>`}
+          ${adaFeedbackImg?`<button class="btn-see-feedback" type="button">See image</button>`:""}
           ${adaBalasan?`
           <div class="admin-reply-box">
             <div class="admin-reply-header">
@@ -1821,6 +1947,8 @@
       const btnPadam=card.querySelector(".btn-padam-ulasan");
       const btnPin=card.querySelector(".btn-pin-ulasan");
       const btnBadge=card.querySelector(".btn-badge-ulasan");
+      const btnSeeFeedback=card.querySelector(".btn-see-feedback");
+      if (btnSeeFeedback) btnSeeFeedback.addEventListener("click", () => openFeedbackImage(data.feedbackImg));
       toggleB.addEventListener("click",()=>{ if(!mintaAdmin())return; form.classList.toggle("show"); if(form.classList.contains("show"))ta.focus(); });
       btnB.addEventListener("click",()=>form.classList.remove("show"));
       btnH.addEventListener("click",()=>hantarBalasan(id,ta.value,btnH));
