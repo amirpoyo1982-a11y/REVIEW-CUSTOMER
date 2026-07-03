@@ -1119,7 +1119,21 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
         ${replied ? `<div class="ss-admin-responded">Admin responded</div>` : ""}
       </div>`;
   }
-  async function downloadReviewScreenshot() {
+  function canvasToPngBlob(canvas) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error("Canvas blob kosong"));
+      }, "image/png");
+    });
+  }
+  function downloadCanvasFallback(canvas) {
+    const a = document.createElement("a");
+    a.download = `h4sx-reviews-${Date.now()}.png`;
+    a.href = canvas.toDataURL("image/png");
+    a.click();
+  }
+  async function copyReviewScreenshot() {
     if (!window.html2canvas) {
       showToast("Library screenshot belum siap dimuat. Cuba tekan sekali lagi.", "error");
       return;
@@ -1130,7 +1144,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       return;
     }
     btnReviewScreenshot.disabled = true;
-    btnReviewScreenshot.textContent = "Membuat...";
+    btnReviewScreenshot.textContent = "Copying...";
     try {
       const board = document.createElement("div");
       board.className = "ss-capture-board";
@@ -1156,20 +1170,25 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
         logging: false
       });
       board.remove();
-      const a = document.createElement("a");
-      a.download = `h4sx-reviews-${Date.now()}.png`;
-      a.href = canvas.toDataURL("image/png");
-      a.click();
-      showToast("Screenshot review siap dimuat turun.", "success");
+      const blob = await canvasToPngBlob(canvas);
+      if (navigator.clipboard?.write && window.ClipboardItem) {
+        await navigator.clipboard.write([
+          new ClipboardItem({ "image/png": blob })
+        ]);
+        showToast("Screenshot review dah dicopy ke clipboard.", "success");
+      } else {
+        downloadCanvasFallback(canvas);
+        showToast("Browser tak support copy gambar. Screenshot dimuat turun sebagai backup.", "success");
+      }
     } catch(e) {
       console.error(e);
-      showToast("Gagal buat screenshot review.", "error");
+      showToast("Gagal copy screenshot review. Cuba guna browser Chrome/Edge atau buka melalui HTTPS.", "error");
     } finally {
       btnReviewScreenshot.disabled = false;
-      btnReviewScreenshot.textContent = "SS Review";
+      btnReviewScreenshot.textContent = "Copy SS";
     }
   }
-  btnReviewScreenshot.addEventListener("click", downloadReviewScreenshot);
+  btnReviewScreenshot.addEventListener("click", copyReviewScreenshot);
 
   function escapeHtml(str) {
     const d=document.createElement("div"); d.textContent=str??""; return d.innerHTML;
