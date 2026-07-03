@@ -1111,7 +1111,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
           </div>
           <div class="buyer-time">${masa}</div>
           ${adaUlasan
-            ?`<p class="buyer-feedback">${escapeHtml(data.ulasan)}</p>`
+            ?`<p class="buyer-feedback">${formatMessageText(data.ulasan)}</p>`
             :`<p class="buyer-no-text">— Tiada ulasan teks —</p>`}
           <div class="admin-review-edit-form">
             <textarea maxlength="500" placeholder="Edit ulasan pelanggan...">${escapeHtml(data.ulasan || "")}</textarea>
@@ -1135,7 +1135,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
               <img src="https://i.imgur.com/cLPulXQ.png" class="admin-reply-avatar" alt="Admin">
               <p class="admin-reply-label">H4SX STORE</p>
             </div>
-            <p class="admin-reply-text">${escapeHtml(data.balasanAdmin)}</p>
+            <p class="admin-reply-text">${formatMessageText(data.balasanAdmin)}</p>
             <p class="admin-reply-time">${masaBalasan}</p>
           </div>`:""}
           <div class="admin-reply-form-actions" style="margin-top:6px;${adminOk()?"":"display:none;"}" data-admin-ctrl-row>
@@ -1278,7 +1278,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
           <span class="ss-badge">${escapeHtml(badge)}</span>
         </div>
         <div class="ss-stars">${stars}</div>
-        <div class="ss-review-text">${escapeHtml(cleanText)}</div>
+        <div class="ss-review-text">${formatMessageText(cleanText)}</div>
         ${replied ? `<div class="ss-admin-responded">Admin responded</div>` : ""}
       </div>`;
   }
@@ -1355,6 +1355,11 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
 
   function escapeHtml(str) {
     const d=document.createElement("div"); d.textContent=str??""; return d.innerHTML;
+  }
+  function formatMessageText(str) {
+    return escapeHtml(str ?? "")
+      .replace(/\s+(?=\d+\s*:\s*H4SX-)/gi, "\n")
+      .replace(/(\d+\s*:\s*)(H4SX-[A-Z0-9]+)/gi, "$1$2");
   }
 
   // ── Block Inspect Element & DevTools ──────────────────────────
