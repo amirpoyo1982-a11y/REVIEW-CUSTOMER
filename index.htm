@@ -778,6 +778,11 @@
     .admin-title { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
     .admin-form-group { margin-bottom: 16px; }
     .admin-form-group label { margin-bottom: 8px; }
+    .admin-form-group input {
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--line-mid);
+      border-radius: 8px; font-size: 13px; font-family: inherit;
+      background: var(--panel-soft); color: var(--text);
+    }
     .admin-btn-row { display: flex; gap: 10px; }
     .admin-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; }
     .admin-btn-save { background: var(--accent); color: #fff; }
@@ -856,6 +861,24 @@
     <button class="admin-btn admin-btn-save" id="btnSaveBadge">Simpan</button>
     <button class="admin-btn" id="btnRemoveBadge" style="background:#fef0f0;color:#b83232;">Buang Badge</button>
     <button class="admin-btn admin-btn-close" id="btnCancelBadge">Batal</button>
+  </div>
+</div>
+
+<!-- ══ ADMIN LOGIN MODAL ══ -->
+<div id="adminLoginOverlayBg" class="admin-overlay-bg"></div>
+<div id="adminLoginModal" class="admin-panel-modal">
+  <div class="admin-title">🔐 Login Admin</div>
+  <div class="admin-form-group">
+    <label>Email Admin</label>
+    <input type="email" id="adminLoginEmail" autocomplete="username" placeholder="admin@h4sx.store">
+  </div>
+  <div class="admin-form-group">
+    <label>Password</label>
+    <input type="password" id="adminLoginPassword" autocomplete="current-password" placeholder="Password Firebase Auth">
+  </div>
+  <div class="admin-btn-row">
+    <button class="admin-btn admin-btn-save" id="btnAdminLogin">Login</button>
+    <button class="admin-btn admin-btn-close" id="btnCancelAdminLogin">Batal</button>
   </div>
 </div>
 
@@ -1072,6 +1095,9 @@
 <script type="module">
   import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import {
     getFirestore, collection, addDoc, onSnapshot,
     query, orderBy, serverTimestamp,
     doc, getDoc, setDoc, deleteDoc, updateDoc
@@ -1088,6 +1114,7 @@
     measurementId:"G-J9QWB39V87"
   });
   const db = getFirestore(app);
+  const auth = getAuth(app);
 
   // -- Light / Dark mode ---------------------------------
   const btnThemeToggle = document.getElementById("btnThemeToggle");
@@ -1109,29 +1136,37 @@
   });
 
   // ── Admin gate ────────────────────────────────────────────────
-  const KOD_ADMIN = "hasnainpizi"; // TUKAR sebelum guna!
-  // Sesi admin disimpan bersama PIN semasa (bukan flag "1" je).
-  // Jadi kalau KOD_ADMIN ditukar dalam kod ni, sesi lama (PIN lama)
-  // automatik terbatal — sesiapa yang dah login kena login semula.
-  const adminOk   = () => sessionStorage.getItem("h4sx_admin_ok") === KOD_ADMIN;
+  const ADMIN_UIDS = ["LWRN6IDv4OV1PZd7Vldgp6F9pdH3"];
+  let currentUser = null;
+  const adminOk = () => !!(currentUser && ADMIN_UIDS.includes(currentUser.uid));
   function mintaAdmin() {
     if (adminOk()) return true;
-    const v = prompt("Masukkan Kod Admin:");
-    if (!v) return false;
-    if (v.trim() === KOD_ADMIN) { sessionStorage.setItem("h4sx_admin_ok", KOD_ADMIN); return true; }
-    showToast("Kod admin salah.", "error"); return false;
+    bukaAdminLogin();
+    return false;
   }
   
-  // Fungsi untuk log keluar admin
-  function logoutAdmin() {
-    sessionStorage.removeItem("h4sx_admin_ok");
-    showToast("Berjaya log keluar dari mod Admin.", "success");
-    // Refresh page selepas 1 saat supaya ui/inspect element block update
-    setTimeout(() => window.location.reload(), 1000); 
+  function updateAdminUi() {
+    const loggedIn = adminOk();
+    if (btnLogoutAdmin) btnLogoutAdmin.style.display = loggedIn ? 'flex' : 'none';
+    if (btnOpenAdminConfig) btnOpenAdminConfig.textContent = loggedIn ? '⚙️ Admin' : '🔐 Login Admin';
+    document.querySelectorAll('[data-admin-ctrl-row]').forEach(row => {
+      row.style.display = loggedIn ? 'flex' : 'none';
+    });
   }
-  // PENTING: fungsi dalam <script type="module"> tidak boleh dipanggil terus
-  // dari atribut onclick="" dalam HTML sebab ia bukan skop global.
-  // Kena "daftar" ke window supaya onclick="logoutAdmin()" dapat cari fungsi ni.
+  function bukaAdminLogin() {
+    adminLoginOverlayBg.classList.add('show');
+    adminLoginModal.classList.add('show');
+    setTimeout(() => adminLoginEmail.focus(), 50);
+  }
+  function tutupAdminLogin() {
+    adminLoginOverlayBg.classList.remove('show');
+    adminLoginModal.classList.remove('show');
+    adminLoginPassword.value = '';
+  }
+  async function logoutAdmin() {
+    await signOut(auth);
+    showToast("Berjaya log keluar dari mod Admin.", "success");
+  }
   window.logoutAdmin = logoutAdmin;
 
   // ── Shop Closed Status (Gist) ─────────────────────────────────
@@ -1337,19 +1372,54 @@
   const btnCloseAdmin = document.getElementById('btnCloseAdmin');
   const btnSaveAdmin = document.getElementById('btnSaveAdmin');
   const adminAnnounceText = document.getElementById('adminAnnounceText');
+  const adminLoginOverlayBg = document.getElementById('adminLoginOverlayBg');
+  const adminLoginModal = document.getElementById('adminLoginModal');
+  const adminLoginEmail = document.getElementById('adminLoginEmail');
+  const adminLoginPassword = document.getElementById('adminLoginPassword');
+  const btnAdminLogin = document.getElementById('btnAdminLogin');
+  const btnCancelAdminLogin = document.getElementById('btnCancelAdminLogin');
 
-  // Papar butang logout kalau dah login admin
-  if (adminOk()) {
-    btnLogoutAdmin.style.display = 'flex';
-  }
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    if (user && !adminOk()) {
+      showToast("Akaun ini bukan admin H4SX.", "error");
+      signOut(auth);
+      return;
+    }
+    updateAdminUi();
+    try { renderReviews(); } catch (e) {}
+  });
+
+  btnAdminLogin.addEventListener('click', async () => {
+    const email = adminLoginEmail.value.trim();
+    const password = adminLoginPassword.value;
+    if (!email || !password) { showToast("Masukkan email dan password admin.", "error"); return; }
+    btnAdminLogin.disabled = true; btnAdminLogin.textContent = "Login...";
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      if (!ADMIN_UIDS.includes(cred.user.uid)) {
+        await signOut(auth);
+        showToast("Akaun ini bukan admin H4SX.", "error");
+        return;
+      }
+      tutupAdminLogin();
+      showToast("Login admin berjaya.", "success");
+    } catch (e) {
+      console.error(e);
+      showToast("Login admin gagal. Semak email/password.", "error");
+    } finally {
+      btnAdminLogin.disabled = false; btnAdminLogin.textContent = "Login";
+    }
+  });
+  adminLoginPassword.addEventListener('keydown', e => {
+    if (e.key === 'Enter') btnAdminLogin.click();
+  });
+  btnCancelAdminLogin.addEventListener('click', tutupAdminLogin);
+  adminLoginOverlayBg.addEventListener('click', tutupAdminLogin);
+  updateAdminUi();
 
   btnOpenAdminConfig.addEventListener('click', async () => {
     if (!mintaAdmin()) return;
-    
-    // Tunjuk butang logout lepas berjaya login
-    btnLogoutAdmin.style.display = 'flex';
-    // Tunjuk balik butang admin (balas/pin/padam) kat setiap kad ulasan serta-merta
-    renderReviews();
     
     try {
       const snap = await getDoc(doc(db, "config", "announcement"));
@@ -2047,10 +2117,8 @@
     }, 1000);
   }
   
-  // Hanya aktifkan block inspect kalau bukan admin yang login
-  if (!adminOk()) {
-    blockInspect();
-  }
+  // Password admin sudah tiada dalam HTML. JangagVxzrkpQAOQ8DSsC3ykhHajavKq2n block inspect secara agresif
+  // supaya Firebase Auth boleh restore sesi admin tanpa UI jadi pelik.
 
 </script>
 </body>
