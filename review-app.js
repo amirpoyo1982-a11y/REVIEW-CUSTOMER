@@ -75,7 +75,14 @@
   window.logoutAdmin = logoutAdmin;
 
   // ── Shop Closed Status (Gist) ─────────────────────────────────
+  const KEDAI_GIST_URL = 'https://gist.githubusercontent.com/amirpoyo1982-a11y/5ed3872290715d7833e788c7b0014f79/raw/kedai.json';
   const HARI_MS = ["ahad","isnin","selasa","rabu","khamis","jumaat","sabtu"];
+  function flagOn(value) {
+    return value === true || String(value).toLowerCase() === "true" || String(value).toLowerCase() === "on";
+  }
+  function flagOff(value) {
+    return value === false || String(value).toLowerCase() === "false" || String(value).toLowerCase() === "close" || String(value).toLowerCase() === "off";
+  }
 
   function semakDalamWaktu(bukaJam, tutupJam) {
     if (!bukaJam || !tutupJam) return true; // takde had waktu = anggap buka
@@ -111,17 +118,17 @@
 
   async function semakStatusKedai() {
     try {
-      const res = await fetch('https://gist.githubusercontent.com/amirpoyo1982-a11y/5ed3872290715d7833e788c7b0014f79/raw/kedai.json?t=' + Date.now(), { cache: "no-store" });
+      const res = await fetch(KEDAI_GIST_URL + '?t=' + Date.now(), { cache: "no-store" });
       const data = await res.json();
 
       // 1. Mod penyelenggaraan — paling utama
-      if (data && data.maintenance === true) {
+      if (data && flagOn(data.maintenance)) {
         paparKedaiTutup('🛠️', 'Dalam Penyelenggaraan', 'Kedai sedang dalam penyelenggaraan buat masa ini. Sila cuba lagi sebentar lagi.', data.business_hours_text);
         return;
       }
 
       // 2. Suis manual admin — bukakedai:false = tutup terus, tak kira jam
-      if (data && data.bukakedai === false) {
+      if (data && flagOff(data.bukakedai)) {
         paparKedaiTutup('🚫', 'Kedai Ditutup Sementara', 'Kami sedang berehat. Sila kembali kemudian.', data.business_hours_text);
         return;
       }
