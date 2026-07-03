@@ -526,6 +526,12 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const btnPickFeedbackImage = document.getElementById("btnPickFeedbackImage");
   const btnClearFeedbackImage = document.getElementById("btnClearFeedbackImage");
   const feedbackImagePreview = document.getElementById("feedbackImagePreview");
+  document.querySelector(".form-col")?.addEventListener("keydown", e => {
+    if (e.key === "Enter" && e.target && e.target.tagName === "INPUT") {
+      if (e.target === urlGambar) return;
+      e.preventDefault();
+    }
+  });
   const feedbackImageModal = document.getElementById("feedbackImageModal");
   const feedbackImageModalImg = document.getElementById("feedbackImageModalImg");
   const btnCloseFeedbackImage = document.getElementById("btnCloseFeedbackImage");
@@ -692,6 +698,12 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       }
     );
     setTimeout(()=>{ if (!selesai) { tamatkan(); showToast("Muat gambar mengambil masa terlalu lama. Cuba lagi.", "error"); } }, 8000);
+  });
+  urlGambar.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      btnLoadUrl.click();
+    }
   });
 
   function compressFeedbackImage(src, cb) {
