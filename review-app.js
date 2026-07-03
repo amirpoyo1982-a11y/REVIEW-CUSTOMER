@@ -811,6 +811,35 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     } finally { btn.disabled=false; btn.textContent="Hantar Balasan"; }
   }
 
+  async function simpanEditUlasan(id, teks, btn, dataDoc) {
+    const ulasanBaru = teks.trim();
+    if (ulasanBaru.length < 3) {
+      showToast("Ulasan terlalu pendek.", "error");
+      return;
+    }
+    if (ulasanBaru.length > 500) {
+      showToast("Ulasan terlalu panjang. Maksimum 500 aksara.", "error");
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = "Menyimpan...";
+    try {
+      const payload = { ulasan: ulasanBaru, ulasanDieditPada: serverTimestamp() };
+      if (!dataDoc.balasanAdmin?.trim()) {
+        payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+        payload.balasanPada = serverTimestamp();
+      }
+      await updateDoc(doc(db,"ratings",id), payload);
+      showToast("Ulasan pelanggan berjaya diedit.", "success");
+    } catch(err) {
+      console.error(err);
+      showToast("Gagal edit ulasan. Pastikan rules admin benarkan update.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Simpan Ulasan";
+    }
+  }
+
   // ── Filter & sort ─────────────────────────────────────────────
   let filterStar="all", sortMode="newest", allDocs=[];
   document.querySelectorAll(".filter-btn").forEach(btn=>{
@@ -941,6 +970,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
           ${adaUlasan
             ?`<p class="buyer-feedback">${escapeHtml(data.ulasan)}</p>`
             :`<p class="buyer-no-text">— Tiada ulasan teks —</p>`}
+          <div class="admin-review-edit-form">
+            <textarea maxlength="500" placeholder="Edit ulasan pelanggan...">${escapeHtml(data.ulasan || "")}</textarea>
+            <div class="admin-reply-form-actions">
+              <button class="btn-simpan-edit-ulasan">Simpan Ulasan</button>
+              <button class="btn-batal-edit-ulasan">Batal</button>
+            </div>
+          </div>
           ${adaFeedbackImg?`<button class="btn-see-feedback" type="button">See image</button>`:""}
           ${adaBalasan?`
           <button class="admin-reply-view-toggle" type="button" aria-expanded="false">Balasan admin ↓</button>
@@ -954,6 +990,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
           </div>`:""}
           <div class="admin-reply-form-actions" style="margin-top:6px;${adminOk()?"":"display:none;"}" data-admin-ctrl-row>
             <button class="reply-toggle-btn admin-action-btn admin-action-edit" title="Edit balasan">${adaBalasan?"Edit":"Balas"}</button>
+            <button class="btn-edit-ulasan admin-action-btn admin-action-review" title="Edit ulasan pelanggan">Edit Ulasan</button>
             <button class="btn-pin-ulasan admin-action-btn admin-action-pin${data.pinned===true?" is-active":""}" title="Semat ulasan">${data.pinned===true?"Unpin":"Pin"}</button>
             <button class="btn-badge-ulasan admin-action-btn admin-action-badge" title="Edit role badge">Role</button>
             <button class="btn-padam-ulasan admin-action-btn admin-action-delete" title="Padam ulasan">Del</button>
@@ -973,6 +1010,11 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       const btnH=form.querySelector(".btn-hantar-balasan");
       const btnB=form.querySelector(".btn-batal-balasan");
       const toggleB=card.querySelector(".reply-toggle-btn");
+      const editReviewForm=card.querySelector(".admin-review-edit-form");
+      const editReviewTa=editReviewForm.querySelector("textarea");
+      const btnEditReview=card.querySelector(".btn-edit-ulasan");
+      const btnSaveEditReview=card.querySelector(".btn-simpan-edit-ulasan");
+      const btnCancelEditReview=card.querySelector(".btn-batal-edit-ulasan");
       const btnPadam=card.querySelector(".btn-padam-ulasan");
       const btnPin=card.querySelector(".btn-pin-ulasan");
       const btnBadge=card.querySelector(".btn-badge-ulasan");
@@ -990,6 +1032,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       toggleB.addEventListener("click",()=>{ if(!mintaAdmin())return; form.classList.toggle("show"); if(form.classList.contains("show"))ta.focus(); });
       btnB.addEventListener("click",()=>form.classList.remove("show"));
       btnH.addEventListener("click",()=>hantarBalasan(id,ta.value,btnH));
+      btnEditReview.addEventListener("click",()=>{
+        if(!mintaAdmin())return;
+        editReviewForm.classList.toggle("show");
+        if(editReviewForm.classList.contains("show")) editReviewTa.focus();
+      });
+      btnCancelEditReview.addEventListener("click",()=>editReviewForm.classList.remove("show"));
+      btnSaveEditReview.addEventListener("click",()=>simpanEditUlasan(id, editReviewTa.value, btnSaveEditReview, data));
       btnBadge.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
         bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor);
