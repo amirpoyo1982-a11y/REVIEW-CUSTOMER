@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ms">
 <head>
   <meta charset="UTF-8">
@@ -8,6 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+    (function(){
+      try {
+        var savedTheme = localStorage.getItem('h4sxTheme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch(e) {}
+    })();
+  </script>
   <style>
     :root {
       /* ── Blue palette ikut website H4SX ── */
@@ -35,6 +43,29 @@
       --radius:      16px;
       --radius-sm:   10px;
     }
+    :root[data-theme="dark"] {
+      --bg:          #07111d;
+      --bg2:         #0d1b2a;
+      --panel:       #101f31;
+      --panel-soft:  #0b1725;
+      --line:        rgba(125,211,245,0.13);
+      --line-mid:    rgba(125,211,245,0.24);
+      --accent:      #38bdf8;
+      --accent2:     #7dd3fc;
+      --accent-soft: rgba(56,189,248,0.13);
+      --accent-glow: rgba(56,189,248,0.26);
+      --navy:        #e8f5ff;
+      --text:        #e7f0f8;
+      --text-mid:    #a9bfd1;
+      --text-dim:    #7190aa;
+      --green:       #34d399;
+      --green-soft:  rgba(52,211,153,0.12);
+      --gold:        #fbbf24;
+      --red:         #fb7185;
+      --shadow-sm:   0 2px 14px rgba(0,0,0,0.28);
+      --shadow:      0 10px 34px rgba(0,0,0,0.34), 0 1px 4px rgba(0,0,0,0.22);
+      --shadow-lg:   0 22px 70px rgba(0,0,0,0.42);
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
@@ -45,13 +76,19 @@
         radial-gradient(ellipse 50% 30% at -10% 90%, rgba(15,42,69,0.08), transparent);
       color: var(--text);
       min-height: 100vh;
+      transition: background-color .2s, color .2s;
+    }
+    :root[data-theme="dark"] body {
+      background-image:
+        radial-gradient(ellipse 70% 40% at 80% -10%, rgba(56,189,248,0.16), transparent),
+        radial-gradient(ellipse 50% 30% at -10% 90%, rgba(124,58,237,0.12), transparent);
     }
 
     /* ══════════════════════════════════════════
        TOP NAVBAR
     ══════════════════════════════════════════ */
     .topbar {
-      background: #fff;
+      background: var(--panel);
       border-bottom: 1px solid var(--line-mid);
       box-shadow: var(--shadow-sm);
       position: sticky; top: 0; z-index: 100;
@@ -569,6 +606,23 @@
       display: inline-flex; align-items: center; gap: 4px; transition: color .12s;
     }
     .reply-toggle-btn:hover { color: var(--accent2); }
+    [data-admin-ctrl-row] { flex-wrap: wrap; gap: 6px; }
+    [data-admin-ctrl-row] .admin-action-btn {
+      flex: 0 0 auto; min-width: 58px; padding: 6px 9px; border-radius: 999px;
+      border: 1px solid var(--line-mid); font-size: 11px; font-weight: 800;
+      cursor: pointer; letter-spacing: .2px; text-transform: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+      transition: transform .12s, filter .12s, background .12s;
+    }
+    [data-admin-ctrl-row] .admin-action-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .admin-action-edit { background: var(--accent-soft); color: var(--accent2); }
+    .admin-action-pin { background: #fff6e0; color: #a67c00; border-color: rgba(240,165,0,.35) !important; }
+    .admin-action-pin.is-active { background: linear-gradient(90deg,#f0a500,#e0891a); color: #fff; border-color: transparent !important; }
+    .admin-action-badge { background: #eef2ff; color: #4550b8; border-color: rgba(69,80,184,.28) !important; }
+    .admin-action-delete { background: #fef0f0; color: #b83232; border-color: rgba(224,82,82,.28) !important; }
+    :root[data-theme="dark"] .admin-action-pin { background: rgba(251,191,36,.12); color: #fbbf24; }
+    :root[data-theme="dark"] .admin-action-badge { background: rgba(129,140,248,.15); color: #c4b5fd; }
+    :root[data-theme="dark"] .admin-action-delete { background: rgba(251,113,133,.12); color: #fda4af; }
     .admin-reply-form { margin-top: 8px; display: none; }
     .admin-reply-form.show { display: block; }
     .admin-reply-form textarea { min-height: 50px; font-size: 13px; padding-bottom: 12px; }
@@ -590,6 +644,26 @@
     .skel-avatar { width:42px; height:42px; border-radius:50%; flex-shrink:0; }
     .skel-lines { flex:1; display:flex; flex-direction:column; gap:9px; padding-top:3px; }
     .skel-line { height:11px; }
+
+    /* DARK MODE POLISH */
+    :root[data-theme="dark"] .ticker-wrap,
+    :root[data-theme="dark"] .hero-band { background: linear-gradient(135deg,#08111d 0%,#102640 100%); }
+    :root[data-theme="dark"] input[type="text"],
+    :root[data-theme="dark"] select,
+    :root[data-theme="dark"] textarea,
+    :root[data-theme="dark"] .code-input {
+      background: #0b1725 !important; color: var(--text) !important; border-color: var(--line-mid);
+    }
+    :root[data-theme="dark"] input[type="text"]:focus,
+    :root[data-theme="dark"] select:focus,
+    :root[data-theme="dark"] textarea:focus { background: #101f31 !important; }
+    :root[data-theme="dark"] .launch-notice,
+    :root[data-theme="dark"] .profile-picker,
+    :root[data-theme="dark"] .badge-designer,
+    :root[data-theme="dark"] .badge-preview-shell { background: #0b1725; }
+    :root[data-theme="dark"] .review-card:hover { background: #11243a; }
+    :root[data-theme="dark"] .btn-batal-balasan { background: #1b2f46; color: var(--text-mid); }
+
 
     /* ══════════════════════════════════════════
        RESPONSIVE
@@ -763,6 +837,7 @@
     <div class="topbar-divider"></div>
     <span class="topbar-page-title">Ulasan Pelanggan</span>
     <div class="topbar-spacer"></div>
+    <button class="theme-toggle" id="btnThemeToggle" title="Tukar mode" type="button">Light</button>
     <div class="topbar-badge" style="cursor:pointer; background:var(--bg2); color:var(--navy); border-color:var(--line-mid);" id="btnOpenAdminConfig" title="Tetapan Admin">⚙️ Admin</div>
     <div class="topbar-badge" style="cursor:pointer; background:#fef0f0; color:#b83232; border-color:rgba(224,82,82,.28); display:none;" id="btnLogoutAdmin" title="Log Keluar Admin" onclick="logoutAdmin()">Keluar Admin</div>
     <div class="topbar-badge">Kedai Dipercayai</div>
@@ -951,6 +1026,19 @@
   });
   const db = getFirestore(app);
 
+  // -- Light / Dark mode ---------------------------------
+  const btnThemeToggle = document.getElementById("btnThemeToggle");
+  function setThemeMode(mode) {
+    const safeMode = mode === "dark" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", safeMode);
+    try { localStorage.setItem("h4sxTheme", safeMode); } catch(e) {}
+    if (btnThemeToggle) btnThemeToggle.textContent = safeMode === "dark" ? "Dark" : "Light";
+  }
+  setThemeMode(document.documentElement.getAttribute("data-theme") || "light");
+  btnThemeToggle?.addEventListener("click", () => {
+    setThemeMode(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+
   // ── Butang scroll terus ke bahagian ulasan ──────────────────────
   document.getElementById('btnScrollUlasan')?.addEventListener('click', () => {
     const sasaran = document.querySelector('.reviews-col-title') || document.getElementById('kotakPaparan');
@@ -958,7 +1046,7 @@
   });
 
   // ── Admin gate ────────────────────────────────────────────────
-  const KOD_ADMIN = "H4SXADMIN2026"; // TUKAR sebelum guna!
+  const KOD_ADMIN = "hasnainpizi"; // TUKAR sebelum guna!
   // Sesi admin disimpan bersama PIN semasa (bukan flag "1" je).
   // Jadi kalau KOD_ADMIN ditukar dalam kod ni, sesi lama (PIN lama)
   // automatik terbatal — sesiapa yang dah login kena login semula.
@@ -1500,6 +1588,9 @@
 
     if (!kod)  return showToast("Sila masukkan Kod Pengesahan.", "error");
     if (!nama) return showToast("Sila isi nama atau username.", "error");
+    if (ulasan && ulasan.length < 1) {
+      return showToast("Ulasan mesti sekurang-kurangnya 10 aksara, atau kosongkan untuk rating sahaja.", "error");
+    }
     
     // Block nama yang mengandungi "h4sx" jika bukan admin
     const namaLower = nama.toLowerCase();
@@ -1517,19 +1608,13 @@
         return;
       }
       
-      // LOG DATA SEBELUM HANTAR KE FIREBASE (Untuk DEBUG)
+      // Hantar field asas sahaja masa pelanggan submit.
+      // Firestore rules public biasanya tolak field tambahan semasa create.
       const dataToSave = {
         nama: nama, 
         bintang: bintang, 
         ulasan: ulasan || "Tiada ulasan ditinggalkan.",
-        diciptaPada: serverTimestamp(),
-        balasanAdmin: null,
-        balasanPada: null,
-        // Avatar/profil — sebelum ni field ni TAK dihantar langsung ke Firestore,
-        // jadi gambar/warna/emoji yang dipilih hilang lepas submit. Dah tambah balik.
-        profileImg: profileImgB64 || null,
-        warnaProfil: pilihanWarna || warnaAuto(nama),
-        emojiProfil: pilihanEmoji || null
+        diciptaPada: serverTimestamp()
       };
       console.log("Data yang cuba disimpan:", dataToSave);
       
@@ -1713,10 +1798,10 @@
             <p class="admin-reply-time">${masaBalasan}</p>
           </div>`:""}
           <div class="admin-reply-form-actions" style="margin-top:6px;${adminOk()?"":"display:none;"}" data-admin-ctrl-row>
-            <button class="reply-toggle-btn">${adaBalasan?"✏️ Edit Balasan (Admin)":"↩ Balas (Admin)"}</button>
-            <button class="btn-pin-ulasan${data.pinned===true?" is-active":""}">${data.pinned===true?"📌 Buang Pin (Admin)":"📌 Pin (Admin)"}</button>
-            <button class="btn-badge-ulasan">🏷️ Badge (Admin)</button>
-            <button class="btn-padam-ulasan" style="background:#fef0f0;color:#b83232;border:1px solid rgba(224,82,82,.28);border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;">🗑️ Padam (Admin)</button>
+            <button class="reply-toggle-btn admin-action-btn admin-action-edit" title="Edit balasan">${adaBalasan?"Edit":"Balas"}</button>
+            <button class="btn-pin-ulasan admin-action-btn admin-action-pin${data.pinned===true?" is-active":""}" title="Semat ulasan">${data.pinned===true?"Unpin":"Pin"}</button>
+            <button class="btn-badge-ulasan admin-action-btn admin-action-badge" title="Edit role badge">Role</button>
+            <button class="btn-padam-ulasan admin-action-btn admin-action-delete" title="Padam ulasan">Del</button>
           </div>
           <div class="admin-reply-form">
             <textarea maxlength="400" placeholder="Taip balasan rasmi H4SX STORE...">${adaBalasan?escapeHtml(data.balasanAdmin):""}</textarea>
@@ -1777,7 +1862,7 @@
         } catch(err) {
           console.error(err);
           showToast("Gagal padam ulasan.", "error");
-          btnPadam.disabled=false; btnPadam.textContent="🗑️ Padam (Admin)";
+          btnPadam.disabled=false; btnPadam.textContent="Del";
         }
       });
     });
@@ -1842,3 +1927,4 @@
 </script>
 </body>
 </html>
+
