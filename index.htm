@@ -52,6 +52,20 @@
     <label>Teks Pengumuman (Atas)</label>
     <textarea id="adminAnnounceText" rows="8" placeholder="KEMASKINI SISTEM H4SX STORE&#10;&#10;Kami telah melancarkan sistem ulasan yang lebih mantap! Sebagai tanda penghargaan kepada pelanggan setia yang telah menyokong kami sejak awal, kini setiap pembeli lama akan diberikan lencana khas: &quot;OLD SUPPORTER&quot;.&#10;&#10;Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adalah keutamaan kami! 💙"></textarea>
   </div>
+  <div class="admin-form-group admin-code-tools">
+    <label>Generate Kod Review</label>
+    <div class="admin-code-row">
+      <input type="text" id="adminCodePrefix" value="H4SX" maxlength="12" placeholder="Prefix kod">
+      <input type="number" id="adminCodeCount" value="10" min="1" max="200" step="1" placeholder="Jumlah">
+      <button class="admin-btn admin-btn-save" id="btnGenerateCodes" type="button">Generate Kod</button>
+    </div>
+    <div class="admin-code-hint">Contoh: H4SX-A8K2Q9. Kod akan terus masuk Firebase.</div>
+    <div class="admin-code-list-head">
+      <span>Kod masih tersedia</span>
+      <button id="btnRefreshCodes" type="button">Refresh</button>
+    </div>
+    <div id="adminCodeList" class="admin-code-list">Login admin untuk lihat kod.</div>
+  </div>
   <div class="admin-btn-row">
     <button class="admin-btn admin-btn-save" id="btnSaveAdmin">Simpan</button>
     <button class="admin-btn admin-btn-close" id="btnCloseAdmin">Tutup</button>

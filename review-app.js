@@ -5,7 +5,7 @@
   import {
     getFirestore, collection, addDoc, onSnapshot,
     query, orderBy, serverTimestamp,
-    doc, getDoc, setDoc, deleteDoc, updateDoc
+    doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   // ── Firebase ──────────────────────────────────────────────────
@@ -43,6 +43,7 @@
   // ── Admin gate ────────────────────────────────────────────────
   const ADMIN_UIDS = ["LWRN6IDv4OV1PZd7Vldgp6F9pdH3"];
   let currentUser = null;
+  let latestCodeSnapshot = null;
   const adminOk = () => !!(currentUser && ADMIN_UIDS.includes(currentUser.uid));
   function mintaAdmin() {
     if (adminOk()) return true;
@@ -310,6 +311,11 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const btnCloseAdmin = document.getElementById('btnCloseAdmin');
   const btnSaveAdmin = document.getElementById('btnSaveAdmin');
   const adminAnnounceText = document.getElementById('adminAnnounceText');
+  const adminCodePrefix = document.getElementById('adminCodePrefix');
+  const adminCodeCount = document.getElementById('adminCodeCount');
+  const btnGenerateCodes = document.getElementById('btnGenerateCodes');
+  const btnRefreshCodes = document.getElementById('btnRefreshCodes');
+  const adminCodeList = document.getElementById('adminCodeList');
   const adminLoginOverlayBg = document.getElementById('adminLoginOverlayBg');
   const adminLoginModal = document.getElementById('adminLoginModal');
   const adminLoginEmail = document.getElementById('adminLoginEmail');
@@ -325,6 +331,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       return;
     }
     updateAdminUi();
+    if (latestCodeSnapshot) renderCodeListFromSnapshot(latestCodeSnapshot);
     try { renderReviews(); } catch (e) {}
   });
 
@@ -386,6 +393,79 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     }
     btnSaveAdmin.disabled = false; btnSaveAdmin.textContent = "Simpan";
   });
+
+  function randomCodePart(len = 6) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let out = "";
+    crypto.getRandomValues(new Uint32Array(len)).forEach(n => out += chars[n % chars.length]);
+    return out;
+  }
+  function cleanCodePrefix(value) {
+    return (value || "H4SX").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12) || "H4SX";
+  }
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(`Kod ${text} dicopy.`, "success");
+    } catch(e) {
+      showToast(`Kod: ${text}`, "success");
+    }
+  }
+  async function generateReviewCodes() {
+    if (!mintaAdmin()) return;
+    const prefix = cleanCodePrefix(adminCodePrefix.value);
+    const count = Math.max(1, Math.min(200, parseInt(adminCodeCount.value) || 1));
+    adminCodePrefix.value = prefix;
+    adminCodeCount.value = String(count);
+    btnGenerateCodes.disabled = true;
+    btnGenerateCodes.textContent = "Generating...";
+    try {
+      const made = [];
+      for (let i = 0; i < count; i++) {
+        let code = `${prefix}-${randomCodePart(6)}`;
+        while (made.includes(code)) code = `${prefix}-${randomCodePart(6)}`;
+        made.push(code);
+        await setDoc(doc(db, "review_codes", code), {
+          kod: code,
+          diciptaPada: serverTimestamp(),
+          diciptaOleh: currentUser?.uid || "admin"
+        });
+      }
+      showToast(`${made.length} kod berjaya dijana ke Firebase.`, "success");
+    } catch(e) {
+      console.error(e);
+      showToast("Gagal generate kod. Semak rules review_codes admin create.", "error");
+    } finally {
+      btnGenerateCodes.disabled = false;
+      btnGenerateCodes.textContent = "Generate Kod";
+    }
+  }
+  function renderCodeListFromSnapshot(snapshot) {
+    if (!adminOk()) {
+      adminCodeList.textContent = "Login admin untuk lihat kod.";
+      return;
+    }
+    const codes = [];
+    snapshot.forEach(item => codes.push(item.id));
+    codes.sort();
+    if (!codes.length) {
+      adminCodeList.textContent = "Tiada kod tersedia.";
+      return;
+    }
+    adminCodeList.innerHTML = codes.map(code => `<button class="admin-code-pill" type="button" data-code="${escapeHtml(code)}">${escapeHtml(code)}</button>`).join("");
+    adminCodeList.querySelectorAll("[data-code]").forEach(btn => {
+      btn.addEventListener("click", () => copyText(btn.dataset.code));
+    });
+  }
+  onSnapshot(collection(db, "review_codes"), snapshot => {
+    latestCodeSnapshot = snapshot;
+    renderCodeListFromSnapshot(snapshot);
+  }, err => {
+    console.error(err);
+    if (adminCodeList) adminCodeList.textContent = "Gagal load kod. Semak rules Firebase.";
+  });
+  btnGenerateCodes.addEventListener("click", generateReviewCodes);
+  btnRefreshCodes.addEventListener("click", () => showToast("Senarai kod auto update dari Firebase.", "success"));
 
   // ── Ticker ────────────────────────────────────────────────────
   const tickerItems = [
@@ -846,6 +926,39 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       btn.textContent = "Simpan Ulasan";
     }
   }
+  function timestampToDatetimeLocal(ts) {
+    const date = ts?.toDate ? ts.toDate() : new Date();
+    const pad = n => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+  async function simpanEditMasa(id, value, btn, dataDoc) {
+    if (!value) {
+      showToast("Pilih tarikh dan masa dahulu.", "error");
+      return;
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      showToast("Tarikh atau masa tidak sah.", "error");
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = "Menyimpan...";
+    try {
+      const payload = { diciptaPada: Timestamp.fromDate(date), masaDieditPada: serverTimestamp() };
+      if (!dataDoc.balasanAdmin?.trim()) {
+        payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+        payload.balasanPada = serverTimestamp();
+      }
+      await updateDoc(doc(db,"ratings",id), payload);
+      showToast("Tarikh dan masa review berjaya diedit.", "success");
+    } catch(err) {
+      console.error(err);
+      showToast("Gagal edit masa. Semak rules admin update ratings.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Simpan Masa";
+    }
+  }
 
   // ── Filter & sort ─────────────────────────────────────────────
   let filterStar="all", sortMode="newest", allDocs=[];
@@ -984,6 +1097,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
               <button class="btn-batal-edit-ulasan">Batal</button>
             </div>
           </div>
+          <div class="admin-time-edit-form">
+            <input type="datetime-local" value="${escapeHtml(timestampToDatetimeLocal(data.diciptaPada))}">
+            <div class="admin-reply-form-actions">
+              <button class="btn-simpan-edit-masa">Simpan Masa</button>
+              <button class="btn-batal-edit-masa">Batal</button>
+            </div>
+          </div>
           ${adaFeedbackImg?`<button class="btn-see-feedback" type="button">See image</button>`:""}
           ${adaBalasan?`
           <button class="admin-reply-view-toggle" type="button" aria-expanded="false">Balasan admin ↓</button>
@@ -998,6 +1118,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
           <div class="admin-reply-form-actions" style="margin-top:6px;${adminOk()?"":"display:none;"}" data-admin-ctrl-row>
             <button class="reply-toggle-btn admin-action-btn admin-action-edit" title="Edit balasan">${adaBalasan?"Edit":"Balas"}</button>
             <button class="btn-edit-ulasan admin-action-btn admin-action-review" title="Edit ulasan pelanggan">Edit Ulasan</button>
+            <button class="btn-edit-masa admin-action-btn admin-action-time" title="Edit tarikh masa">Masa</button>
             <button class="btn-pin-ulasan admin-action-btn admin-action-pin${data.pinned===true?" is-active":""}" title="Semat ulasan">${data.pinned===true?"Unpin":"Pin"}</button>
             <button class="btn-badge-ulasan admin-action-btn admin-action-badge" title="Edit role badge">Role</button>
             <button class="btn-padam-ulasan admin-action-btn admin-action-delete" title="Padam ulasan">Del</button>
@@ -1022,6 +1143,11 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       const btnEditReview=card.querySelector(".btn-edit-ulasan");
       const btnSaveEditReview=card.querySelector(".btn-simpan-edit-ulasan");
       const btnCancelEditReview=card.querySelector(".btn-batal-edit-ulasan");
+      const editTimeForm=card.querySelector(".admin-time-edit-form");
+      const editTimeInput=editTimeForm.querySelector("input");
+      const btnEditTime=card.querySelector(".btn-edit-masa");
+      const btnSaveEditTime=card.querySelector(".btn-simpan-edit-masa");
+      const btnCancelEditTime=card.querySelector(".btn-batal-edit-masa");
       const btnPadam=card.querySelector(".btn-padam-ulasan");
       const btnPin=card.querySelector(".btn-pin-ulasan");
       const btnBadge=card.querySelector(".btn-badge-ulasan");
@@ -1046,6 +1172,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       });
       btnCancelEditReview.addEventListener("click",()=>editReviewForm.classList.remove("show"));
       btnSaveEditReview.addEventListener("click",()=>simpanEditUlasan(id, editReviewTa.value, btnSaveEditReview, data));
+      btnEditTime.addEventListener("click",()=>{
+        if(!mintaAdmin())return;
+        editTimeForm.classList.toggle("show");
+        if(editTimeForm.classList.contains("show")) editTimeInput.focus();
+      });
+      btnCancelEditTime.addEventListener("click",()=>editTimeForm.classList.remove("show"));
+      btnSaveEditTime.addEventListener("click",()=>simpanEditMasa(id, editTimeInput.value, btnSaveEditTime, data));
       btnBadge.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
         bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor);
