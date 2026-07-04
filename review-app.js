@@ -231,6 +231,15 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     const bg = gradient ? `linear-gradient(120deg, ${c1}, ${c2}, ${c1})` : c1;
     return `background:${bg}; color:${text}; --badge-glow:${glow}; box-shadow:0 4px 16px -8px ${glow}, inset 0 1px 0 rgba(255,255,255,.26); border:none;`;
   }
+  function medalStyle(data = {}) {
+    const bg = warnaHexSah(data.medalColor, '#f0a500');
+    const text = warnaHexSah(data.medalTextColor, '#ffffff');
+    return `background:${bg}; color:${text}; box-shadow:0 4px 14px -9px ${bg};`;
+  }
+  function medalMarkup(data = {}) {
+    const teks = (data.medalText || '').trim();
+    return teks ? `<span class="medal-badge" style="${medalStyle(data)}">${escapeHtml(teks)}</span>` : '';
+  }
   function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia) {
     editingBadgeId = id;
     badgeTextInput.value = teksSedia || '';
@@ -309,6 +318,139 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       badgeGradient: null,
       badgeAnimated: null
     }, "Badge dibuang, kembali ke default.", dataDoc);
+  });
+
+  // -- Customer Profile Editor (Admin) ----------------------------
+  const customerOverlayBg = document.getElementById('customerOverlayBg');
+  const customerPanelModal = document.getElementById('customerPanelModal');
+  const customerNameInput = document.getElementById('customerNameInput');
+  const customerColorInput = document.getElementById('customerColorInput');
+  const customerEmojiInput = document.getElementById('customerEmojiInput');
+  const customerAvatarPreview = document.getElementById('customerAvatarPreview');
+  const customerAvatarText = document.getElementById('customerAvatarText');
+  const customerNamePreview = document.getElementById('customerNamePreview');
+  const customerMedalPreview = document.getElementById('customerMedalPreview');
+  const medalTextInput = document.getElementById('medalTextInput');
+  const medalColorInput = document.getElementById('medalColorInput');
+  const medalTextColorInput = document.getElementById('medalTextColorInput');
+  const btnSuggestCustomerProfile = document.getElementById('btnSuggestCustomerProfile');
+  const btnRemoveCustomerImage = document.getElementById('btnRemoveCustomerImage');
+  const btnSaveCustomer = document.getElementById('btnSaveCustomer');
+  const btnRemoveMedal = document.getElementById('btnRemoveMedal');
+  const btnCancelCustomer = document.getElementById('btnCancelCustomer');
+  const profileSuggestions = [
+    { warna:'#2fa8e0', emoji:'H' }, { warna:'#22c47a', emoji:'V' },
+    { warna:'#7c3aed', emoji:'S' }, { warna:'#f0a500', emoji:'P' },
+    { warna:'#ef5da8', emoji:'A' }, { warna:'#14b8a6', emoji:'Z' },
+    { warna:'#0f2a45', emoji:'X' }, { warna:'#e05252', emoji:'M' }
+  ];
+  let editingCustomerId = null;
+  let removeCustomerImage = false;
+
+  function kemaskiniCustomerPreview() {
+    const nama = customerNameInput.value.trim() || 'Pelanggan';
+    const warna = warnaHexSah(customerColorInput.value, warnaAuto(nama));
+    const avatar = (customerEmojiInput.value.trim() || nama.charAt(0) || 'H').slice(0, 4).toUpperCase();
+    const medalText = medalTextInput.value.trim();
+    customerAvatarPreview.style.background = warna;
+    customerAvatarText.textContent = avatar;
+    customerNamePreview.textContent = nama;
+    customerMedalPreview.textContent = medalText || '#1';
+    customerMedalPreview.style.cssText = medalStyle({
+      medalColor: medalColorInput.value,
+      medalTextColor: medalTextColorInput.value
+    });
+    customerMedalPreview.style.display = medalText ? 'inline-flex' : 'none';
+  }
+
+  function bukaCustomerModal(id, data = {}) {
+    const nama = data.nama || 'Pelanggan';
+    editingCustomerId = id;
+    removeCustomerImage = false;
+    customerNameInput.value = nama;
+    customerColorInput.value = warnaHexSah(data.warnaProfil, warnaAuto(nama));
+    customerEmojiInput.value = data.emojiProfil || nama.charAt(0).toUpperCase();
+    medalTextInput.value = data.medalText || '';
+    medalColorInput.value = warnaHexSah(data.medalColor, '#f0a500');
+    medalTextColorInput.value = warnaHexSah(data.medalTextColor, '#ffffff');
+    btnRemoveCustomerImage.disabled = !data.profileImg;
+    btnRemoveCustomerImage.textContent = data.profileImg ? 'Buang Gambar Profil' : 'Tiada Gambar Profil';
+    kemaskiniCustomerPreview();
+    customerOverlayBg.classList.add('show');
+    customerPanelModal.classList.add('show');
+    setTimeout(() => customerNameInput.focus(), 50);
+  }
+
+  function tutupCustomerModal() {
+    customerOverlayBg.classList.remove('show');
+    customerPanelModal.classList.remove('show');
+    editingCustomerId = null;
+    removeCustomerImage = false;
+  }
+
+  async function simpanCustomerPayload(payload, mesejBerjaya, dataDoc) {
+    if (!editingCustomerId) return;
+    try {
+      if (!dataDoc.balasanAdmin?.trim()) {
+        payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+        payload.balasanPada = serverTimestamp();
+      }
+      await updateDoc(doc(db, "ratings", editingCustomerId), payload);
+      showToast(mesejBerjaya, "success");
+      tutupCustomerModal();
+    } catch (err) {
+      console.error(err);
+      showToast("Gagal kemaskini pelanggan.", "error");
+    }
+  }
+
+  [customerNameInput, customerColorInput, customerEmojiInput, medalTextInput, medalColorInput, medalTextColorInput]
+    .forEach(el => el.addEventListener('input', kemaskiniCustomerPreview));
+  customerOverlayBg.addEventListener('click', tutupCustomerModal);
+  btnCancelCustomer.addEventListener('click', tutupCustomerModal);
+  btnSuggestCustomerProfile.addEventListener('click', () => {
+    const nama = customerNameInput.value.trim() || 'Pelanggan';
+    const pilihan = profileSuggestions[Math.floor(Math.random() * profileSuggestions.length)];
+    customerColorInput.value = pilihan.warna;
+    customerEmojiInput.value = nama.charAt(0).toUpperCase() || pilihan.emoji;
+    removeCustomerImage = true;
+    btnRemoveCustomerImage.disabled = false;
+    btnRemoveCustomerImage.textContent = 'Gambar akan dibuang';
+    kemaskiniCustomerPreview();
+  });
+  btnRemoveCustomerImage.addEventListener('click', () => {
+    removeCustomerImage = true;
+    btnRemoveCustomerImage.disabled = false;
+    btnRemoveCustomerImage.textContent = 'Gambar akan dibuang';
+    kemaskiniCustomerPreview();
+  });
+  btnSaveCustomer.addEventListener('click', () => {
+    const nama = customerNameInput.value.trim();
+    if (nama.length < 1 || nama.length > 40) {
+      showToast("Nama pelanggan mesti 1 hingga 40 aksara.", "error");
+      return;
+    }
+    const emoji = customerEmojiInput.value.trim();
+    const medal = medalTextInput.value.trim();
+    const dataDoc = allDocs.find(d => d.id === editingCustomerId) || {};
+    const payload = {
+      nama,
+      warnaProfil: customerColorInput.value,
+      emojiProfil: emoji || null,
+      medalText: medal || null,
+      medalColor: medal ? medalColorInput.value : null,
+      medalTextColor: medal ? medalTextColorInput.value : null
+    };
+    if (removeCustomerImage) payload.profileImg = null;
+    simpanCustomerPayload(payload, "Profil pelanggan berjaya dikemaskini.", dataDoc);
+  });
+  btnRemoveMedal.addEventListener('click', () => {
+    const dataDoc = allDocs.find(d => d.id === editingCustomerId) || {};
+    simpanCustomerPayload({
+      medalText: null,
+      medalColor: null,
+      medalTextColor: null
+    }, "Pingat pelanggan dibuang.", dataDoc);
   });
 
   // -- Admin Config Modal ────────────────────────────────────────
@@ -1160,6 +1302,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
             <div class="buyer-name-container">
               ${data.pinned===true?`<span class="pin-badge">📌 Disematkan</span>`:""}
               <span class="buyer-name" style="${isReviewAdmin ? 'color: var(--accent);' : ''}">${escapeHtml(namaDisorok)}</span>
+              ${medalMarkup(data)}
               ${(rawBintang<0||rawBintang>5)?`<span style="background:linear-gradient(90deg,#f0a500,#e05252);color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.3px;">${rawBintang} Bintang</span>`:""}
               ${verifiedTag}
             </div>
@@ -1198,6 +1341,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
             <button class="reply-toggle-btn admin-action-btn admin-action-edit" title="Edit balasan">${adaBalasan?"Edit":"Balas"}</button>
             <button class="btn-edit-ulasan admin-action-btn admin-action-review" title="Edit ulasan pelanggan">Edit Ulasan</button>
             <button class="btn-edit-masa admin-action-btn admin-action-time" title="Edit tarikh masa">Masa</button>
+            <button class="btn-profile-ulasan admin-action-btn admin-action-profile" title="Edit nama, profil dan pingat">Profile</button>
             <button class="btn-pin-ulasan admin-action-btn admin-action-pin${data.pinned===true?" is-active":""}" title="Semat ulasan">${data.pinned===true?"Unpin":"Pin"}</button>
             <button class="btn-badge-ulasan admin-action-btn admin-action-badge" title="Edit role badge">Role</button>
             <button class="btn-padam-ulasan admin-action-btn admin-action-delete" title="Padam ulasan">Del</button>
@@ -1229,6 +1373,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       const btnCancelEditTime=card.querySelector(".btn-batal-edit-masa");
       const btnPadam=card.querySelector(".btn-padam-ulasan");
       const btnPin=card.querySelector(".btn-pin-ulasan");
+      const btnProfile=card.querySelector(".btn-profile-ulasan");
       const btnBadge=card.querySelector(".btn-badge-ulasan");
       const btnSeeFeedback=card.querySelector(".btn-see-feedback");
       const btnReplyView=card.querySelector(".admin-reply-view-toggle");
@@ -1261,6 +1406,10 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       btnBadge.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
         bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor);
+      });
+      btnProfile.addEventListener("click", ()=>{
+        if(!mintaAdmin())return;
+        bukaCustomerModal(id, data);
       });
       btnPin.addEventListener("click", async ()=>{
         if(!mintaAdmin())return;

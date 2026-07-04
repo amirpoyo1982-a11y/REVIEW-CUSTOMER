@@ -128,6 +128,61 @@
   </div>
 </div>
 
+<!-- ══ CUSTOMER PROFILE EDITOR (Admin) ══ -->
+<div id="customerOverlayBg" class="admin-overlay-bg"></div>
+<div id="customerPanelModal" class="admin-panel-modal">
+  <div class="admin-title">Edit Pelanggan</div>
+  <div class="admin-form-group">
+    <label>Nama Pelanggan</label>
+    <input type="text" id="customerNameInput" maxlength="40" placeholder="Nama pelanggan">
+  </div>
+  <div class="admin-form-group customer-designer">
+    <div class="customer-preview-row">
+      <div class="avatar-preview customer-avatar-preview" id="customerAvatarPreview">
+        <span class="av-letter" id="customerAvatarText">H</span>
+      </div>
+      <div class="customer-preview-copy">
+        <strong id="customerNamePreview">Pelanggan</strong>
+        <span id="customerMedalPreview" class="medal-badge">#1</span>
+        <small>Preview nama, profil dan pingat.</small>
+      </div>
+    </div>
+    <div class="badge-color-grid">
+      <div class="badge-color-field">
+        <label>Warna Profil</label>
+        <input type="color" id="customerColorInput" value="#2fa8e0">
+      </div>
+      <div class="badge-color-field">
+        <label>Emoji / Huruf Profil</label>
+        <input type="text" id="customerEmojiInput" maxlength="4" placeholder="H">
+      </div>
+    </div>
+    <div class="customer-tool-row">
+      <button type="button" class="admin-btn customer-tool-btn" id="btnSuggestCustomerProfile">Suggest Profil</button>
+      <button type="button" class="admin-btn customer-tool-btn danger" id="btnRemoveCustomerImage">Buang Gambar Profil</button>
+    </div>
+  </div>
+  <div class="admin-form-group customer-designer">
+    <label>Pingat Custom</label>
+    <input type="text" id="medalTextInput" maxlength="10" placeholder="Cth: #1, 10, VIP">
+    <div class="badge-color-grid" style="margin-top:10px;">
+      <div class="badge-color-field">
+        <label>Warna Pingat</label>
+        <input type="color" id="medalColorInput" value="#f0a500">
+      </div>
+      <div class="badge-color-field">
+        <label>Warna Text Pingat</label>
+        <input type="color" id="medalTextColorInput" value="#ffffff">
+      </div>
+    </div>
+  </div>
+  <div class="admin-btn-row">
+    <button class="admin-btn admin-btn-save" id="btnSaveCustomer">Simpan</button>
+    <button class="admin-btn" id="btnRemoveMedal" style="background:#fff6e0;color:#9a6400;">Buang Pingat</button>
+    <button class="admin-btn admin-btn-close" id="btnCancelCustomer">Batal</button>
+  </div>
+</div>
+
 <!-- ══ ADMIN LOGIN MODAL ══ -->
 <div id="adminLoginOverlayBg" class="admin-overlay-bg"></div>
 <div id="adminLoginModal" class="admin-panel-modal">
