@@ -548,7 +548,17 @@
     .review-content { flex-grow: 1; min-width: 0; }
     .review-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
     .buyer-name-container { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-    .buyer-name { font-weight: 700; color: var(--text); font-size: 14px; }
+    .buyer-name {
+      font-weight: 700; color: var(--text); font-size: 14px;
+      display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .buyer-name.custom-name { position: relative; background-size: 230% 230% !important; }
+    .buyer-name.custom-name.is-animated { animation: nameGradientMove 3.4s linear infinite; }
+    @keyframes nameGradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
     .verified-badge {
       background: var(--green-soft); color: #1a9c60; font-size: 9.5px;
       padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(34,196,122,.28);
@@ -631,6 +641,42 @@
       box-shadow: 0 10px 22px -14px rgba(47,168,224,.9);
     }
     .bulk-apply-btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .bulk-delete-btn,
+    .bulk-confirm-danger {
+      background: linear-gradient(120deg, #b83232, #e05252) !important;
+      color: #fff !important;
+      box-shadow: 0 10px 22px -14px rgba(224,82,82,.9);
+    }
+    .bulk-select-modal { max-width: 640px; }
+    .bulk-select-toolbar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      padding: 10px; margin-bottom: 10px; border-radius: 12px;
+      background: rgba(47,168,224,.07); border: 1px solid var(--line-mid);
+    }
+    .bulk-select-toolbar #bulkSelectedCount {
+      margin-left: auto; color: var(--text-mid); font-size: 12px; font-weight: 850;
+    }
+    .bulk-review-list {
+      display: grid; gap: 8px; max-height: min(52vh, 430px); overflow-y: auto;
+      padding: 4px 2px 8px;
+    }
+    .bulk-review-item {
+      display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px;
+      padding: 10px 12px; border: 1px solid var(--line-mid); border-radius: 12px;
+      background: #fff; cursor: pointer; transition: border-color .12s, transform .12s, background .12s;
+    }
+    .bulk-review-item:hover { transform: translateY(-1px); border-color: rgba(47,168,224,.35); background: #f8fbff; }
+    .bulk-review-check { width: 18px; height: 18px; accent-color: var(--accent); }
+    .bulk-review-main { min-width: 0; display: grid; gap: 2px; }
+    .bulk-review-main strong {
+      color: var(--text); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .bulk-review-main small { color: var(--text-dim); font-size: 11px; }
+    .bulk-mini-badge {
+      max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      padding: 3px 8px; border-radius: 999px; background: var(--accent-soft);
+      color: var(--accent2); font-size: 10px; font-weight: 900;
+    }
     .medal-preset-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
     .medal-preset {
       border: 1px solid var(--line-mid); background: #fff; color: var(--text-mid);
@@ -894,6 +940,9 @@
     :root[data-theme="dark"] .medal-preset,
     :root[data-theme="dark"] .badge-color-field select { background: #13243a; color: var(--text-mid); border-color: rgba(148,163,184,.22); }
     :root[data-theme="dark"] .review-text-toggle { background: rgba(47,168,224,.12); }
+    :root[data-theme="dark"] .bulk-select-toolbar { background: rgba(47,168,224,.1); }
+    :root[data-theme="dark"] .bulk-review-item { background: #0f1f33; border-color: rgba(148,163,184,.18); }
+    :root[data-theme="dark"] .bulk-review-item:hover { background: #132a44; }
     :root[data-theme="dark"] .review-card:hover { background: #11243a; }
     :root[data-theme="dark"] .btn-batal-balasan { background: #1b2f46; color: var(--text-mid); }
 

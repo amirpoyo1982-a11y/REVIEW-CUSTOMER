@@ -81,6 +81,7 @@
   </div>
   <div class="admin-btn-row">
     <button class="admin-btn admin-btn-save" id="btnSaveAdmin">Simpan</button>
+    <button class="admin-btn bulk-delete-btn" id="btnOpenBulkDelete" type="button">Delete Pilihan</button>
     <button class="admin-btn admin-btn-close" id="btnCloseAdmin">Tutup</button>
   </div>
 </div>
@@ -123,7 +124,7 @@
   </div>
   <div class="admin-btn-row">
     <button class="admin-btn admin-btn-save" id="btnSaveBadge">Simpan</button>
-    <button class="admin-btn bulk-apply-btn" id="btnApplyBadgeAll">Apply Role Semua</button>
+    <button class="admin-btn bulk-apply-btn" id="btnApplyBadgeAll">Pilih Apply Role</button>
     <button class="admin-btn" id="btnRemoveBadge" style="background:#fef0f0;color:#b83232;">Buang Badge</button>
     <button class="admin-btn admin-btn-close" id="btnCancelBadge">Batal</button>
   </div>
@@ -161,6 +162,36 @@
     <div class="customer-tool-row">
       <button type="button" class="admin-btn customer-tool-btn" id="btnSuggestCustomerProfile">Suggest Profil</button>
       <button type="button" class="admin-btn customer-tool-btn danger" id="btnRemoveCustomerImage">Buang Gambar Profil</button>
+    </div>
+  </div>
+  <div class="admin-form-group customer-designer">
+    <label>Warna Nama Custom</label>
+    <div class="badge-toggle-row">
+      <span class="badge-switch"><input type="checkbox" id="nameColorEnabledToggle"> Aktifkan warna nama</span>
+      <span class="badge-switch"><input type="checkbox" id="nameGradientToggle" checked> Gradient</span>
+      <span class="badge-switch"><input type="checkbox" id="nameAnimatedToggle" checked> Warna bergerak</span>
+    </div>
+    <div class="badge-color-grid" style="margin-top:10px;">
+      <div class="badge-color-field">
+        <label>Warna Nama 1</label>
+        <input type="color" id="nameColorInput" value="#2fa8e0">
+      </div>
+      <div class="badge-color-field">
+        <label>Warna Nama 2</label>
+        <input type="color" id="nameColor2Input" value="#7c3aed">
+      </div>
+      <div class="badge-color-field">
+        <label>Glow Nama</label>
+        <input type="color" id="nameGlowColorInput" value="#2fa8e0">
+      </div>
+      <div class="badge-color-field">
+        <label>Berat Font</label>
+        <select id="nameWeightSelect">
+          <option value="700">Normal Bold</option>
+          <option value="800">Extra Bold</option>
+          <option value="900">Super Bold</option>
+        </select>
+      </div>
     </div>
   </div>
   <div class="admin-form-group customer-designer">
@@ -261,9 +292,27 @@
   </div>
   <div class="admin-btn-row">
     <button class="admin-btn admin-btn-save" id="btnSaveCustomer">Simpan</button>
-    <button class="admin-btn bulk-apply-btn" id="btnApplyMedalAll">Apply Pingat Semua</button>
+    <button class="admin-btn bulk-apply-btn" id="btnApplyNameAll">Pilih Apply Nama</button>
+    <button class="admin-btn bulk-apply-btn" id="btnApplyMedalAll">Pilih Apply Pingat</button>
+    <button class="admin-btn" id="btnRemoveNameColor" style="background:#eef2ff;color:#4550b8;">Buang Warna Nama</button>
     <button class="admin-btn" id="btnRemoveMedal" style="background:#fff6e0;color:#9a6400;">Buang Pingat</button>
     <button class="admin-btn admin-btn-close" id="btnCancelCustomer">Batal</button>
+  </div>
+</div>
+
+<!-- ══ BULK SELECT MODAL (Admin) ══ -->
+<div id="bulkSelectOverlayBg" class="admin-overlay-bg"></div>
+<div id="bulkSelectModal" class="admin-panel-modal bulk-select-modal">
+  <div class="admin-title" id="bulkSelectTitle">Pilih Ulasan</div>
+  <div class="bulk-select-toolbar">
+    <button type="button" class="admin-btn customer-tool-btn" id="btnBulkSelectAll">Select All</button>
+    <button type="button" class="admin-btn customer-tool-btn" id="btnBulkClearAll">Clear</button>
+    <span id="bulkSelectedCount">0 dipilih</span>
+  </div>
+  <div id="bulkReviewList" class="bulk-review-list"></div>
+  <div class="admin-btn-row">
+    <button class="admin-btn admin-btn-save" id="btnBulkConfirm">Teruskan</button>
+    <button class="admin-btn admin-btn-close" id="btnBulkCancel">Batal</button>
   </div>
 </div>
 

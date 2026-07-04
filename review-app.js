@@ -243,6 +243,22 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     const border = outline ? `1.5px solid ${glow}` : '1px solid rgba(255,255,255,.48)';
     return `background:${bg}; color:${text}; --medal-glow:${glow}; border:${border}; box-shadow:0 5px 18px -9px ${glow}, inset 0 1px 0 rgba(255,255,255,.28);`;
   }
+  function nameStyle(data = {}, isReviewAdmin = false) {
+    if (data.nameColorEnabled !== true) {
+      return isReviewAdmin ? 'color: var(--accent);' : '';
+    }
+    const c1 = warnaHexSah(data.nameColor, '#2fa8e0');
+    const c2 = warnaHexSah(data.nameColor2, '#7c3aed');
+    const glow = warnaHexSah(data.nameGlowColor, c1);
+    const weight = ['700','800','900'].includes(String(data.nameWeight)) ? String(data.nameWeight) : '800';
+    const gradient = data.nameGradient !== false;
+    const base = `font-weight:${weight}; text-shadow:0 2px 12px ${glow}55;`;
+    if (!gradient) return `${base} color:${c1};`;
+    return `${base} color:${c1}; background:linear-gradient(120deg, ${c1}, ${c2}, ${c1}); background-size:230% 230%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;`;
+  }
+  function nameClass(data = {}) {
+    return 'buyer-name custom-name' + (data.nameColorEnabled === true && data.nameAnimated !== false && data.nameGradient !== false ? ' is-animated' : '');
+  }
   function medalMarkup(data = {}) {
     const teks = (data.medalText || '').trim();
     if (!teks) return '';
@@ -296,20 +312,124 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     return next;
   }
 
-  async function applyPayloadSemua(basePayload, label, closeModalFn) {
+  const bulkSelectOverlayBg = document.getElementById('bulkSelectOverlayBg');
+  const bulkSelectModal = document.getElementById('bulkSelectModal');
+  const bulkSelectTitle = document.getElementById('bulkSelectTitle');
+  const bulkReviewList = document.getElementById('bulkReviewList');
+  const bulkSelectedCount = document.getElementById('bulkSelectedCount');
+  const btnBulkSelectAll = document.getElementById('btnBulkSelectAll');
+  const btnBulkClearAll = document.getElementById('btnBulkClearAll');
+  const btnBulkConfirm = document.getElementById('btnBulkConfirm');
+  const btnBulkCancel = document.getElementById('btnBulkCancel');
+  let bulkAction = null;
+
+  function bulkCheckedDocs() {
+    const ids = [...bulkReviewList.querySelectorAll('.bulk-review-check:checked')].map(input => input.value);
+    return allDocs.filter(item => ids.includes(item.id));
+  }
+
+  function updateBulkSelectedCount() {
+    const jumlah = bulkReviewList.querySelectorAll('.bulk-review-check:checked').length;
+    bulkSelectedCount.textContent = `${jumlah} dipilih`;
+    btnBulkConfirm.disabled = jumlah === 0;
+  }
+
+  function tutupBulkSelect() {
+    bulkSelectOverlayBg.classList.remove('show');
+    bulkSelectModal.classList.remove('show');
+    bulkAction = null;
+    bulkReviewList.innerHTML = '';
+  }
+
+  function bukaBulkSelect({ title, confirmText, danger = false, onConfirm }) {
     if (!adminOk()) { bukaAdminLogin(); return; }
-    if (!allDocs.length) { showToast("Tiada ulasan untuk dikemaskini.", "error"); return; }
-    if (!confirm(`${label} untuk semua ${allDocs.length} ulasan?`)) return;
-    const tasks = allDocs.map(dataDoc => updateDoc(doc(db, "ratings", dataDoc.id), withAutoReply(basePayload, dataDoc)));
+    if (!allDocs.length) { showToast("Tiada ulasan untuk dipilih.", "error"); return; }
+    bulkAction = { onConfirm, danger };
+    bulkSelectTitle.textContent = title;
+    btnBulkConfirm.textContent = confirmText || 'Teruskan';
+    btnBulkConfirm.classList.toggle('bulk-confirm-danger', danger);
+    bulkReviewList.innerHTML = allDocs.map(data => {
+      const nama = escapeHtml(data.nama || 'Pelanggan Misteri');
+      const bintang = clampBintang(data.bintang);
+      const masa = reviewDateText(data);
+      const badge = data.badgeText?.trim() ? `<span class="bulk-mini-badge">${escapeHtml(data.badgeText)}</span>` : '';
+      return `
+        <label class="bulk-review-item">
+          <input class="bulk-review-check" type="checkbox" value="${escapeHtml(data.id)}">
+          <span class="bulk-review-main">
+            <strong>${nama}</strong>
+            <small>${'★'.repeat(bintang)}${'☆'.repeat(5-bintang)} · ${escapeHtml(masa)}</small>
+          </span>
+          ${badge}
+        </label>`;
+    }).join('');
+    bulkReviewList.querySelectorAll('.bulk-review-check').forEach(input => {
+      input.addEventListener('change', updateBulkSelectedCount);
+    });
+    updateBulkSelectedCount();
+    bulkSelectOverlayBg.classList.add('show');
+    bulkSelectModal.classList.add('show');
+  }
+
+  async function applyPayloadPilihan(basePayload, label, closeModalFn) {
+    bukaBulkSelect({
+      title: `Pilih ulasan untuk ${label}`,
+      confirmText: `Apply ${label}`,
+      onConfirm: async (selectedDocs) => {
+        const tasks = selectedDocs.map(dataDoc => updateDoc(doc(db, "ratings", dataDoc.id), withAutoReply(basePayload, dataDoc)));
+        await Promise.all(tasks);
+        showToast(`${label} berjaya untuk ${selectedDocs.length} ulasan.`, "success");
+        closeModalFn?.();
+      }
+    });
+  }
+
+  async function deletePilihan() {
+    bukaBulkSelect({
+      title: 'Pilih ulasan untuk delete',
+      confirmText: 'Delete Pilihan',
+      danger: true,
+      onConfirm: async (selectedDocs) => {
+        if (!confirm(`Padam ${selectedDocs.length} ulasan yang dipilih? Tindakan ni tak boleh diundur.`)) return false;
+        await Promise.all(selectedDocs.map(dataDoc => deleteDoc(doc(db, "ratings", dataDoc.id))));
+        showToast(`${selectedDocs.length} ulasan berjaya dipadam.`, "success");
+      }
+    });
+  }
+
+  btnBulkSelectAll.addEventListener('click', () => {
+    bulkReviewList.querySelectorAll('.bulk-review-check').forEach(input => input.checked = true);
+    updateBulkSelectedCount();
+  });
+  btnBulkClearAll.addEventListener('click', () => {
+    bulkReviewList.querySelectorAll('.bulk-review-check').forEach(input => input.checked = false);
+    updateBulkSelectedCount();
+  });
+  btnBulkCancel.addEventListener('click', tutupBulkSelect);
+  bulkSelectOverlayBg.addEventListener('click', tutupBulkSelect);
+  btnBulkConfirm.addEventListener('click', async () => {
+    if (!bulkAction) return;
+    const selectedDocs = bulkCheckedDocs();
+    if (!selectedDocs.length) { showToast("Tick sekurang-kurangnya satu ulasan.", "error"); return; }
+    btnBulkConfirm.disabled = true;
+    const asalText = btnBulkConfirm.textContent;
+    btnBulkConfirm.textContent = bulkAction.danger ? 'Memadam...' : 'Mengemaskini...';
     try {
-      await Promise.all(tasks);
-      showToast(`${label} berjaya untuk semua ulasan.`, "success");
-      closeModalFn?.();
+      const result = await bulkAction.onConfirm(selectedDocs);
+      if (result === false) {
+        btnBulkConfirm.disabled = false;
+        btnBulkConfirm.textContent = asalText;
+        updateBulkSelectedCount();
+        return;
+      }
+      tutupBulkSelect();
     } catch (err) {
       console.error(err);
-      showToast(`${label} gagal. Semak Firestore rules.`, "error");
+      showToast("Gagal proses pilihan. Semak Firestore rules.", "error");
+      btnBulkConfirm.disabled = false;
+      btnBulkConfirm.textContent = asalText;
     }
-  }
+  });
 
   function getBadgePayloadFromInputs() {
     const teks = badgeTextInput.value.trim();
@@ -347,7 +467,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   btnApplyBadgeAll.addEventListener('click', () => {
     const payload = getBadgePayloadFromInputs();
     if (!payload) { showToast("Taip teks role dulu sebelum apply semua.", "error"); return; }
-    applyPayloadSemua(payload, "Role", tutupBadgeModal);
+    applyPayloadPilihan(payload, "Role", tutupBadgeModal);
   });
   btnRemoveBadge.addEventListener('click', () => {
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
@@ -371,6 +491,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const customerAvatarPreview = document.getElementById('customerAvatarPreview');
   const customerAvatarText = document.getElementById('customerAvatarText');
   const customerNamePreview = document.getElementById('customerNamePreview');
+  const nameColorEnabledToggle = document.getElementById('nameColorEnabledToggle');
+  const nameColorInput = document.getElementById('nameColorInput');
+  const nameColor2Input = document.getElementById('nameColor2Input');
+  const nameGlowColorInput = document.getElementById('nameGlowColorInput');
+  const nameGradientToggle = document.getElementById('nameGradientToggle');
+  const nameAnimatedToggle = document.getElementById('nameAnimatedToggle');
+  const nameWeightSelect = document.getElementById('nameWeightSelect');
   const customerMedalPreview = document.getElementById('customerMedalPreview');
   const medalLivePreview = document.getElementById('medalLivePreview');
   const medalTextInput = document.getElementById('medalTextInput');
@@ -392,7 +519,9 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const btnSuggestCustomerProfile = document.getElementById('btnSuggestCustomerProfile');
   const btnRemoveCustomerImage = document.getElementById('btnRemoveCustomerImage');
   const btnSaveCustomer = document.getElementById('btnSaveCustomer');
+  const btnApplyNameAll = document.getElementById('btnApplyNameAll');
   const btnApplyMedalAll = document.getElementById('btnApplyMedalAll');
+  const btnRemoveNameColor = document.getElementById('btnRemoveNameColor');
   const btnRemoveMedal = document.getElementById('btnRemoveMedal');
   const btnCancelCustomer = document.getElementById('btnCancelCustomer');
   const profileSuggestions = [
@@ -439,6 +568,20 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     customerAvatarPreview.style.background = warna;
     customerAvatarText.textContent = avatar;
     customerNamePreview.textContent = nama;
+    customerNamePreview.className = nameClass({
+      nameColorEnabled: nameColorEnabledToggle.checked,
+      nameAnimated: nameAnimatedToggle.checked,
+      nameGradient: nameGradientToggle.checked
+    });
+    customerNamePreview.style.cssText = nameStyle({
+      nameColorEnabled: nameColorEnabledToggle.checked,
+      nameColor: nameColorInput.value,
+      nameColor2: nameColor2Input.value,
+      nameGlowColor: nameGlowColorInput.value,
+      nameGradient: nameGradientToggle.checked,
+      nameAnimated: nameAnimatedToggle.checked,
+      nameWeight: nameWeightSelect.value
+    });
     customerMedalPreview.textContent = medalPreviewText;
     customerMedalPreview.className = medalClass;
     customerMedalPreview.style.cssText = medalCss;
@@ -455,6 +598,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     customerNameInput.value = nama;
     customerColorInput.value = warnaHexSah(data.warnaProfil, warnaAuto(nama));
     customerEmojiInput.value = data.emojiProfil || nama.charAt(0).toUpperCase();
+    nameColorEnabledToggle.checked = data.nameColorEnabled === true;
+    nameColorInput.value = warnaHexSah(data.nameColor, '#2fa8e0');
+    nameColor2Input.value = warnaHexSah(data.nameColor2, '#7c3aed');
+    nameGlowColorInput.value = warnaHexSah(data.nameGlowColor, warnaHexSah(data.nameColor, '#2fa8e0'));
+    nameGradientToggle.checked = data.nameGradient !== false;
+    nameAnimatedToggle.checked = data.nameAnimated !== false;
+    nameWeightSelect.value = ['700','800','900'].includes(String(data.nameWeight)) ? String(data.nameWeight) : '800';
     medalTextInput.value = data.medalText || '';
     medalColorInput.value = warnaHexSah(data.medalColor, '#f0a500');
     medalColor2Input.value = warnaHexSah(data.medalColor2, '#e05252');
@@ -502,7 +652,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     }
   }
 
-  [customerNameInput, customerColorInput, customerEmojiInput, medalTextInput, medalColorInput, medalColor2Input, medalTextColorInput, medalGlowColorInput, medalShapeSelect, medalSizeSelect, medalGradientToggle, medalAnimatedToggle, medalOutlineToggle]
+  [customerNameInput, customerColorInput, customerEmojiInput, nameColorEnabledToggle, nameColorInput, nameColor2Input, nameGlowColorInput, nameGradientToggle, nameAnimatedToggle, nameWeightSelect, medalTextInput, medalColorInput, medalColor2Input, medalTextColorInput, medalGlowColorInput, medalShapeSelect, medalSizeSelect, medalGradientToggle, medalAnimatedToggle, medalOutlineToggle]
     .forEach(el => {
       el.addEventListener('input', kemaskiniCustomerPreview);
       el.addEventListener('change', kemaskiniCustomerPreview);
@@ -555,6 +705,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       nama,
       warnaProfil: customerColorInput.value,
       emojiProfil: emoji || null,
+      nameColorEnabled: nameColorEnabledToggle.checked,
+      nameColor: nameColorEnabledToggle.checked ? nameColorInput.value : null,
+      nameColor2: nameColorEnabledToggle.checked ? nameColor2Input.value : null,
+      nameGlowColor: nameColorEnabledToggle.checked ? nameGlowColorInput.value : null,
+      nameGradient: nameColorEnabledToggle.checked ? nameGradientToggle.checked : null,
+      nameAnimated: nameColorEnabledToggle.checked ? nameAnimatedToggle.checked : null,
+      nameWeight: nameColorEnabledToggle.checked ? nameWeightSelect.value : null,
       medalText: medal || null,
       medalColor: medal ? medalColorInput.value : null,
       medalColor2: medal ? medalColor2Input.value : null,
@@ -575,6 +732,35 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     if (removeCustomerImage) payload.profileImg = null;
     simpanCustomerPayload(payload, "Profil pelanggan berjaya dikemaskini.", dataDoc);
   });
+  function getNamePayloadFromInputs() {
+    if (!nameColorEnabledToggle.checked) return null;
+    return {
+      nameColorEnabled: true,
+      nameColor: nameColorInput.value,
+      nameColor2: nameColor2Input.value,
+      nameGlowColor: nameGlowColorInput.value,
+      nameGradient: nameGradientToggle.checked,
+      nameAnimated: nameAnimatedToggle.checked,
+      nameWeight: nameWeightSelect.value
+    };
+  }
+  btnApplyNameAll.addEventListener('click', () => {
+    const payload = getNamePayloadFromInputs();
+    if (!payload) { showToast("Aktifkan warna nama dulu sebelum apply semua.", "error"); return; }
+    applyPayloadPilihan(payload, "Warna nama", tutupCustomerModal);
+  });
+  btnRemoveNameColor.addEventListener('click', () => {
+    const dataDoc = allDocs.find(d => d.id === editingCustomerId) || {};
+    simpanCustomerPayload({
+      nameColorEnabled: false,
+      nameColor: null,
+      nameColor2: null,
+      nameGlowColor: null,
+      nameGradient: null,
+      nameAnimated: null,
+      nameWeight: null
+    }, "Warna nama dibuang.", dataDoc);
+  });
   function getMedalPayloadFromInputs() {
     const medal = medalTextInput.value.trim();
     if (!medal) return null;
@@ -594,7 +780,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   btnApplyMedalAll.addEventListener('click', () => {
     const payload = getMedalPayloadFromInputs();
     if (!payload) { showToast("Taip teks pingat dulu sebelum apply semua.", "error"); return; }
-    applyPayloadSemua(payload, "Pingat", tutupCustomerModal);
+    applyPayloadPilihan(payload, "Pingat", tutupCustomerModal);
   });
   btnRemoveMedal.addEventListener('click', () => {
     const dataDoc = allDocs.find(d => d.id === editingCustomerId) || {};
@@ -615,6 +801,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   // -- Admin Config Modal ────────────────────────────────────────
   const btnOpenAdminConfig = document.getElementById('btnOpenAdminConfig');
   const btnLogoutAdmin = document.getElementById('btnLogoutAdmin');
+  const btnOpenBulkDelete = document.getElementById('btnOpenBulkDelete');
   const adminOverlayBg = document.getElementById('adminOverlayBg');
   const adminPanelModal = document.getElementById('adminPanelModal');
   const btnCloseAdmin = document.getElementById('btnCloseAdmin');
@@ -689,6 +876,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   btnCloseAdmin.addEventListener('click', () => {
     adminOverlayBg.classList.remove('show');
     adminPanelModal.classList.remove('show');
+  });
+
+  btnOpenBulkDelete.addEventListener('click', () => {
+    if (!mintaAdmin()) return;
+    adminOverlayBg.classList.remove('show');
+    adminPanelModal.classList.remove('show');
+    deletePilihan();
   });
 
   btnSaveAdmin.addEventListener('click', async () => {
@@ -1466,7 +1660,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
           <div class="review-header">
             <div class="buyer-name-container">
               ${data.pinned===true?`<span class="pin-badge">📌 Disematkan</span>`:""}
-              <span class="buyer-name" style="${isReviewAdmin ? 'color: var(--accent);' : ''}">${escapeHtml(namaDisorok)}</span>
+              <span class="${nameClass(data)}" style="${nameStyle(data, isReviewAdmin)}">${escapeHtml(namaDisorok)}</span>
               ${medalMarkup(data)}
               ${(rawBintang<0||rawBintang>5)?`<span style="background:linear-gradient(90deg,#f0a500,#e05252);color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.3px;">${rawBintang} Bintang</span>`:""}
               ${verifiedTag}
