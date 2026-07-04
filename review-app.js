@@ -215,6 +215,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const badgeAnimatedToggle  = document.getElementById('badgeAnimatedToggle');
   const badgeLivePreview     = document.getElementById('badgeLivePreview');
   const btnSaveBadge         = document.getElementById('btnSaveBadge');
+  const btnApplyBadgeAll     = document.getElementById('btnApplyBadgeAll');
   const btnRemoveBadge       = document.getElementById('btnRemoveBadge');
   const btnCancelBadge       = document.getElementById('btnCancelBadge');
   let editingBadgeId = null;
@@ -286,16 +287,50 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   badgeOverlayBg.addEventListener('click', tutupBadgeModal);
   btnCancelBadge.addEventListener('click', tutupBadgeModal);
 
+  function withAutoReply(payload, dataDoc = {}) {
+    const next = { ...payload };
+    if (!dataDoc.balasanAdmin?.trim()) {
+      next.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+      next.balasanPada = serverTimestamp();
+    }
+    return next;
+  }
+
+  async function applyPayloadSemua(basePayload, label, closeModalFn) {
+    if (!adminOk()) { bukaAdminLogin(); return; }
+    if (!allDocs.length) { showToast("Tiada ulasan untuk dikemaskini.", "error"); return; }
+    if (!confirm(`${label} untuk semua ${allDocs.length} ulasan?`)) return;
+    const tasks = allDocs.map(dataDoc => updateDoc(doc(db, "ratings", dataDoc.id), withAutoReply(basePayload, dataDoc)));
+    try {
+      await Promise.all(tasks);
+      showToast(`${label} berjaya untuk semua ulasan.`, "success");
+      closeModalFn?.();
+    } catch (err) {
+      console.error(err);
+      showToast(`${label} gagal. Semak Firestore rules.`, "error");
+    }
+  }
+
+  function getBadgePayloadFromInputs() {
+    const teks = badgeTextInput.value.trim();
+    if (!teks) return null;
+    return {
+      badgeText: teks,
+      badgeColor: badgeColorInput.value,
+      badgeColor2: badgeColorInput2.value,
+      badgeTextColor: badgeTextColorInput.value,
+      badgeGlowColor: badgeGlowColorInput.value,
+      badgeGradient: badgeGradientToggle.checked,
+      badgeAnimated: badgeAnimatedToggle.checked
+    };
+  }
+
   async function simpanBadgePayload(payload, mesejBerjaya, dataDoc) {
     if (!editingBadgeId) return;
     try {
       // Rules 'update' wajibkan balasanAdmin sentiasa string sah - isi auto-reply
       // dulu kalau ulasan ni belum pernah dapat balasan.
-      if (!dataDoc.balasanAdmin?.trim()) {
-        payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
-        payload.balasanPada = serverTimestamp();
-      }
-      await updateDoc(doc(db,"ratings",editingBadgeId), payload);
+      await updateDoc(doc(db,"ratings",editingBadgeId), withAutoReply(payload, dataDoc));
       showToast(mesejBerjaya, "success");
       tutupBadgeModal();
     } catch(err) {
@@ -304,18 +339,15 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     }
   }
   btnSaveBadge.addEventListener('click', () => {
-    const teks = badgeTextInput.value.trim();
-    if (!teks) { showToast("Taip teks badge dulu, atau guna 'Buang Badge'.", "error"); return; }
+    const payload = getBadgePayloadFromInputs();
+    if (!payload) { showToast("Taip teks badge dulu, atau guna 'Buang Badge'.", "error"); return; }
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
-    simpanBadgePayload({
-      badgeText: teks,
-      badgeColor: badgeColorInput.value,
-      badgeColor2: badgeColorInput2.value,
-      badgeTextColor: badgeTextColorInput.value,
-      badgeGlowColor: badgeGlowColorInput.value,
-      badgeGradient: badgeGradientToggle.checked,
-      badgeAnimated: badgeAnimatedToggle.checked
-    }, "Badge berjaya disimpan!", dataDoc);
+    simpanBadgePayload(payload, "Badge berjaya disimpan!", dataDoc);
+  });
+  btnApplyBadgeAll.addEventListener('click', () => {
+    const payload = getBadgePayloadFromInputs();
+    if (!payload) { showToast("Taip teks role dulu sebelum apply semua.", "error"); return; }
+    applyPayloadSemua(payload, "Role", tutupBadgeModal);
   });
   btnRemoveBadge.addEventListener('click', () => {
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
@@ -360,6 +392,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const btnSuggestCustomerProfile = document.getElementById('btnSuggestCustomerProfile');
   const btnRemoveCustomerImage = document.getElementById('btnRemoveCustomerImage');
   const btnSaveCustomer = document.getElementById('btnSaveCustomer');
+  const btnApplyMedalAll = document.getElementById('btnApplyMedalAll');
   const btnRemoveMedal = document.getElementById('btnRemoveMedal');
   const btnCancelCustomer = document.getElementById('btnCancelCustomer');
   const profileSuggestions = [
@@ -541,6 +574,27 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     };
     if (removeCustomerImage) payload.profileImg = null;
     simpanCustomerPayload(payload, "Profil pelanggan berjaya dikemaskini.", dataDoc);
+  });
+  function getMedalPayloadFromInputs() {
+    const medal = medalTextInput.value.trim();
+    if (!medal) return null;
+    return {
+      medalText: medal,
+      medalColor: medalColorInput.value,
+      medalColor2: medalColor2Input.value,
+      medalTextColor: medalTextColorInput.value,
+      medalGlowColor: medalGlowColorInput.value,
+      medalShape: medalShapeSelect.value,
+      medalSize: medalSizeSelect.value,
+      medalGradient: medalGradientToggle.checked,
+      medalAnimated: medalAnimatedToggle.checked,
+      medalOutline: medalOutlineToggle.checked
+    };
+  }
+  btnApplyMedalAll.addEventListener('click', () => {
+    const payload = getMedalPayloadFromInputs();
+    if (!payload) { showToast("Taip teks pingat dulu sebelum apply semua.", "error"); return; }
+    applyPayloadSemua(payload, "Pingat", tutupCustomerModal);
   });
   btnRemoveMedal.addEventListener('click', () => {
     const dataDoc = allDocs.find(d => d.id === editingCustomerId) || {};

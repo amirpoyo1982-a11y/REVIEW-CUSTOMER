@@ -625,6 +625,12 @@
     .customer-tool-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .customer-tool-btn { padding: 9px 12px; font-size: 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent2); }
     .customer-tool-btn.danger { background: #fef0f0; color: #b83232; }
+    .bulk-apply-btn {
+      background: linear-gradient(120deg, #0f2a45, #2fa8e0);
+      color: #fff;
+      box-shadow: 0 10px 22px -14px rgba(47,168,224,.9);
+    }
+    .bulk-apply-btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
     .medal-preset-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
     .medal-preset {
       border: 1px solid var(--line-mid); background: #fff; color: var(--text-mid);
