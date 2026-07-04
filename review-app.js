@@ -1096,6 +1096,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
 
       const card=document.createElement("div");
       card.className="review-card"+(data.pinned===true?" is-pinned":"");
+      card.dataset.reviewId = id;
       card.style.animationDelay=`${i*36}ms`;
       card.innerHTML=`
         <div class="avatar" style="background:${warna}">${avatarInner}</div>
@@ -1282,6 +1283,21 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
         ${replied ? `<div class="ss-admin-responded">Admin responded</div>` : ""}
       </div>`;
   }
+  function getVisibleReviewList() {
+    const byId = new Map(allDocs.map(item => [item.id, item]));
+    const boxRect = kotakPaparan.getBoundingClientRect();
+    const visible = [...kotakPaparan.querySelectorAll(".review-card")]
+      .map(card => {
+        const rect = card.getBoundingClientRect();
+        const overlap = Math.min(rect.bottom, boxRect.bottom) - Math.max(rect.top, boxRect.top);
+        return { card, overlap, top: rect.top };
+      })
+      .filter(item => item.overlap > 24)
+      .sort((a,b) => a.top - b.top)
+      .map(item => byId.get(item.card.dataset.reviewId))
+      .filter(Boolean);
+    return visible.slice(0, 6);
+  }
   function canvasToPngBlob(canvas) {
     return new Promise((resolve, reject) => {
       canvas.toBlob(blob => {
@@ -1301,9 +1317,9 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       showToast("Library screenshot belum siap dimuat. Cuba tekan sekali lagi.", "error");
       return;
     }
-    const list = getCurrentReviewList().slice(0, 6);
+    const list = getVisibleReviewList();
     if (!list.length) {
-      showToast("Tiada review untuk screenshot.", "error");
+      showToast("Tiada review yang sedang nampak untuk screenshot.", "error");
       return;
     }
     btnReviewScreenshot.disabled = true;
