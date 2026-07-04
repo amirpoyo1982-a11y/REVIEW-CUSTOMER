@@ -340,6 +340,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const customerAvatarText = document.getElementById('customerAvatarText');
   const customerNamePreview = document.getElementById('customerNamePreview');
   const customerMedalPreview = document.getElementById('customerMedalPreview');
+  const medalLivePreview = document.getElementById('medalLivePreview');
   const medalTextInput = document.getElementById('medalTextInput');
   const medalColorInput = document.getElementById('medalColorInput');
   const medalColor2Input = document.getElementById('medalColor2Input');
@@ -392,12 +393,9 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     const warna = warnaHexSah(customerColorInput.value, warnaAuto(nama));
     const avatar = (customerEmojiInput.value.trim() || nama.charAt(0) || 'H').slice(0, 4).toUpperCase();
     const medalText = medalTextInput.value.trim();
-    customerAvatarPreview.style.background = warna;
-    customerAvatarText.textContent = avatar;
-    customerNamePreview.textContent = nama;
-    customerMedalPreview.textContent = medalText || '#1';
-    customerMedalPreview.className = `medal-badge medal-${medalShapeSelect.value} medal-${medalSizeSelect.value}${medalAnimatedToggle.checked ? ' is-animated' : ''}`;
-    customerMedalPreview.style.cssText = medalStyle({
+    const medalPreviewText = medalText || 'Preview';
+    const medalClass = `medal-badge medal-${medalShapeSelect.value} medal-${medalSizeSelect.value}${medalAnimatedToggle.checked ? ' is-animated' : ''}`;
+    const medalCss = medalStyle({
       medalColor: medalColorInput.value,
       medalColor2: medalColor2Input.value,
       medalTextColor: medalTextColorInput.value,
@@ -405,7 +403,16 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       medalGradient: medalGradientToggle.checked,
       medalOutline: medalOutlineToggle.checked
     });
+    customerAvatarPreview.style.background = warna;
+    customerAvatarText.textContent = avatar;
+    customerNamePreview.textContent = nama;
+    customerMedalPreview.textContent = medalPreviewText;
+    customerMedalPreview.className = medalClass;
+    customerMedalPreview.style.cssText = medalCss;
     customerMedalPreview.style.display = medalText ? 'inline-flex' : 'none';
+    medalLivePreview.textContent = medalPreviewText;
+    medalLivePreview.className = medalClass;
+    medalLivePreview.style.cssText = medalCss;
   }
 
   function bukaCustomerModal(id, data = {}) {

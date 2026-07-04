@@ -655,6 +655,16 @@
       display: flex; align-items: center; justify-content: center; min-height: 48px;
       border-radius: 12px; background: rgba(255,255,255,.72); border: 1px dashed var(--line-mid);
     }
+    .medal-preview-shell {
+      min-height: 64px;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(47,168,224,.14), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,.86), rgba(238,246,253,.72));
+    }
+    .medal-preview-shell .medal-badge {
+      transform: scale(1.18);
+      max-width: min(220px, 80%);
+    }
     @media (max-width:480px) { .badge-color-grid { grid-template-columns: 1fr; } }
     .star-display { display: flex; gap: 2px; }
     .buyer-time { font-size: 11px; color: var(--text-dim); margin: 3px 0 7px; display: flex; align-items: center; gap: 5px; }
