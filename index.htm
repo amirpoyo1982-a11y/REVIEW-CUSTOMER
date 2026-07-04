@@ -171,6 +171,16 @@
       <button type="button" class="medal-preset" data-medal-preset="top">Top</button>
       <button type="button" class="medal-preset" data-medal-preset="og">OG</button>
       <button type="button" class="medal-preset" data-medal-preset="trusted">Trusted</button>
+      <button type="button" class="medal-preset" data-medal-preset="buyer">Buyer</button>
+      <button type="button" class="medal-preset" data-medal-preset="legend">Legend</button>
+      <button type="button" class="medal-preset" data-medal-preset="fast">Fast</button>
+      <button type="button" class="medal-preset" data-medal-preset="safe">Safe</button>
+      <button type="button" class="medal-preset" data-medal-preset="rare">Rare</button>
+      <button type="button" class="medal-preset" data-medal-preset="pro">Pro</button>
+      <button type="button" class="medal-preset" data-medal-preset="local">Local</button>
+      <button type="button" class="medal-preset" data-medal-preset="king">King</button>
+      <button type="button" class="medal-preset" data-medal-preset="new">New</button>
+      <button type="button" class="medal-preset" data-medal-preset="oldsupport">Old Support</button>
     </div>
     <div class="badge-color-grid" style="margin-top:10px;">
       <div class="badge-color-field">
@@ -212,6 +222,37 @@
       <span class="badge-switch"><input type="checkbox" id="medalGradientToggle" checked> Gradient</span>
       <span class="badge-switch"><input type="checkbox" id="medalAnimatedToggle" checked> Shine</span>
       <span class="badge-switch"><input type="checkbox" id="medalOutlineToggle"> Outline</span>
+    </div>
+  </div>
+  <div class="admin-form-group customer-designer">
+    <label>Lipat Text Ulasan</label>
+    <div class="badge-toggle-row">
+      <span class="badge-switch"><input type="checkbox" id="reviewCollapseToggle"> Aktifkan anak panah</span>
+      <span class="badge-switch"><input type="checkbox" id="reviewCollapseDefaultOpenToggle"> Mula terbuka</span>
+    </div>
+    <div class="badge-color-grid" style="margin-top:10px;">
+      <div class="badge-color-field">
+        <label>Baris sebelum tutup</label>
+        <select id="reviewCollapseLinesSelect">
+          <option value="2">2 baris</option>
+          <option value="3">3 baris</option>
+          <option value="4">4 baris</option>
+          <option value="5">5 baris</option>
+          <option value="6">6 baris</option>
+        </select>
+      </div>
+      <div class="badge-color-field">
+        <label>Warna Butang</label>
+        <input type="color" id="reviewToggleColorInput" value="#2fa8e0">
+      </div>
+      <div class="badge-color-field">
+        <label>Teks Buka</label>
+        <input type="text" id="reviewExpandLabelInput" maxlength="24" placeholder="Lihat lagi ↓">
+      </div>
+      <div class="badge-color-field">
+        <label>Teks Tutup</label>
+        <input type="text" id="reviewCollapseLabelInput" maxlength="24" placeholder="Tutup ↑">
+      </div>
     </div>
   </div>
   <div class="admin-btn-row">

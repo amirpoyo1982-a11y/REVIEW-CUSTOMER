@@ -667,6 +667,23 @@
       overflow-wrap: anywhere;
       word-break: break-word;
     }
+    .buyer-feedback.is-collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: var(--review-lines, 4);
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      position: relative;
+    }
+    .review-text-toggle {
+      display: inline-flex; align-items: center; justify-content: center;
+      margin: 2px 0 8px; padding: 6px 11px;
+      border-radius: 999px; border: 1px solid color-mix(in srgb, var(--toggle-color, #2fa8e0) 35%, transparent);
+      background: color-mix(in srgb, var(--toggle-color, #2fa8e0) 12%, #fff);
+      color: var(--toggle-color, #2fa8e0);
+      font-size: 11px; font-weight: 850; cursor: pointer;
+      transition: transform .12s, filter .12s, background .12s;
+    }
+    .review-text-toggle:hover { transform: translateY(-1px); filter: brightness(1.04); }
     .buyer-no-text { color: var(--text-dim); font-size: 13px; font-style: italic; }
     .feedback-image-picker { border-top: 1px solid var(--line-mid); padding-top: 12px; }
     .feedback-image-control { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -860,6 +877,7 @@
     :root[data-theme="dark"] .badge-preview-shell { background: #0b1725; }
     :root[data-theme="dark"] .medal-preset,
     :root[data-theme="dark"] .badge-color-field select { background: #13243a; color: var(--text-mid); border-color: rgba(148,163,184,.22); }
+    :root[data-theme="dark"] .review-text-toggle { background: rgba(47,168,224,.12); }
     :root[data-theme="dark"] .review-card:hover { background: #11243a; }
     :root[data-theme="dark"] .btn-batal-balasan { background: #1b2f46; color: var(--text-mid); }
 

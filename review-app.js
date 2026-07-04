@@ -350,6 +350,12 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const medalGradientToggle = document.getElementById('medalGradientToggle');
   const medalAnimatedToggle = document.getElementById('medalAnimatedToggle');
   const medalOutlineToggle = document.getElementById('medalOutlineToggle');
+  const reviewCollapseToggle = document.getElementById('reviewCollapseToggle');
+  const reviewCollapseDefaultOpenToggle = document.getElementById('reviewCollapseDefaultOpenToggle');
+  const reviewCollapseLinesSelect = document.getElementById('reviewCollapseLinesSelect');
+  const reviewToggleColorInput = document.getElementById('reviewToggleColorInput');
+  const reviewExpandLabelInput = document.getElementById('reviewExpandLabelInput');
+  const reviewCollapseLabelInput = document.getElementById('reviewCollapseLabelInput');
   const btnSuggestCustomerProfile = document.getElementById('btnSuggestCustomerProfile');
   const btnRemoveCustomerImage = document.getElementById('btnRemoveCustomerImage');
   const btnSaveCustomer = document.getElementById('btnSaveCustomer');
@@ -366,7 +372,17 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     vip: { text:'VIP', c1:'#7c3aed', c2:'#ef5da8', textColor:'#ffffff', glow:'#7c3aed', shape:'shield', size:'md', gradient:true, animated:true, outline:false },
     top: { text:'#1', c1:'#f0a500', c2:'#e05252', textColor:'#ffffff', glow:'#f0a500', shape:'round', size:'md', gradient:true, animated:true, outline:false },
     og: { text:'OLD', c1:'#0f2a45', c2:'#2fa8e0', textColor:'#ffffff', glow:'#2fa8e0', shape:'ticket', size:'sm', gradient:true, animated:false, outline:true },
-    trusted: { text:'TRUSTED', c1:'#22c47a', c2:'#14b8a6', textColor:'#ffffff', glow:'#22c47a', shape:'pill', size:'md', gradient:true, animated:true, outline:false }
+    trusted: { text:'TRUSTED', c1:'#22c47a', c2:'#14b8a6', textColor:'#ffffff', glow:'#22c47a', shape:'pill', size:'md', gradient:true, animated:true, outline:false },
+    buyer: { text:'BUYER', c1:'#38bdf8', c2:'#2563eb', textColor:'#ffffff', glow:'#38bdf8', shape:'pill', size:'sm', gradient:true, animated:true, outline:false },
+    legend: { text:'LEGEND', c1:'#f59e0b', c2:'#7c2d12', textColor:'#fff7ed', glow:'#f59e0b', shape:'shield', size:'lg', gradient:true, animated:true, outline:false },
+    fast: { text:'FAST', c1:'#f97316', c2:'#ef4444', textColor:'#ffffff', glow:'#fb923c', shape:'ticket', size:'sm', gradient:true, animated:true, outline:false },
+    safe: { text:'SAFE', c1:'#10b981', c2:'#0f766e', textColor:'#ffffff', glow:'#34d399', shape:'shield', size:'sm', gradient:true, animated:false, outline:true },
+    rare: { text:'RARE', c1:'#ec4899', c2:'#8b5cf6', textColor:'#ffffff', glow:'#ec4899', shape:'round', size:'md', gradient:true, animated:true, outline:false },
+    pro: { text:'PRO', c1:'#111827', c2:'#475569', textColor:'#ffffff', glow:'#64748b', shape:'pill', size:'sm', gradient:true, animated:false, outline:true },
+    local: { text:'LOCAL', c1:'#06b6d4', c2:'#22c55e', textColor:'#ffffff', glow:'#06b6d4', shape:'ticket', size:'md', gradient:true, animated:true, outline:false },
+    king: { text:'KING', c1:'#eab308', c2:'#ca8a04', textColor:'#ffffff', glow:'#facc15', shape:'shield', size:'md', gradient:true, animated:true, outline:true },
+    new: { text:'NEW', c1:'#3b82f6', c2:'#60a5fa', textColor:'#ffffff', glow:'#60a5fa', shape:'round', size:'sm', gradient:true, animated:true, outline:false },
+    oldsupport: { text:'OLD SUPPORT', c1:'#0f2a45', c2:'#f0a500', textColor:'#ffffff', glow:'#f0a500', shape:'ticket', size:'lg', gradient:true, animated:false, outline:true }
   };
   let editingCustomerId = null;
   let removeCustomerImage = false;
@@ -409,6 +425,12 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     medalGradientToggle.checked = data.medalGradient !== false;
     medalAnimatedToggle.checked = data.medalAnimated !== false;
     medalOutlineToggle.checked = data.medalOutline === true;
+    reviewCollapseToggle.checked = data.reviewTextCollapsed === true;
+    reviewCollapseDefaultOpenToggle.checked = data.reviewTextDefaultOpen === true;
+    reviewCollapseLinesSelect.value = String(Math.min(6, Math.max(2, parseInt(data.reviewTextLines) || 4)));
+    reviewToggleColorInput.value = warnaHexSah(data.reviewToggleColor, '#2fa8e0');
+    reviewExpandLabelInput.value = data.reviewExpandLabel || 'Lihat lagi ↓';
+    reviewCollapseLabelInput.value = data.reviewCollapseLabel || 'Tutup ↑';
     btnRemoveCustomerImage.disabled = !data.profileImg;
     btnRemoveCustomerImage.textContent = data.profileImg ? 'Buang Gambar Profil' : 'Tiada Gambar Profil';
     kemaskiniCustomerPreview();
@@ -502,7 +524,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       medalSize: medal ? medalSizeSelect.value : null,
       medalGradient: medal ? medalGradientToggle.checked : null,
       medalAnimated: medal ? medalAnimatedToggle.checked : null,
-      medalOutline: medal ? medalOutlineToggle.checked : null
+      medalOutline: medal ? medalOutlineToggle.checked : null,
+      reviewTextCollapsed: reviewCollapseToggle.checked,
+      reviewTextDefaultOpen: reviewCollapseDefaultOpenToggle.checked,
+      reviewTextLines: parseInt(reviewCollapseLinesSelect.value) || 4,
+      reviewToggleColor: reviewToggleColorInput.value,
+      reviewExpandLabel: reviewExpandLabelInput.value.trim() || 'Lihat lagi ↓',
+      reviewCollapseLabel: reviewCollapseLabelInput.value.trim() || 'Tutup ↑'
     };
     if (removeCustomerImage) payload.profileImg = null;
     simpanCustomerPayload(payload, "Profil pelanggan berjaya dikemaskini.", dataDoc);
@@ -1344,6 +1372,12 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       const adaBalasan=!!(data.balasanAdmin?.trim());
       const adaUlasan = !!(data.ulasan?.trim()) && data.ulasan !== "Tiada ulasan ditinggalkan.";
       const adaFeedbackImg = !!(data.feedbackImg);
+      const gunaTextToggle = adaUlasan && data.reviewTextCollapsed === true;
+      const textMulaBuka = data.reviewTextDefaultOpen === true;
+      const textLines = Math.min(6, Math.max(2, parseInt(data.reviewTextLines) || 4));
+      const expandLabel = data.reviewExpandLabel || "Lihat lagi ↓";
+      const collapseLabel = data.reviewCollapseLabel || "Tutup ↑";
+      const toggleColor = warnaHexSah(data.reviewToggleColor, "#2fa8e0");
 
       let masa="Baru sahaja";
       if (data.diciptaPada) masa=data.diciptaPada.toDate().toLocaleString("ms-MY",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
@@ -1380,7 +1414,8 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
           </div>
           <div class="buyer-time">${masa}</div>
           ${adaUlasan
-            ?`<p class="buyer-feedback">${formatMessageText(data.ulasan)}</p>`
+            ?`<p class="buyer-feedback${gunaTextToggle && !textMulaBuka ? " is-collapsed" : ""}" style="--review-lines:${textLines};">${formatMessageText(data.ulasan)}</p>
+              ${gunaTextToggle ? `<button class="review-text-toggle" type="button" style="--toggle-color:${toggleColor};" data-open="${textMulaBuka ? "1" : "0"}" data-expand="${escapeHtml(expandLabel)}" data-collapse="${escapeHtml(collapseLabel)}">${escapeHtml(textMulaBuka ? collapseLabel : expandLabel)}</button>` : ""}`
             :`<p class="buyer-no-text">— Tiada ulasan teks —</p>`}
           <div class="admin-review-edit-form">
             <textarea maxlength="500" placeholder="Edit ulasan pelanggan...">${escapeHtml(data.ulasan || "")}</textarea>
@@ -1447,6 +1482,17 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       const btnBadge=card.querySelector(".btn-badge-ulasan");
       const btnSeeFeedback=card.querySelector(".btn-see-feedback");
       const btnReplyView=card.querySelector(".admin-reply-view-toggle");
+      const btnTextToggle=card.querySelector(".review-text-toggle");
+      if (btnTextToggle) {
+        const feedbackText = card.querySelector(".buyer-feedback");
+        btnTextToggle.addEventListener("click", () => {
+          const open = btnTextToggle.dataset.open !== "1";
+          btnTextToggle.dataset.open = open ? "1" : "0";
+          feedbackText.classList.toggle("is-collapsed", !open);
+          btnTextToggle.textContent = open ? btnTextToggle.dataset.collapse : btnTextToggle.dataset.expand;
+          btnTextToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      }
       if (btnSeeFeedback) btnSeeFeedback.addEventListener("click", () => openFeedbackImage(data.feedbackImg));
       if (btnReplyView) {
         const replyBox = card.querySelector(".admin-reply-box");
