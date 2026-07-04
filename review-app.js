@@ -324,6 +324,8 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const btnGenerateCodes = document.getElementById('btnGenerateCodes');
   const btnRefreshCodes = document.getElementById('btnRefreshCodes');
   const adminCodeList = document.getElementById('adminCodeList');
+  const adminOnlineVisitors = document.getElementById('adminOnlineVisitors');
+  const adminTotalVisitors = document.getElementById('adminTotalVisitors');
   const adminLoginOverlayBg = document.getElementById('adminLoginOverlayBg');
   const adminLoginModal = document.getElementById('adminLoginModal');
   const adminLoginEmail = document.getElementById('adminLoginEmail');
@@ -474,6 +476,59 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   });
   btnGenerateCodes.addEventListener("click", generateReviewCodes);
   btnRefreshCodes.addEventListener("click", () => showToast("Senarai kod auto update dari Firebase.", "success"));
+
+  function getVisitorId() {
+    const key = "h4sx_review_visitor_id";
+    let id = localStorage.getItem(key);
+    if (!id) {
+      id = "v-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem(key, id);
+    }
+    return id;
+  }
+  const visitorId = getVisitorId();
+  async function updateVisitPresence(online = true) {
+    try {
+      const firstSeenKey = "h4sx_review_first_seen";
+      let firstSeen = localStorage.getItem(firstSeenKey);
+      if (!firstSeen) {
+        firstSeen = new Date().toISOString();
+        localStorage.setItem(firstSeenKey, firstSeen);
+      }
+      await setDoc(doc(db, "review_visits", visitorId), {
+        page: "review",
+        online,
+        firstSeen,
+        lastSeen: serverTimestamp(),
+        userAgent: navigator.userAgent.slice(0, 140)
+      }, { merge: true });
+    } catch(e) {
+      console.warn("Presence update gagal:", e);
+    }
+  }
+  updateVisitPresence(true);
+  setInterval(() => updateVisitPresence(document.visibilityState !== "hidden"), 20000);
+  document.addEventListener("visibilitychange", () => updateVisitPresence(document.visibilityState !== "hidden"));
+  window.addEventListener("pagehide", () => updateVisitPresence(false));
+
+  onSnapshot(collection(db, "review_visits"), snapshot => {
+    if (!adminOk()) {
+      if (adminOnlineVisitors) adminOnlineVisitors.textContent = "0";
+      if (adminTotalVisitors) adminTotalVisitors.textContent = "0";
+      return;
+    }
+    const now = Date.now();
+    let online = 0;
+    snapshot.forEach(item => {
+      const data = item.data();
+      const last = data.lastSeen?.toMillis?.() || 0;
+      if (data.online === true && now - last < 45000) online++;
+    });
+    adminOnlineVisitors.textContent = String(online);
+    adminTotalVisitors.textContent = String(snapshot.size);
+  }, err => {
+    console.warn("Gagal baca visit stats:", err);
+  });
 
   // ── Ticker ────────────────────────────────────────────────────
   const tickerItems = [
