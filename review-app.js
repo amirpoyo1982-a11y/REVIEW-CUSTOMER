@@ -1286,17 +1286,15 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   function getVisibleReviewList() {
     const byId = new Map(allDocs.map(item => [item.id, item]));
     const boxRect = kotakPaparan.getBoundingClientRect();
-    const visible = [...kotakPaparan.querySelectorAll(".review-card")]
-      .map(card => {
-        const rect = card.getBoundingClientRect();
-        const overlap = Math.min(rect.bottom, boxRect.bottom) - Math.max(rect.top, boxRect.top);
-        return { card, overlap, top: rect.top };
-      })
-      .filter(item => item.overlap > 24)
-      .sort((a,b) => a.top - b.top)
-      .map(item => byId.get(item.card.dataset.reviewId))
-      .filter(Boolean);
-    return visible.slice(0, 6);
+    const cards = [...kotakPaparan.querySelectorAll(".review-card")];
+    const firstVisibleIndex = cards.findIndex(card => {
+      const rect = card.getBoundingClientRect();
+      const overlap = Math.min(rect.bottom, boxRect.bottom) - Math.max(rect.top, boxRect.top);
+      return overlap > 24;
+    });
+    const startIndex = Math.max(0, firstVisibleIndex);
+    const pickedCards = cards.slice(startIndex, startIndex + 6);
+    return pickedCards.map(card => byId.get(card.dataset.reviewId)).filter(Boolean);
   }
   function canvasToPngBlob(canvas) {
     return new Promise((resolve, reject) => {
