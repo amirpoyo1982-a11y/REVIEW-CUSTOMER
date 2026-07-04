@@ -736,6 +736,16 @@
       overflow: hidden;
       position: relative;
     }
+    .message-link {
+      color: var(--accent2);
+      font-weight: 850;
+      text-decoration: underline;
+      text-decoration-thickness: 1.5px;
+      text-underline-offset: 3px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .message-link:hover { color: var(--accent); }
     .review-text-toggle {
       display: inline-flex; align-items: center; justify-content: center;
       margin: 2px 0 8px; padding: 6px 11px;

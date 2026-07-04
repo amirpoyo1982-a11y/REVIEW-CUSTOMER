@@ -1948,7 +1948,12 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   function formatMessageText(str) {
     return escapeHtml(str ?? "")
       .replace(/\s+(?=\d+\s*:\s*H4SX-)/gi, "\n")
-      .replace(/(\d+\s*:\s*)(H4SX-[A-Z0-9]+)/gi, "$1$2");
+      .replace(/(\d+\s*:\s*)(H4SX-[A-Z0-9]+)/gi, "$1$2")
+      .replace(/https?:\/\/[^\s<>"']+/gi, rawUrl => {
+        const trailing = rawUrl.match(/[),.!?]+$/)?.[0] || "";
+        const url = rawUrl.slice(0, rawUrl.length - trailing.length);
+        return `<a class="message-link" href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>${trailing}`;
+      });
   }
 
   // ── Block Inspect Element & DevTools ──────────────────────────
