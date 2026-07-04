@@ -232,13 +232,23 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     return `background:${bg}; color:${text}; --badge-glow:${glow}; box-shadow:0 4px 16px -8px ${glow}, inset 0 1px 0 rgba(255,255,255,.26); border:none;`;
   }
   function medalStyle(data = {}) {
-    const bg = warnaHexSah(data.medalColor, '#f0a500');
+    const c1 = warnaHexSah(data.medalColor, '#f0a500');
+    const c2 = warnaHexSah(data.medalColor2, '#e05252');
     const text = warnaHexSah(data.medalTextColor, '#ffffff');
-    return `background:${bg}; color:${text}; box-shadow:0 4px 14px -9px ${bg};`;
+    const glow = warnaHexSah(data.medalGlowColor, c1);
+    const gradient = data.medalGradient !== false;
+    const outline = data.medalOutline === true;
+    const bg = gradient ? `linear-gradient(120deg, ${c1}, ${c2}, ${c1})` : c1;
+    const border = outline ? `1.5px solid ${glow}` : '1px solid rgba(255,255,255,.48)';
+    return `background:${bg}; color:${text}; --medal-glow:${glow}; border:${border}; box-shadow:0 5px 18px -9px ${glow}, inset 0 1px 0 rgba(255,255,255,.28);`;
   }
   function medalMarkup(data = {}) {
     const teks = (data.medalText || '').trim();
-    return teks ? `<span class="medal-badge" style="${medalStyle(data)}">${escapeHtml(teks)}</span>` : '';
+    if (!teks) return '';
+    const shape = ['pill','shield','round','ticket'].includes(data.medalShape) ? data.medalShape : 'pill';
+    const size = ['sm','md','lg'].includes(data.medalSize) ? data.medalSize : 'sm';
+    const animated = data.medalAnimated === false ? '' : ' is-animated';
+    return `<span class="medal-badge medal-${shape} medal-${size}${animated}" style="${medalStyle(data)}">${escapeHtml(teks)}</span>`;
   }
   function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia) {
     editingBadgeId = id;
@@ -332,7 +342,14 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const customerMedalPreview = document.getElementById('customerMedalPreview');
   const medalTextInput = document.getElementById('medalTextInput');
   const medalColorInput = document.getElementById('medalColorInput');
+  const medalColor2Input = document.getElementById('medalColor2Input');
   const medalTextColorInput = document.getElementById('medalTextColorInput');
+  const medalGlowColorInput = document.getElementById('medalGlowColorInput');
+  const medalShapeSelect = document.getElementById('medalShapeSelect');
+  const medalSizeSelect = document.getElementById('medalSizeSelect');
+  const medalGradientToggle = document.getElementById('medalGradientToggle');
+  const medalAnimatedToggle = document.getElementById('medalAnimatedToggle');
+  const medalOutlineToggle = document.getElementById('medalOutlineToggle');
   const btnSuggestCustomerProfile = document.getElementById('btnSuggestCustomerProfile');
   const btnRemoveCustomerImage = document.getElementById('btnRemoveCustomerImage');
   const btnSaveCustomer = document.getElementById('btnSaveCustomer');
@@ -344,6 +361,13 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     { warna:'#ef5da8', emoji:'A' }, { warna:'#14b8a6', emoji:'Z' },
     { warna:'#0f2a45', emoji:'X' }, { warna:'#e05252', emoji:'M' }
   ];
+  const medalPresets = {
+    staff: { text:'STAFF', c1:'#2fa8e0', c2:'#22c47a', textColor:'#ffffff', glow:'#2fa8e0', shape:'pill', size:'sm', gradient:true, animated:true, outline:false },
+    vip: { text:'VIP', c1:'#7c3aed', c2:'#ef5da8', textColor:'#ffffff', glow:'#7c3aed', shape:'shield', size:'md', gradient:true, animated:true, outline:false },
+    top: { text:'#1', c1:'#f0a500', c2:'#e05252', textColor:'#ffffff', glow:'#f0a500', shape:'round', size:'md', gradient:true, animated:true, outline:false },
+    og: { text:'OLD', c1:'#0f2a45', c2:'#2fa8e0', textColor:'#ffffff', glow:'#2fa8e0', shape:'ticket', size:'sm', gradient:true, animated:false, outline:true },
+    trusted: { text:'TRUSTED', c1:'#22c47a', c2:'#14b8a6', textColor:'#ffffff', glow:'#22c47a', shape:'pill', size:'md', gradient:true, animated:true, outline:false }
+  };
   let editingCustomerId = null;
   let removeCustomerImage = false;
 
@@ -356,9 +380,14 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     customerAvatarText.textContent = avatar;
     customerNamePreview.textContent = nama;
     customerMedalPreview.textContent = medalText || '#1';
+    customerMedalPreview.className = `medal-badge medal-${medalShapeSelect.value} medal-${medalSizeSelect.value}${medalAnimatedToggle.checked ? ' is-animated' : ''}`;
     customerMedalPreview.style.cssText = medalStyle({
       medalColor: medalColorInput.value,
-      medalTextColor: medalTextColorInput.value
+      medalColor2: medalColor2Input.value,
+      medalTextColor: medalTextColorInput.value,
+      medalGlowColor: medalGlowColorInput.value,
+      medalGradient: medalGradientToggle.checked,
+      medalOutline: medalOutlineToggle.checked
     });
     customerMedalPreview.style.display = medalText ? 'inline-flex' : 'none';
   }
@@ -372,7 +401,14 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     customerEmojiInput.value = data.emojiProfil || nama.charAt(0).toUpperCase();
     medalTextInput.value = data.medalText || '';
     medalColorInput.value = warnaHexSah(data.medalColor, '#f0a500');
+    medalColor2Input.value = warnaHexSah(data.medalColor2, '#e05252');
     medalTextColorInput.value = warnaHexSah(data.medalTextColor, '#ffffff');
+    medalGlowColorInput.value = warnaHexSah(data.medalGlowColor, warnaHexSah(data.medalColor, '#f0a500'));
+    medalShapeSelect.value = ['pill','shield','round','ticket'].includes(data.medalShape) ? data.medalShape : 'pill';
+    medalSizeSelect.value = ['sm','md','lg'].includes(data.medalSize) ? data.medalSize : 'sm';
+    medalGradientToggle.checked = data.medalGradient !== false;
+    medalAnimatedToggle.checked = data.medalAnimated !== false;
+    medalOutlineToggle.checked = data.medalOutline === true;
     btnRemoveCustomerImage.disabled = !data.profileImg;
     btnRemoveCustomerImage.textContent = data.profileImg ? 'Buang Gambar Profil' : 'Tiada Gambar Profil';
     kemaskiniCustomerPreview();
@@ -404,8 +440,28 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     }
   }
 
-  [customerNameInput, customerColorInput, customerEmojiInput, medalTextInput, medalColorInput, medalTextColorInput]
-    .forEach(el => el.addEventListener('input', kemaskiniCustomerPreview));
+  [customerNameInput, customerColorInput, customerEmojiInput, medalTextInput, medalColorInput, medalColor2Input, medalTextColorInput, medalGlowColorInput, medalShapeSelect, medalSizeSelect, medalGradientToggle, medalAnimatedToggle, medalOutlineToggle]
+    .forEach(el => {
+      el.addEventListener('input', kemaskiniCustomerPreview);
+      el.addEventListener('change', kemaskiniCustomerPreview);
+    });
+  document.querySelectorAll('[data-medal-preset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = medalPresets[btn.dataset.medalPreset];
+      if (!preset) return;
+      medalTextInput.value = preset.text;
+      medalColorInput.value = preset.c1;
+      medalColor2Input.value = preset.c2;
+      medalTextColorInput.value = preset.textColor;
+      medalGlowColorInput.value = preset.glow;
+      medalShapeSelect.value = preset.shape;
+      medalSizeSelect.value = preset.size;
+      medalGradientToggle.checked = preset.gradient;
+      medalAnimatedToggle.checked = preset.animated;
+      medalOutlineToggle.checked = preset.outline;
+      kemaskiniCustomerPreview();
+    });
+  });
   customerOverlayBg.addEventListener('click', tutupCustomerModal);
   btnCancelCustomer.addEventListener('click', tutupCustomerModal);
   btnSuggestCustomerProfile.addEventListener('click', () => {
@@ -439,7 +495,14 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       emojiProfil: emoji || null,
       medalText: medal || null,
       medalColor: medal ? medalColorInput.value : null,
-      medalTextColor: medal ? medalTextColorInput.value : null
+      medalColor2: medal ? medalColor2Input.value : null,
+      medalTextColor: medal ? medalTextColorInput.value : null,
+      medalGlowColor: medal ? medalGlowColorInput.value : null,
+      medalShape: medal ? medalShapeSelect.value : null,
+      medalSize: medal ? medalSizeSelect.value : null,
+      medalGradient: medal ? medalGradientToggle.checked : null,
+      medalAnimated: medal ? medalAnimatedToggle.checked : null,
+      medalOutline: medal ? medalOutlineToggle.checked : null
     };
     if (removeCustomerImage) payload.profileImg = null;
     simpanCustomerPayload(payload, "Profil pelanggan berjaya dikemaskini.", dataDoc);
@@ -449,7 +512,14 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     simpanCustomerPayload({
       medalText: null,
       medalColor: null,
-      medalTextColor: null
+      medalColor2: null,
+      medalTextColor: null,
+      medalGlowColor: null,
+      medalShape: null,
+      medalSize: null,
+      medalGradient: null,
+      medalAnimated: null,
+      medalOutline: null
     }, "Pingat pelanggan dibuang.", dataDoc);
   });
 

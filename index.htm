@@ -164,16 +164,54 @@
   </div>
   <div class="admin-form-group customer-designer">
     <label>Pingat Custom</label>
-    <input type="text" id="medalTextInput" maxlength="10" placeholder="Cth: #1, 10, VIP">
+    <input type="text" id="medalTextInput" maxlength="14" placeholder="Cth: #999, STAFF, VIP, OLD">
+    <div class="medal-preset-row">
+      <button type="button" class="medal-preset" data-medal-preset="staff">Staff</button>
+      <button type="button" class="medal-preset" data-medal-preset="vip">VIP</button>
+      <button type="button" class="medal-preset" data-medal-preset="top">Top</button>
+      <button type="button" class="medal-preset" data-medal-preset="og">OG</button>
+      <button type="button" class="medal-preset" data-medal-preset="trusted">Trusted</button>
+    </div>
     <div class="badge-color-grid" style="margin-top:10px;">
       <div class="badge-color-field">
-        <label>Warna Pingat</label>
+        <label>Warna 1</label>
         <input type="color" id="medalColorInput" value="#f0a500">
+      </div>
+      <div class="badge-color-field">
+        <label>Warna 2 Gradient</label>
+        <input type="color" id="medalColor2Input" value="#e05252">
       </div>
       <div class="badge-color-field">
         <label>Warna Text Pingat</label>
         <input type="color" id="medalTextColorInput" value="#ffffff">
       </div>
+      <div class="badge-color-field">
+        <label>Glow Pingat</label>
+        <input type="color" id="medalGlowColorInput" value="#f0a500">
+      </div>
+      <div class="badge-color-field">
+        <label>Bentuk</label>
+        <select id="medalShapeSelect">
+          <option value="pill">Capsule</option>
+          <option value="shield">Shield</option>
+          <option value="round">Round</option>
+          <option value="ticket">Ticket</option>
+        </select>
+      </div>
+      <div class="badge-color-field">
+        <label>Saiz</label>
+        <select id="medalSizeSelect">
+          <option value="sm">Small</option>
+          <option value="md">Medium</option>
+          <option value="lg">Large</option>
+        </select>
+      </div>
+    </div>
+    <div class="badge-toggle-row">
+      <label>Effect Pingat</label>
+      <span class="badge-switch"><input type="checkbox" id="medalGradientToggle" checked> Gradient</span>
+      <span class="badge-switch"><input type="checkbox" id="medalAnimatedToggle" checked> Shine</span>
+      <span class="badge-switch"><input type="checkbox" id="medalOutlineToggle"> Outline</span>
     </div>
   </div>
   <div class="admin-btn-row">

@@ -584,7 +584,29 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       border: 1px solid rgba(255,255,255,.48);
       text-shadow: 0 1px 2px rgba(15,42,69,.16);
+      position: relative; isolation: isolate; background-size: 230% 230% !important;
+      letter-spacing: .35px; text-transform: uppercase;
     }
+    .medal-badge::after {
+      content: ''; position: absolute; inset: -45% -85%; z-index: -1; pointer-events: none;
+      background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.44) 50%, transparent 62%);
+      transform: translateX(-78%); opacity: .78;
+    }
+    .medal-badge.is-animated { animation: medalGradientMove 3.2s linear infinite; }
+    .medal-badge.is-animated::after { animation: medalShine 2.2s ease-in-out infinite; }
+    .medal-sm { min-height: 20px; padding: 2px 8px; font-size: 10px; }
+    .medal-md { min-height: 23px; padding: 3px 10px; font-size: 10.5px; max-width: 92px; }
+    .medal-lg { min-height: 27px; padding: 4px 12px; font-size: 11.5px; max-width: 116px; }
+    .medal-pill { border-radius: 999px; }
+    .medal-shield { border-radius: 8px 8px 12px 12px; clip-path: polygon(7% 0, 93% 0, 100% 55%, 50% 100%, 0 55%); padding-inline: 12px; }
+    .medal-round { min-width: 24px; aspect-ratio: 1; border-radius: 50%; padding-inline: 6px; }
+    .medal-ticket { border-radius: 5px; clip-path: polygon(0 0, 100% 0, 100% 34%, 92% 50%, 100% 66%, 100% 100%, 0 100%, 0 66%, 8% 50%, 0 34%); padding-inline: 12px; }
+    @keyframes medalGradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes medalShine { 0%, 20% { transform: translateX(-78%); } 56%, 100% { transform: translateX(78%); } }
 
     .badge-designer {
       display: grid; gap: 12px; padding: 12px; background: linear-gradient(180deg,#f8fbff,#eef6fd);
@@ -603,12 +625,23 @@
     .customer-tool-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .customer-tool-btn { padding: 9px 12px; font-size: 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent2); }
     .customer-tool-btn.danger { background: #fef0f0; color: #b83232; }
+    .medal-preset-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .medal-preset {
+      border: 1px solid var(--line-mid); background: #fff; color: var(--text-mid);
+      border-radius: 999px; padding: 7px 10px; font-size: 11px; font-weight: 850;
+      cursor: pointer; transition: transform .12s, border-color .12s, color .12s, background .12s;
+    }
+    .medal-preset:hover { transform: translateY(-1px); border-color: rgba(47,168,224,.42); color: var(--accent2); background: var(--accent-soft); }
     .badge-color-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
     .badge-color-field { display: grid; gap: 6px; }
     .badge-color-field label { margin: 0; }
     .badge-color-field input[type="color"] {
       width: 100%; height: 40px; border: 1.5px solid var(--line-mid); border-radius: 9px;
       cursor: pointer; padding: 2px; background: #fff;
+    }
+    .badge-color-field select {
+      width: 100%; min-height: 40px; border: 1.5px solid var(--line-mid); border-radius: 9px;
+      padding: 8px 10px; background: #fff; color: var(--text); font-family: inherit; font-weight: 750;
     }
     .badge-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     .badge-toggle-row label { margin: 0; }
@@ -825,6 +858,8 @@
     :root[data-theme="dark"] .badge-designer,
     :root[data-theme="dark"] .customer-designer,
     :root[data-theme="dark"] .badge-preview-shell { background: #0b1725; }
+    :root[data-theme="dark"] .medal-preset,
+    :root[data-theme="dark"] .badge-color-field select { background: #13243a; color: var(--text-mid); border-color: rgba(148,163,184,.22); }
     :root[data-theme="dark"] .review-card:hover { background: #11243a; }
     :root[data-theme="dark"] .btn-batal-balasan { background: #1b2f46; color: var(--text-mid); }
 
