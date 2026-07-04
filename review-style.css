@@ -882,6 +882,15 @@
       background: var(--panel-soft); color: var(--text);
     }
     .admin-code-row { display: grid; grid-template-columns: 1fr 90px auto; gap: 8px; align-items: center; }
+    .admin-visit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .admin-visit-card {
+      border: 1px solid var(--line-mid); border-radius: 14px;
+      background: linear-gradient(135deg, rgba(47,168,224,.1), rgba(255,255,255,.72));
+      padding: 12px; display: grid; gap: 4px;
+    }
+    .admin-visit-card span { font-size: 11px; color: var(--text-dim); font-weight: 800; text-transform: uppercase; letter-spacing: .4px; }
+    .admin-visit-card strong { color: var(--accent2); font: 900 28px/1 'Space Mono', monospace; }
+    :root[data-theme="dark"] .admin-visit-card { background: rgba(47,168,224,.08); }
     .admin-code-row .admin-btn { white-space: nowrap; }
     .admin-code-hint { margin-top: 7px; font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
     .admin-code-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0 8px; font-size: 12px; font-weight: 800; color: var(--navy); }
