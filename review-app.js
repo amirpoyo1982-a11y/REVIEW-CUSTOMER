@@ -130,26 +130,42 @@
       const res = await fetch(KEDAI_GIST_URL + '?t=' + Date.now(), { cache: "no-store" });
       const data = await res.json();
 
-      // 1. Mod penyelenggaraan — paling utama
+      // 1. Maintenance khas untuk page ulasan sahaja.
+      if (data && (
+        flagOn(data.review_maintenance) ||
+        flagOn(data.maintenance_review) ||
+        flagOn(data.ulasan_maintenance) ||
+        flagOn(data.reviews_maintenance)
+      )) {
+        paparKedaiTutup(
+          '🔧',
+          data.review_maintenance_title || 'Ulasan Dalam Penyelenggaraan',
+          data.review_maintenance_message || data.review_maintenance_msg || 'Sistem ulasan sedang diselenggara buat masa ini. Sila cuba lagi sebentar lagi.',
+          data.business_hours_text
+        );
+        return;
+      }
+
+      // 2. Mod penyelenggaraan global — untuk tutup semua website kalau perlu.
       if (data && flagOn(data.maintenance)) {
         paparKedaiTutup('🛠️', 'Dalam Penyelenggaraan', 'Kedai sedang dalam penyelenggaraan buat masa ini. Sila cuba lagi sebentar lagi.', data.business_hours_text);
         return;
       }
 
-      // 2. Suis manual admin — bukakedai:false = tutup terus, tak kira jam
+      // 3. Suis manual admin — bukakedai:false = tutup terus, tak kira jam
       if (data && flagOff(data.bukakedai)) {
         paparKedaiTutup('🚫', 'Kedai Ditutup Sementara', 'Kami sedang berehat. Sila kembali kemudian.', data.business_hours_text);
         return;
       }
 
-      // 3. Hari cuti (tutup_hari)
+      // 4. Hari cuti (tutup_hari)
       const hariIni = HARI_MS[new Date().getDay()];
       if (data && Array.isArray(data.tutup_hari) && data.tutup_hari.some(h => (h||"").toLowerCase() === hariIni)) {
         paparKedaiTutup('📅', 'Kedai Tutup Hari Ini', 'Kami tidak beroperasi pada hari ini.', data.business_hours_text);
         return;
       }
 
-      // 4. Di luar waktu operasi (buka_jam / tutup_jam)
+      // 5. Di luar waktu operasi (buka_jam / tutup_jam)
       if (data && !semakDalamWaktu(data.buka_jam, data.tutup_jam)) {
         paparKedaiTutup('🕐', 'Di Luar Waktu Operasi', 'Kami sedang tutup buat masa ini. Sila kembali semasa waktu operasi kami.', data.business_hours_text);
         return;
