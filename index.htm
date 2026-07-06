@@ -475,6 +475,7 @@
             <p class="pp-label" style="margin-bottom:10px;">📸 Gambar Profil (pilihan)</p>
             <div class="image-upload-tabs">
               <div class="img-tab active" data-tab="gallery">📁 Galeri / Phone</div>
+              <div class="img-tab" data-tab="clipboard">📋 Clipboard</div>
               <div class="img-tab" data-tab="url">🔗 URL Gambar</div>
             </div>
             <div class="img-tab-panel show" id="panel-gallery">
@@ -483,6 +484,14 @@
                 <div class="drop-zone-icon">🖼️</div>
                 <div class="drop-zone-text">Klik atau seret gambar ke sini</div>
                 <div class="drop-zone-sub">JPG, PNG, WEBP · Max 5MB · Auto-crop bulat</div>
+              </div>
+            </div>
+            <div class="img-tab-panel" id="panel-clipboard">
+              <div class="clipboard-zone" id="clipboardZone" tabindex="0">
+                <div class="drop-zone-icon">📋</div>
+                <div class="drop-zone-text">Copy gambar, kemudian tekan Ctrl+V di sini</div>
+                <div class="drop-zone-sub">PC paling stabil. Phone/tablet bergantung pada browser.</div>
+                <button class="btn-url-load btn-clipboard-paste" id="btnPasteProfileImg" type="button">Paste Clipboard</button>
               </div>
             </div>
             <div class="img-tab-panel" id="panel-url">
