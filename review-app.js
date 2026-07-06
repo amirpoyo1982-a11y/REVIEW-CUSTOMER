@@ -1285,8 +1285,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   const btnReviewScreenshot = document.getElementById("btnReviewScreenshot");
   const fileInput       = document.getElementById("fileInput");
   const dropZone        = document.getElementById("dropZone");
+  const clipboardZone   = document.getElementById("clipboardZone");
   const urlGambar       = document.getElementById("urlGambar");
   const btnLoadUrl      = document.getElementById("btnLoadUrl");
+  const btnPasteProfileImg = document.getElementById("btnPasteProfileImg");
   const btnClearImg     = document.getElementById("btnClearImg");
   const btnDadu         = document.getElementById("btnDadu");
   const feedbackImageInput   = document.getElementById("feedbackImageInput");
@@ -1420,6 +1422,40 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     btnClearImg.classList.add("show"); updatePreview();
     showToast("Gambar profil berjaya dimuatkan! 📸", "success");
   }
+  function applyProfileFile(file, sourceLabel = "gambar") {
+    if (!file || !file.type?.startsWith("image/")) {
+      showToast(`Clipboard tiada gambar. Copy gambar dulu, kemudian paste.`, "error");
+      return;
+    }
+    if (file.size > 5*1024*1024) {
+      showToast("Gambar profil terlalu besar. Max 5MB.", "error");
+      return;
+    }
+    const r = new FileReader();
+    r.onload = e => compressImage(e.target.result, applyProfileImg);
+    r.readAsDataURL(file);
+    showToast(`Memproses ${sourceLabel}...`, "info");
+  }
+  async function pasteProfileFromClipboard() {
+    if (!navigator.clipboard?.read) {
+      showToast("Browser ini tidak support baca gambar clipboard. Guna Ctrl+V atau upload galeri.", "error");
+      return;
+    }
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const type = item.types.find(t => t.startsWith("image/"));
+        if (!type) continue;
+        const blob = await item.getType(type);
+        applyProfileFile(new File([blob], "clipboard-profile.png", { type }), "gambar clipboard");
+        return;
+      }
+      showToast("Clipboard tiada gambar. Copy gambar dulu.", "error");
+    } catch (err) {
+      console.error(err);
+      showToast("Tak dapat baca clipboard. Cuba tekan Ctrl+V dalam kotak Clipboard.", "error");
+    }
+  }
   function clearProfileImg(showMsg=true) {
     profileImgB64 = null; btnClearImg.classList.remove("show");
     fileInput.value = ""; urlGambar.value = ""; updatePreview();
@@ -1429,21 +1465,36 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   fileInput.addEventListener("change", () => {
     const f = fileInput.files[0];
     if (!f) return;
-    if (f.size > 5*1024*1024) { showToast("Fail terlalu besar. Max 5MB.", "error"); return; }
-    const r = new FileReader();
-    r.onload = e => compressImage(e.target.result, applyProfileImg);
-    r.readAsDataURL(f);
+    applyProfileFile(f, "gambar profil");
   });
   dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
   dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
   dropZone.addEventListener("drop", e => {
     e.preventDefault(); dropZone.classList.remove("drag-over");
     const f = e.dataTransfer.files[0];
-    if (!f || !f.type.startsWith("image/")) { showToast("Bukan gambar.", "error"); return; }
-    if (f.size > 5*1024*1024) { showToast("Fail terlalu besar.", "error"); return; }
-    const r = new FileReader();
-    r.onload = ev => compressImage(ev.target.result, applyProfileImg);
-    r.readAsDataURL(f);
+    applyProfileFile(f, "gambar drop");
+  });
+  if (btnPasteProfileImg) btnPasteProfileImg.addEventListener("click", pasteProfileFromClipboard);
+  if (clipboardZone) {
+    clipboardZone.addEventListener("click", () => clipboardZone.focus());
+    clipboardZone.addEventListener("paste", e => {
+      const file = [...(e.clipboardData?.items || [])]
+        .find(item => item.type.startsWith("image/"))?.getAsFile();
+      if (file) {
+        e.preventDefault();
+        applyProfileFile(file, "gambar clipboard");
+      }
+    });
+  }
+  document.addEventListener("paste", e => {
+    const activePanel = document.getElementById("panel-clipboard");
+    if (!activePanel?.classList.contains("show")) return;
+    const file = [...(e.clipboardData?.items || [])]
+      .find(item => item.type.startsWith("image/"))?.getAsFile();
+    if (file) {
+      e.preventDefault();
+      applyProfileFile(file, "gambar clipboard");
+    }
   });
   btnLoadUrl.addEventListener("click", () => {
     const url = urlGambar.value.trim();
