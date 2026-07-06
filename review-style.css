@@ -1063,7 +1063,31 @@
       cursor: pointer; user-select: all;
     }
     :root[data-theme="dark"] .admin-code-pill { background: #101f31; }
-    @media (max-width: 560px) { .admin-code-row { grid-template-columns: 1fr; } }
+    .auto-post-card {
+      display: grid; gap: 10px; padding: 12px;
+      border: 1px solid var(--line-mid); border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.94), var(--panel-soft));
+    }
+    .auto-post-row {
+      display: grid; grid-template-columns: minmax(150px,1fr) minmax(80px,.45fr) minmax(80px,.45fr);
+      gap: 8px; align-items: center;
+    }
+    .auto-post-row + .auto-post-row { grid-template-columns: minmax(0,1fr) minmax(120px,.55fr) minmax(90px,.45fr); }
+    .auto-post-card input,
+    .auto-post-card textarea {
+      width: 100%; border: 1.5px solid var(--line-mid); border-radius: 10px;
+      padding: 10px 12px; font-family: inherit; font-size: 13px;
+      background: var(--panel-soft); color: var(--text); outline: none;
+    }
+    .auto-post-card textarea { resize: vertical; min-height: 120px; line-height: 1.55; }
+    .auto-post-card input:focus,
+    .auto-post-card textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47,168,224,.12); }
+    :root[data-theme="dark"] .auto-post-card { background: rgba(47,168,224,.08); }
+    @media (max-width: 560px) {
+      .admin-code-row,
+      .auto-post-row,
+      .auto-post-row + .auto-post-row { grid-template-columns: 1fr; }
+    }
     .admin-btn-row { display: flex; gap: 10px; }
     .admin-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; }
     .admin-btn-save { background: var(--accent); color: #fff; }

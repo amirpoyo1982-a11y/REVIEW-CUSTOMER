@@ -836,6 +836,178 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
   const adminLoginPassword = document.getElementById('adminLoginPassword');
   const btnAdminLogin = document.getElementById('btnAdminLogin');
   const btnCancelAdminLogin = document.getElementById('btnCancelAdminLogin');
+  const AUTO_ZIXU_CONFIG_ID = "auto_post_zixu";
+  const DEFAULT_ZIXU_MESSAGE = `📞 Link admin : https://wa.me/60193263016
+☎️ Support Service : https://wa.me/60193263016
+🛒 Website Market : https://h4sx-store.vercel.app/
+
+⚠️ PERHATIAN ⚠️
+Zixu tidak mempunyai sebarang akaun clone. Jika anda menemui mana-mana akaun yang mengaku sebagai Zixu, itu adalah 100% palsu (FAKE).
+
+Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikawal sepenuhnya oleh AI.
+
+👑 Zixu Official Promoter H4SX Store Programmer 👑
+
+☀️ Promote Link Buy Phone nom & Support Service Phone nom ☀️`;
+  const DEFAULT_ZIXU_CONFIG = {
+    enabled: false,
+    intervalHours: 5,
+    nama: "Z!xu Official",
+    bintang: 5,
+    ulasan: DEFAULT_ZIXU_MESSAGE,
+    profileImg: "https://i.imgur.com/cLPulXQ.png",
+    warnaProfil: "#0f2a45",
+    badgeText: "ZIXU",
+    badgeColor: "#9b5cff",
+    badgeColor2: "#35d6ff",
+    badgeTextColor: "#ffffff",
+    badgeGlowColor: "#9b5cff",
+    badgeGradient: true,
+    badgeAnimated: true,
+    medalText: "PAID PROMOTE",
+    medalColor: "#a5b4fc",
+    medalColor2: "#7c3aed",
+    medalTextColor: "#ffffff",
+    medalGlowColor: "#7c3aed",
+    medalShape: "pill",
+    medalSize: "sm",
+    medalGradient: true,
+    medalAnimated: true,
+    medalOutline: false,
+    nameColorEnabled: true,
+    nameColor: "#8b5cf6",
+    nameColor2: "#38bdf8",
+    nameGlowColor: "#8b5cf6",
+    nameGradient: true,
+    nameAnimated: true,
+    nameWeight: "900"
+  };
+  const autoZixuEnabled = document.getElementById('autoZixuEnabled');
+  const autoZixuInterval = document.getElementById('autoZixuInterval');
+  const autoZixuRating = document.getElementById('autoZixuRating');
+  const autoZixuName = document.getElementById('autoZixuName');
+  const autoZixuRole = document.getElementById('autoZixuRole');
+  const autoZixuMedal = document.getElementById('autoZixuMedal');
+  const autoZixuProfileImg = document.getElementById('autoZixuProfileImg');
+  const autoZixuMessage = document.getElementById('autoZixuMessage');
+  const autoZixuStatus = document.getElementById('autoZixuStatus');
+  const btnRunZixuNow = document.getElementById('btnRunZixuNow');
+
+  function isiAutoZixuForm(data = {}) {
+    const cfg = { ...DEFAULT_ZIXU_CONFIG, ...data };
+    if (!autoZixuEnabled) return;
+    autoZixuEnabled.checked = cfg.enabled === true;
+    autoZixuInterval.value = Math.max(1, Math.min(72, parseInt(cfg.intervalHours) || 5));
+    autoZixuRating.value = Math.max(1, Math.min(5, parseInt(cfg.bintang) || 5));
+    autoZixuName.value = cfg.nama || DEFAULT_ZIXU_CONFIG.nama;
+    autoZixuRole.value = cfg.badgeText || DEFAULT_ZIXU_CONFIG.badgeText;
+    autoZixuMedal.value = cfg.medalText || DEFAULT_ZIXU_CONFIG.medalText;
+    autoZixuProfileImg.value = cfg.profileImg || "";
+    autoZixuMessage.value = cfg.ulasan || DEFAULT_ZIXU_MESSAGE;
+    if (autoZixuStatus) autoZixuStatus.textContent = cfg.lastPostAt?.toDate
+      ? `Last post: ${cfg.lastPostAt.toDate().toLocaleString("ms-MY")}`
+      : "Belum pernah auto post.";
+  }
+  function bacaAutoZixuForm(base = {}) {
+    const intervalHours = Math.max(1, Math.min(72, parseInt(autoZixuInterval?.value) || 5));
+    const rating = Math.max(1, Math.min(5, parseInt(autoZixuRating?.value) || 5));
+    return {
+      ...DEFAULT_ZIXU_CONFIG,
+      ...base,
+      enabled: autoZixuEnabled?.checked === true,
+      intervalHours,
+      bintang: rating,
+      nama: (autoZixuName?.value || DEFAULT_ZIXU_CONFIG.nama).trim().slice(0, 40),
+      ulasan: (autoZixuMessage?.value || DEFAULT_ZIXU_MESSAGE).trim().slice(0, 500),
+      profileImg: (autoZixuProfileImg?.value || DEFAULT_ZIXU_CONFIG.profileImg).trim(),
+      badgeText: (autoZixuRole?.value || DEFAULT_ZIXU_CONFIG.badgeText).trim().slice(0, 24),
+      medalText: (autoZixuMedal?.value || DEFAULT_ZIXU_CONFIG.medalText).trim().slice(0, 18)
+    };
+  }
+  async function loadAutoZixuConfig() {
+    try {
+      const snap = await getDoc(doc(db, "config", AUTO_ZIXU_CONFIG_ID));
+      isiAutoZixuForm(snap.exists() ? snap.data() : DEFAULT_ZIXU_CONFIG);
+      return snap.exists() ? snap.data() : DEFAULT_ZIXU_CONFIG;
+    } catch(e) {
+      console.error(e);
+      isiAutoZixuForm(DEFAULT_ZIXU_CONFIG);
+      return DEFAULT_ZIXU_CONFIG;
+    }
+  }
+  async function saveAutoZixuConfig(extra = {}) {
+    if (!adminOk()) return;
+    const cfg = bacaAutoZixuForm(extra);
+    await setDoc(doc(db, "config", AUTO_ZIXU_CONFIG_ID), cfg, { merge: true });
+    return cfg;
+  }
+  function autoZixuReviewPayload(cfg = {}) {
+    const data = { ...DEFAULT_ZIXU_CONFIG, ...cfg };
+    return {
+      nama: String(data.nama || DEFAULT_ZIXU_CONFIG.nama).trim().slice(0, 40),
+      bintang: Math.max(1, Math.min(5, parseInt(data.bintang) || 5)),
+      ulasan: String(data.ulasan || DEFAULT_ZIXU_MESSAGE).trim().slice(0, 500),
+      diciptaPada: serverTimestamp(),
+      profileImg: data.profileImg || DEFAULT_ZIXU_CONFIG.profileImg,
+      warnaProfil: data.warnaProfil || DEFAULT_ZIXU_CONFIG.warnaProfil,
+      badgeText: data.badgeText || DEFAULT_ZIXU_CONFIG.badgeText,
+      badgeColor: data.badgeColor || DEFAULT_ZIXU_CONFIG.badgeColor,
+      badgeColor2: data.badgeColor2 || DEFAULT_ZIXU_CONFIG.badgeColor2,
+      badgeTextColor: data.badgeTextColor || DEFAULT_ZIXU_CONFIG.badgeTextColor,
+      badgeGlowColor: data.badgeGlowColor || DEFAULT_ZIXU_CONFIG.badgeGlowColor,
+      badgeGradient: data.badgeGradient !== false,
+      badgeAnimated: data.badgeAnimated !== false,
+      medalText: data.medalText || DEFAULT_ZIXU_CONFIG.medalText,
+      medalColor: data.medalColor || DEFAULT_ZIXU_CONFIG.medalColor,
+      medalColor2: data.medalColor2 || DEFAULT_ZIXU_CONFIG.medalColor2,
+      medalTextColor: data.medalTextColor || DEFAULT_ZIXU_CONFIG.medalTextColor,
+      medalGlowColor: data.medalGlowColor || DEFAULT_ZIXU_CONFIG.medalGlowColor,
+      medalShape: data.medalShape || DEFAULT_ZIXU_CONFIG.medalShape,
+      medalSize: data.medalSize || DEFAULT_ZIXU_CONFIG.medalSize,
+      medalGradient: data.medalGradient !== false,
+      medalAnimated: data.medalAnimated !== false,
+      medalOutline: data.medalOutline === true,
+      nameColorEnabled: data.nameColorEnabled === true,
+      nameColor: data.nameColor || DEFAULT_ZIXU_CONFIG.nameColor,
+      nameColor2: data.nameColor2 || DEFAULT_ZIXU_CONFIG.nameColor2,
+      nameGlowColor: data.nameGlowColor || DEFAULT_ZIXU_CONFIG.nameGlowColor,
+      nameGradient: data.nameGradient !== false,
+      nameAnimated: data.nameAnimated !== false,
+      nameWeight: data.nameWeight || DEFAULT_ZIXU_CONFIG.nameWeight,
+      autoPostBy: "zixu",
+      pinned: true,
+      pinnedAt: serverTimestamp()
+    };
+  }
+  async function postZixuReview(manual = false) {
+    if (!adminOk()) {
+      if (manual) showToast("Login admin dulu untuk post Z!xu.", "error");
+      return false;
+    }
+    const snap = await getDoc(doc(db, "config", AUTO_ZIXU_CONFIG_ID));
+    const saved = snap.exists() ? snap.data() : {};
+    const cfg = manual ? bacaAutoZixuForm(saved) : { ...DEFAULT_ZIXU_CONFIG, ...saved };
+    if (!manual && cfg.enabled !== true) return false;
+    const intervalMs = Math.max(1, Math.min(72, parseInt(cfg.intervalHours) || 5)) * 60 * 60 * 1000;
+    const lastMs = cfg.lastPostAt?.toMillis ? cfg.lastPostAt.toMillis() : 0;
+    if (!manual && lastMs && Date.now() - lastMs < intervalMs) return false;
+    const reviewRef = await addDoc(collection(db, "ratings"), autoZixuReviewPayload(cfg));
+    await setDoc(doc(db, "config", AUTO_ZIXU_CONFIG_ID), {
+      ...cfg,
+      lastPostAt: serverTimestamp(),
+      lastPostReviewId: reviewRef.id,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    if (autoZixuStatus) autoZixuStatus.textContent = "Z!xu baru sahaja post.";
+    if (manual) showToast("Z!xu berjaya post sekarang.", "success");
+    else showToast("Auto post Z!xu dihantar.", "success");
+    return true;
+  }
+  async function checkAutoZixuPost() {
+    if (!adminOk()) return;
+    try { await postZixuReview(false); }
+    catch(e) { console.error("Auto Z!xu gagal:", e); }
+  }
 
   onAuthStateChanged(auth, user => {
     currentUser = user;
@@ -847,6 +1019,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     updateAdminUi();
     if (latestCodeSnapshot) renderCodeListFromSnapshot(latestCodeSnapshot);
     try { renderReviews(); } catch (e) {}
+    if (adminOk()) checkAutoZixuPost();
   });
 
   btnAdminLogin.addEventListener('click', async () => {
@@ -885,6 +1058,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
       if (snap.exists()) adminAnnounceText.value = snap.data().text || DEFAULT_ANNOUNCEMENT_TEXT;
       else adminAnnounceText.value = DEFAULT_ANNOUNCEMENT_TEXT;
     } catch(e) {}
+    await loadAutoZixuConfig();
     adminOverlayBg.classList.add('show');
     adminPanelModal.classList.add('show');
   });
@@ -906,6 +1080,7 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     try {
       // Kita kena pastikan document wujud, setDoc dengan merge:true adalah cara yang betul
       await setDoc(doc(db, "config", "announcement"), { text: adminAnnounceText.value.trim() }, { merge: true });
+      await saveAutoZixuConfig({ updatedAt: serverTimestamp() });
       showToast("Tetapan admin berjaya disimpan.", "success");
       btnCloseAdmin.click();
     } catch (e) {
@@ -914,6 +1089,24 @@ Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adal
     }
     btnSaveAdmin.disabled = false; btnSaveAdmin.textContent = "Simpan";
   });
+  if (btnRunZixuNow) {
+    btnRunZixuNow.addEventListener('click', async () => {
+      if (!mintaAdmin()) return;
+      btnRunZixuNow.disabled = true;
+      btnRunZixuNow.textContent = "Posting...";
+      try {
+        await saveAutoZixuConfig({ updatedAt: serverTimestamp() });
+        await postZixuReview(true);
+      } catch(e) {
+        console.error(e);
+        showToast("Gagal post Z!xu. Semak rules ratings/config.", "error");
+      } finally {
+        btnRunZixuNow.disabled = false;
+        btnRunZixuNow.textContent = "Post Z!xu Sekarang";
+      }
+    });
+  }
+  setInterval(checkAutoZixuPost, 5 * 60 * 1000);
 
   function randomCodePart(len = 6) {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

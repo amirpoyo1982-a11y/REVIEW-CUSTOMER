@@ -79,6 +79,25 @@
     </div>
     <div id="adminCodeList" class="admin-code-list">Login admin untuk lihat kod.</div>
   </div>
+  <div class="admin-form-group admin-auto-post-tools">
+    <label>Auto Post Z!xu</label>
+    <div class="auto-post-card">
+      <div class="auto-post-row">
+        <span class="badge-switch"><input type="checkbox" id="autoZixuEnabled"> Aktif auto post</span>
+        <input type="number" id="autoZixuInterval" value="5" min="1" max="72" step="1" placeholder="Jam">
+        <input type="number" id="autoZixuRating" value="5" min="1" max="5" step="1" placeholder="Rating">
+      </div>
+      <div class="auto-post-row">
+        <input type="text" id="autoZixuName" maxlength="40" placeholder="Nama bot / promoter">
+        <input type="text" id="autoZixuRole" maxlength="24" placeholder="Role badge">
+        <input type="text" id="autoZixuMedal" maxlength="18" placeholder="Pingat">
+      </div>
+      <input type="url" id="autoZixuProfileImg" placeholder="Link gambar profile Z!xu">
+      <textarea id="autoZixuMessage" rows="7" maxlength="500" placeholder="Mesej auto post Z!xu"></textarea>
+      <div class="admin-code-hint" id="autoZixuStatus">Auto post hanya jalan bila admin login dan website review dibuka.</div>
+      <button class="admin-btn admin-btn-save" id="btnRunZixuNow" type="button">Post Z!xu Sekarang</button>
+    </div>
+  </div>
   <div class="admin-btn-row">
     <button class="admin-btn admin-btn-save" id="btnSaveAdmin">Simpan</button>
     <button class="admin-btn bulk-delete-btn" id="btnOpenBulkDelete" type="button">Delete Pilihan</button>
