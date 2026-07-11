@@ -1907,3 +1907,98 @@ input[type="text"]:focus, select:focus, textarea:focus, .code-input:focus {
   .review-card { border-radius: 20px; }
   .review-notice-actions { grid-template-columns: 1fr; }
 }
+
+/* =========================================================
+   REVIEW PERFORMANCE POLISH
+   Keep the rebuild look, reduce blur/shadow/animation cost.
+   ========================================================= */
+.topbar,
+.main-card,
+.review-notice-popup,
+.feedback-modal,
+.shop-closed-overlay,
+.shop-closed-modal {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.loader-card,
+.review-notice-card,
+.main-card,
+.stat-card,
+.rating-box,
+.review-card,
+.admin-panel-modal,
+.feedback-modal-box,
+.profile-picker,
+.profile-image-section,
+.badge-designer,
+.customer-designer,
+.badge-preview-shell,
+.bulk-select-toolbar,
+.auto-post-card {
+  box-shadow: 0 12px 30px rgba(15,42,69,.08) !important;
+}
+.review-card:hover,
+.btn-main-site:hover {
+  transform: none !important;
+  box-shadow: 0 14px 32px rgba(15,42,69,.10) !important;
+}
+body::before,
+.hero-band::before,
+.hero-band::after {
+  opacity: .35;
+}
+.ticker-track,
+.marquee-track {
+  animation-duration: 60s !important;
+}
+.buyer-name.custom-name.is-animated,
+.verified-badge.custom-badge.is-animated,
+.medal-badge.is-animated,
+.review-notice-icon {
+  animation-duration: 7s !important;
+}
+.verified-badge.custom-badge.is-animated::after,
+.medal-badge.is-animated::after {
+  animation-duration: 4.8s !important;
+}
+.review-card {
+  animation-duration: .16s !important;
+}
+
+@media (max-width: 760px), (prefers-reduced-motion: reduce) {
+  body::before,
+  .hero-band::before,
+  .hero-band::after {
+    display: none !important;
+  }
+  .ticker-track,
+  .marquee-track,
+  .loader-card::before,
+  .loader-logo-wrap span,
+  .loader-bar span {
+    animation: none !important;
+  }
+  .review-card {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .review-card:hover,
+  .bulk-review-item:hover,
+  [data-admin-ctrl-row] .admin-action-btn:hover,
+  #butangHantar:hover {
+    transform: none !important;
+  }
+  .buyer-name.custom-name.is-animated,
+  .verified-badge.custom-badge.is-animated,
+  .medal-badge.is-animated {
+    animation-duration: 9s !important;
+  }
+  .main-card,
+  .stat-card,
+  .rating-box,
+  .review-card,
+  .admin-panel-modal {
+    box-shadow: 0 8px 22px rgba(15,42,69,.07) !important;
+  }
+}
