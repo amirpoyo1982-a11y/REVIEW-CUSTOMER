@@ -78,7 +78,32 @@
   document.getElementById("btnOkReviewNotice")?.addEventListener("click", () => closeReviewNoticePopup(true));
   document.getElementById("btnCloseReviewNotice")?.addEventListener("click", () => closeReviewNoticePopup(false));
 
+  const mainReviewCard = document.querySelector(".main-card");
+  const mobileReviewTabs = document.querySelectorAll("[data-mobile-review-tab]");
+  const isMobileReviewLayout = () => window.matchMedia("(max-width: 859px)").matches;
+  function setMobileReviewTab(tab = "form", shouldScroll = false) {
+    const safeTab = tab === "reviews" ? "reviews" : "form";
+    mainReviewCard?.setAttribute("data-mobile-tab", safeTab);
+    mobileReviewTabs.forEach(btn => {
+      const active = btn.dataset.mobileReviewTab === safeTab;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    if (shouldScroll && isMobileReviewLayout()) {
+      const target = document.querySelector(".mobile-review-tabs") || mainReviewCard;
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+  setMobileReviewTab("form");
+  mobileReviewTabs.forEach(btn => {
+    btn.addEventListener("click", () => setMobileReviewTab(btn.dataset.mobileReviewTab, true));
+  });
+
   document.getElementById('btnScrollUlasan')?.addEventListener('click', () => {
+    if (isMobileReviewLayout()) {
+      setMobileReviewTab("reviews", true);
+      return;
+    }
     const sasaran = document.querySelector('.reviews-col-title') || document.getElementById('kotakPaparan');
     sasaran?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
@@ -1752,6 +1777,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       clearProfileImg(false); clearFeedbackImage(false); charCounter.textContent = "0 / 500"; updatePreview();
 
       showToast("Ulasan berjaya dihantar! Terima kasih. 🙏", "success");
+      setMobileReviewTab("reviews", true);
     } catch(err) {
       console.error("Ralat Firebase (Details):", err.code, err.message, err);
       // Papar sebab sebenar terus dalam toast supaya senang debug tanpa F12

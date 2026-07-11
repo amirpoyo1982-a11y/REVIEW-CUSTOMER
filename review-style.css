@@ -2171,3 +2171,139 @@ body::before {
     radial-gradient(circle at 18% 22%, rgba(14,165,233,.2), transparent 30%),
     linear-gradient(115deg, #020617 0%, #082f49 50%, #0369a1 100%) !important;
 }
+
+/* =========================================================
+   MOBILE REVIEW SPLIT VIEW
+   Phone only: one screen to write, one screen to read reviews.
+   ========================================================= */
+.mobile-review-tabs {
+  display: none;
+}
+
+@media (max-width: 859px) {
+  .main-card {
+    overflow: visible !important;
+  }
+  .mobile-review-tabs {
+    position: sticky;
+    top: 94px;
+    z-index: 90;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(240,249,255,.94);
+    border-bottom: 1px solid rgba(14,165,233,.18);
+    box-shadow: 0 12px 28px rgba(14,165,233,.08);
+  }
+  .mobile-review-tab {
+    min-height: 44px;
+    border: 1.5px solid rgba(14,165,233,.22);
+    border-radius: 14px;
+    background: #fff;
+    color: #075985;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 950;
+    letter-spacing: .2px;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(14,165,233,.08);
+  }
+  .mobile-review-tab.active {
+    background: linear-gradient(135deg, #0ea5e9, #06b6d4, #38bdf8);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 14px 28px rgba(14,165,233,.22);
+  }
+  .main-card[data-mobile-tab="form"] .reviews-col,
+  .main-card[data-mobile-tab="reviews"] .form-col {
+    display: none !important;
+  }
+  .main-card[data-mobile-tab="reviews"] .reviews-col,
+  .main-card[data-mobile-tab="form"] .form-col {
+    display: block !important;
+  }
+  .card-grid {
+    display: block !important;
+  }
+  .reviews-col {
+    background: linear-gradient(180deg, rgba(248,253,255,.98), rgba(240,249,255,.94)) !important;
+  }
+  .reviews-col-head {
+    align-items: center;
+  }
+  .reviews-col-title,
+  .form-section-title {
+    font-size: 13px !important;
+    color: #075985 !important;
+  }
+  .filter-bar {
+    position: sticky;
+    top: 158px;
+    z-index: 80;
+    margin-inline: -4px;
+    padding: 8px 4px;
+    background: rgba(240,249,255,.96);
+    border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(14,165,233,.08);
+  }
+  .filter-btn {
+    flex: 1 1 auto;
+    min-height: 34px;
+    padding-inline: 10px;
+    background: #fff !important;
+  }
+  .filter-btn.active {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8) !important;
+  }
+  .sort-select {
+    flex: 1 1 100%;
+    width: 100%;
+    margin-left: 0 !important;
+    min-height: 38px;
+    background: #fff !important;
+  }
+  .reviews-col .rating-box {
+    max-height: calc(100dvh - 330px);
+    min-height: 300px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 18px !important;
+  }
+  .review-card {
+    margin: 8px !important;
+  }
+  .mobile-review-tabs,
+  .form-col,
+  .reviews-col {
+    scroll-margin-top: 112px;
+  }
+  :root[data-theme="dark"] .mobile-review-tabs,
+  :root[data-theme="dark"] .filter-bar {
+    background: rgba(8,47,73,.92) !important;
+    border-color: rgba(125,211,252,.18) !important;
+  }
+  :root[data-theme="dark"] .mobile-review-tab {
+    background: rgba(8,24,39,.88);
+    color: #e0f2fe;
+    border-color: rgba(125,211,252,.22);
+  }
+  :root[data-theme="dark"] .reviews-col {
+    background: rgba(8,24,39,.72) !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .mobile-review-tabs {
+    gap: 7px;
+    padding: 8px;
+  }
+  .mobile-review-tab {
+    min-height: 42px;
+    font-size: 12px;
+  }
+  .reviews-col .rating-box {
+    max-height: calc(100dvh - 315px);
+    min-height: 260px;
+  }
+}
