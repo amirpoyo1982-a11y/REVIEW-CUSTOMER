@@ -2307,3 +2307,148 @@ body::before {
     min-height: 260px;
   }
 }
+
+/* Stronger closed-hours modal for review page */
+.shop-closed-overlay {
+  background:
+    radial-gradient(circle at 50% 32%, rgba(14,165,233,.28), transparent 34%),
+    linear-gradient(135deg, rgba(7,47,75,.86), rgba(2,6,23,.8)) !important;
+  backdrop-filter: blur(10px) saturate(1.12) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.12) !important;
+}
+.shop-closed-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(56,189,248,.24), transparent 34%),
+    radial-gradient(circle at 90% 14%, rgba(14,165,233,.2), transparent 30%);
+  pointer-events: none;
+}
+.shop-closed-modal {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  max-width: 520px !important;
+  min-height: 255px;
+  padding: clamp(24px, 4.5vw, 38px) !important;
+  border-radius: 30px !important;
+  background:
+    linear-gradient(180deg, rgba(240,249,255,.82), rgba(219,234,244,.72)),
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.58), transparent 44%) !important;
+  border: 1px solid rgba(255,255,255,.62) !important;
+  box-shadow: 0 28px 80px rgba(2,6,23,.28), inset 0 1px 0 rgba(255,255,255,.82) !important;
+}
+.shop-closed-modal::after {
+  content: "H4SX REVIEW";
+  position: absolute;
+  left: 50%;
+  bottom: -16px;
+  transform: translateX(-50%);
+  z-index: 0;
+  color: rgba(255,255,255,.48);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: clamp(58px, 14vw, 108px);
+  font-weight: 950;
+  line-height: .78;
+  letter-spacing: -5px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.shop-closed-modal > * {
+  position: relative;
+  z-index: 1;
+}
+.shop-closed-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 24%, #fff, #dbeafe 35%, #64748b 76%);
+  border: 5px solid rgba(15,23,42,.45);
+  font-size: 24px;
+  box-shadow: 0 14px 28px rgba(15,23,42,.22);
+}
+.shop-closed-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.22);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.shop-closed-title {
+  margin: 10px 0 10px !important;
+  color: #082f49 !important;
+  font-size: clamp(24px, 5vw, 34px) !important;
+  font-weight: 950 !important;
+  letter-spacing: -.04em;
+}
+.shop-closed-msg {
+  max-width: 390px;
+  margin: 0 auto 16px !important;
+  color: #31506b !important;
+  font-size: 15px !important;
+  line-height: 1.65 !important;
+}
+.shop-closed-time {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 17px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #082f49, #0f172a) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.28);
+  box-shadow: 0 12px 28px rgba(15,23,42,.2);
+  font-size: 13px !important;
+  font-weight: 900 !important;
+}
+.shop-closed-time[style*="display: none"] {
+  display: none !important;
+}
+
+@media (max-width: 520px) {
+  .shop-closed-modal {
+    width: min(92vw, 420px) !important;
+    border-radius: 24px !important;
+  }
+  .shop-closed-modal::after {
+    font-size: 58px;
+    letter-spacing: -3px;
+  }
+  .shop-closed-kicker,
+  .shop-closed-time {
+    font-size: 11px !important;
+  }
+}
+
+/* Maintenance mode: hide everything behind the popup completely. */
+.shop-closed-overlay[data-closed-type="maintenance"] {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(14,165,233,.18), transparent 34%),
+    radial-gradient(circle at 20% 88%, rgba(56,189,248,.13), transparent 32%),
+    linear-gradient(145deg, #020617 0%, #061827 48%, #082f49 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.shop-closed-overlay[data-closed-type="maintenance"]::before {
+  background:
+    linear-gradient(135deg, rgba(14,165,233,.08) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(56,189,248,.06) 25%, transparent 25%) !important;
+  background-size: 34px 34px !important;
+  opacity: .55;
+}
+.shop-closed-overlay[data-closed-type="maintenance"] .shop-closed-modal {
+  background:
+    linear-gradient(180deg, rgba(240,249,255,.92), rgba(219,234,244,.86)),
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.68), transparent 44%) !important;
+}

@@ -175,18 +175,21 @@
   }
 
   function paparKedaiTutup(icon, tajuk, mesej, jamTeks) {
-    const iconEl = document.querySelector('#shopClosedOverlay > div > div:first-child');
+    const iconEl = document.querySelector('.shop-closed-icon');
     if (iconEl) iconEl.textContent = icon;
     document.querySelector('.shop-closed-title').textContent = tajuk;
     document.getElementById('shopClosedMsg').textContent = mesej;
+    const overlayEl = document.getElementById('shopClosedOverlay');
+    const type = /luar waktu/i.test(tajuk) ? 'hours' : (/(penyelenggaraan|selenggara|maintenance|maintain|update)/i.test(tajuk) ? 'maintenance' : 'closed');
+    overlayEl?.setAttribute('data-closed-type', type);
     const timeEl = document.getElementById('shopClosedTime');
     if (jamTeks) {
-      timeEl.textContent = '🕐 ' + jamTeks;
+      timeEl.textContent = '⏱ ' + jamTeks.replace(/\s*\|\s*$/, '');
       timeEl.style.display = 'inline-block';
     } else {
       timeEl.style.display = 'none';
     }
-    document.getElementById('shopClosedOverlay').classList.add('active');
+    overlayEl?.classList.add('active');
   }
 
   async function semakStatusKedai() {
