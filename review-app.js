@@ -61,6 +61,7 @@
     return document.getElementById("shopClosedOverlay")?.classList.contains("active");
   }
   function openReviewNoticePopup() {
+    return;
     if (reviewNoticeTried || !reviewNoticePopup || reviewNoticeHidden() || maintenanceOverlayActive()) return;
     reviewNoticeTried = true;
     reviewNoticePopup.classList.add("show");
@@ -166,7 +167,6 @@
   async function semakStatusKedai() {
     if (isPreviewBypass()) {
       document.getElementById('shopClosedOverlay').classList.remove('active');
-      openReviewNoticePopup();
       return;
     }
     try {
@@ -216,16 +216,51 @@
 
       // Semua ok — kedai buka
       document.getElementById('shopClosedOverlay').classList.remove('active');
-      openReviewNoticePopup();
     } catch (e) {
       console.log('Gagal semak status kedai', e);
-      setTimeout(openReviewNoticePopup, 900);
     }
   }
   semakStatusKedai();
   setInterval(semakStatusKedai, 60000); // Semak setiap 1 minit
 
-  // Notis status ulasan sekarang dikawal oleh popup khas dan Gist maintenance.
+  // ── Announcement Bar (Firebase) ───────────────────────────────
+  const topAnnounceEl = document.getElementById('topAnnouncement');
+  const announceTextWrap = document.getElementById('announcementTextWrap');
+  const announcementTitle = document.getElementById('announcementTitle');
+  const announcementFullText = document.getElementById('announcementFullText');
+  const announcementToggle = document.getElementById('announcementToggle');
+  function renderAnnouncementText(text) {
+    if (!topAnnounceEl || !announceTextWrap || !announcementTitle || !announcementFullText || !announcementToggle) return;
+    const clean = (text || "").trim();
+    if (!clean) {
+      topAnnounceEl.classList.remove('show', 'expanded');
+      return;
+    }
+    const parts = clean.split(/\n+/).map(line => line.trim()).filter(Boolean);
+    const title = parts.length > 1 ? parts[0] : 'Pengumuman H4SX STORE';
+    const body = parts.length > 1 ? parts.slice(1).join('\n\n') : parts[0];
+    announcementTitle.textContent = title;
+    announceTextWrap.textContent = body.length > 140 ? body.slice(0, 140).trim() + '...' : body;
+    announcementFullText.textContent = body;
+    topAnnounceEl.classList.remove('expanded');
+    announcementToggle.textContent = 'Baca';
+    announcementToggle.style.display = body.length > 140 || parts.length > 1 ? 'inline-flex' : 'none';
+    topAnnounceEl.classList.add('show');
+  }
+  announcementToggle?.addEventListener('click', () => {
+    const expanded = topAnnounceEl.classList.toggle('expanded');
+    announcementToggle.textContent = expanded ? 'Tutup' : 'Baca';
+  });
+  if (topAnnounceEl) {
+    onSnapshot(doc(db, "config", "announcement"), (snap) => {
+      if (snap.exists()) {
+        const d = snap.data();
+        renderAnnouncementText(d.text);
+      } else {
+        topAnnounceEl.classList.remove('show', 'expanded');
+      }
+    });
+  }
 
   // -- Custom Badge Editor (Admin) ---------------------------------
   const badgeOverlayBg       = document.getElementById('badgeOverlayBg');
