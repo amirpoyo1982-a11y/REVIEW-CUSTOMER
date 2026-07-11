@@ -2038,3 +2038,136 @@ body::before,
     animation-play-state: running !important;
   }
 }
+
+/* =========================================================
+   SKY BLUE THEME ALIGNMENT
+   Match review page hero/header with the main H4SX sky theme.
+   ========================================================= */
+:root {
+  --review-cyan: #0ea5e9;
+  --review-teal: #38bdf8;
+  --review-green: #7dd3fc;
+  --review-violet: #bae6fd;
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(14,165,233,.18), transparent 34%),
+    radial-gradient(circle at 88% 8%, rgba(125,211,252,.16), transparent 30%),
+    linear-gradient(145deg, #f8fdff 0%, #eef8ff 48%, #e0f5ff 100%) !important;
+}
+body::before {
+  background-image:
+    linear-gradient(135deg, rgba(14,165,233,.055) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(56,189,248,.045) 25%, transparent 25%) !important;
+}
+
+.ticker-wrap {
+  background: linear-gradient(90deg, #082f49 0%, #0369a1 28%, #0ea5e9 58%, #38bdf8 100%) !important;
+  border-bottom: 1px solid rgba(186,230,253,.3) !important;
+}
+.ticker-item {
+  color: #effaff !important;
+}
+.ticker-item .ti {
+  color: #bae6fd !important;
+}
+
+.topbar {
+  background: linear-gradient(180deg, rgba(248,253,255,.96), rgba(224,242,254,.86)) !important;
+  border-bottom: 1px solid rgba(14,165,233,.24) !important;
+  box-shadow: 0 12px 28px rgba(14,165,233,.08) !important;
+}
+.topbar-logo-name span,
+.topbar-page-title {
+  color: #0284c7 !important;
+}
+.topbar-divider {
+  background: rgba(14,165,233,.22) !important;
+}
+.theme-toggle,
+.topbar-badge,
+#btnOpenAdminConfig,
+#btnLogoutAdmin {
+  background: rgba(240,249,255,.86) !important;
+  color: #075985 !important;
+  border-color: rgba(14,165,233,.24) !important;
+  box-shadow: 0 8px 20px rgba(14,165,233,.08) !important;
+}
+.topbar-badge::before {
+  background: #0ea5e9 !important;
+  box-shadow: 0 0 0 4px rgba(14,165,233,.14) !important;
+}
+#btnLogoutAdmin {
+  color: #dc2626 !important;
+  border-color: rgba(248,113,113,.26) !important;
+}
+
+.hero-band {
+  background:
+    radial-gradient(circle at 80% 12%, rgba(125,211,252,.34), transparent 32%),
+    radial-gradient(circle at 18% 22%, rgba(14,165,233,.28), transparent 30%),
+    linear-gradient(115deg, #061827 0%, #0b3b5a 48%, #0ea5e9 100%) !important;
+  border-bottom: 1px solid rgba(125,211,252,.32) !important;
+}
+.hero-band::before {
+  opacity: .28 !important;
+  background:
+    linear-gradient(90deg, transparent 0 48%, rgba(255,255,255,.12) 48% 52%, transparent 52% 100%),
+    repeating-linear-gradient(135deg, rgba(186,230,253,.12) 0 1px, transparent 1px 22px) !important;
+}
+.hero-band::after {
+  background: radial-gradient(circle, rgba(56,189,248,.26), transparent 62%) !important;
+}
+.hero-eyebrow {
+  background: rgba(14,165,233,.18) !important;
+  border-color: rgba(186,230,253,.42) !important;
+  color: #e0f2fe !important;
+  box-shadow: 0 12px 30px rgba(14,165,233,.12) !important;
+}
+.hero-band h1 span {
+  background: linear-gradient(95deg, #38bdf8 0%, #67e8f9 48%, #e0f2fe 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+.hero-sub {
+  color: rgba(240,249,255,.86) !important;
+}
+.btn-scroll-reviews {
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 54%, #38bdf8 100%) !important;
+  border-color: rgba(224,242,254,.42) !important;
+  box-shadow: 0 16px 34px rgba(14,165,233,.28) !important;
+}
+.btn-scroll-reviews:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 55%, #67e8f9 100%) !important;
+}
+.btn-main-site {
+  background: linear-gradient(135deg, #075985 0%, #0284c7 58%, #0ea5e9 100%) !important;
+  box-shadow: 0 14px 30px rgba(14,165,233,.26) !important;
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(14,165,233,.15), transparent 34%),
+    radial-gradient(circle at 92% 10%, rgba(125,211,252,.12), transparent 30%),
+    linear-gradient(145deg, #06111d, #071827 52%, #082f49) !important;
+}
+:root[data-theme="dark"] .topbar {
+  background: linear-gradient(180deg, rgba(8,24,39,.94), rgba(7,47,75,.82)) !important;
+  border-bottom-color: rgba(125,211,252,.2) !important;
+}
+:root[data-theme="dark"] .theme-toggle,
+:root[data-theme="dark"] .topbar-badge,
+:root[data-theme="dark"] #btnOpenAdminConfig,
+:root[data-theme="dark"] #btnLogoutAdmin {
+  background: rgba(8,47,73,.72) !important;
+  color: #e0f2fe !important;
+  border-color: rgba(125,211,252,.2) !important;
+}
+:root[data-theme="dark"] .hero-band {
+  background:
+    radial-gradient(circle at 80% 12%, rgba(56,189,248,.22), transparent 32%),
+    radial-gradient(circle at 18% 22%, rgba(14,165,233,.2), transparent 30%),
+    linear-gradient(115deg, #020617 0%, #082f49 50%, #0369a1 100%) !important;
+}
