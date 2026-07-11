@@ -183,7 +183,7 @@
         paparKedaiTutup(
           '🔧',
           data.review_maintenance_title || 'Ulasan Dalam Penyelenggaraan',
-          data.review_maintenance_message || data.review_maintenance_msg || 'Sistem ulasan sedang diselenggara buat masa ini. Sila cuba lagi sebentar lagi.',
+          data.review_maintenance_message || data.review_maintenance_msg || 'Sistem ulasan sedang diproses dan dikemas semula. Kemungkinan besar feature ulasan akan berfungsi kembali dalam sekitar 2 hari lagi.',
           data.business_hours_text
         );
         return;
@@ -225,46 +225,7 @@
   semakStatusKedai();
   setInterval(semakStatusKedai, 60000); // Semak setiap 1 minit
 
-  // ── Announcement Bar (Firebase) ───────────────────────────────
-  const topAnnounceEl = document.getElementById('topAnnouncement');
-  const announceTextWrap = document.getElementById('announcementTextWrap');
-  const announcementTitle = document.getElementById('announcementTitle');
-  const announcementFullText = document.getElementById('announcementFullText');
-  const announcementToggle = document.getElementById('announcementToggle');
-  const DEFAULT_ANNOUNCEMENT_TEXT = `KEMASKINI SISTEM H4SX STORE
-
-Kami telah melancarkan sistem ulasan yang lebih mantap! Sebagai tanda penghargaan kepada pelanggan setia yang telah menyokong kami sejak awal, kini setiap pembeli lama akan diberikan lencana khas: "OLD SUPPORTER".
-
-Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adalah keutamaan kami! 💙`;
-  function renderAnnouncementText(text) {
-    const clean = (text || "").trim();
-    if (!clean) {
-      topAnnounceEl.classList.remove('show', 'expanded');
-      return;
-    }
-    const parts = clean.split(/\n+/).map(line => line.trim()).filter(Boolean);
-    const title = parts.length > 1 ? parts[0] : 'Pengumuman H4SX STORE';
-    const body = parts.length > 1 ? parts.slice(1).join('\n\n') : parts[0];
-    announcementTitle.textContent = title;
-    announceTextWrap.textContent = body.length > 140 ? body.slice(0, 140).trim() + '...' : body;
-    announcementFullText.textContent = body;
-    topAnnounceEl.classList.remove('expanded');
-    announcementToggle.textContent = 'Baca';
-    announcementToggle.style.display = body.length > 140 || parts.length > 1 ? 'inline-flex' : 'none';
-    topAnnounceEl.classList.add('show');
-  }
-  announcementToggle.addEventListener('click', () => {
-    const expanded = topAnnounceEl.classList.toggle('expanded');
-    announcementToggle.textContent = expanded ? 'Tutup' : 'Baca';
-  });
-  onSnapshot(doc(db, "config", "announcement"), (snap) => {
-    if (snap.exists()) {
-      const d = snap.data();
-      renderAnnouncementText(d.text);
-    } else {
-      topAnnounceEl.classList.remove('show', 'expanded');
-    }
-  });
+  // Notis status ulasan sekarang dikawal oleh popup khas dan Gist maintenance.
 
   // -- Custom Badge Editor (Admin) ---------------------------------
   const badgeOverlayBg       = document.getElementById('badgeOverlayBg');
