@@ -36,6 +36,27 @@
 </div>
 
 <!-- ══ ANNOUNCEMENT BAR ══ -->
+
+<!-- REVIEW SYSTEM NOTICE POPUP -->
+<div id="reviewNoticePopup" class="review-notice-popup" aria-hidden="true">
+  <div class="review-notice-card" role="dialog" aria-modal="true" aria-labelledby="reviewNoticeTitle">
+    <button class="review-notice-close" id="btnCloseReviewNotice" type="button" aria-label="Tutup notis">?</button>
+    <div class="review-notice-icon">!</div>
+    <div class="review-notice-kicker">Makluman Sistem Ulasan</div>
+    <h2 id="reviewNoticeTitle">Sistem Ulasan Sedang Mengalami Gangguan</h2>
+    <p>Buat masa ini, sistem ulasan H4SX STORE mungkin mengambil masa lebih lama daripada biasa untuk pulih sepenuhnya. Ada kemungkinan sesetengah ulasan lambat dimuatkan, paparan tidak stabil, atau proses semakan berjalan perlahan.</p>
+    <p>Kami sedang pantau keadaan ini dan akan pulihkan semula secepat mungkin. Terima kasih kerana bersabar, dan maaf atas sebarang kesulitan sementara ini.</p>
+    <div class="review-notice-actions">
+      <a href="https://h4sx-store.vercel.app" class="review-notice-link" target="_blank" rel="noopener">Website Utama</a>
+      <button class="review-notice-ok" id="btnOkReviewNotice" type="button">Saya faham</button>
+    </div>
+    <label class="review-notice-snooze">
+      <input type="checkbox" id="reviewNoticeHideCheck">
+      <span>Jangan tunjuk lagi selama 1 jam 30 minit</span>
+    </label>
+  </div>
+</div>
+
 <div id="topAnnouncement" class="top-announcement">
   <div class="announce-inner">
     <span class="admin-badge">Admin Rasmi</span>

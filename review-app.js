@@ -45,6 +45,38 @@
   });
 
   // ── Butang scroll terus ke bahagian ulasan ──────────────────────
+
+  // -- Review notice popup ---------------------------------
+  // Popup ini tidak ikut Gist maintenance. Kalau overlay Gist aktif, popup tidak dibuka.
+  const REVIEW_NOTICE_HIDE_KEY = "h4sx_review_notice_hidden_until";
+  const REVIEW_NOTICE_HIDE_MS = 90 * 60 * 1000;
+  let reviewNoticeTried = false;
+  const reviewNoticePopup = document.getElementById("reviewNoticePopup");
+  const reviewNoticeHideCheck = document.getElementById("reviewNoticeHideCheck");
+  function reviewNoticeHidden() {
+    try { return Date.now() < Number(localStorage.getItem(REVIEW_NOTICE_HIDE_KEY) || 0); }
+    catch(e) { return false; }
+  }
+  function maintenanceOverlayActive() {
+    return document.getElementById("shopClosedOverlay")?.classList.contains("active");
+  }
+  function openReviewNoticePopup() {
+    if (reviewNoticeTried || !reviewNoticePopup || reviewNoticeHidden() || maintenanceOverlayActive()) return;
+    reviewNoticeTried = true;
+    reviewNoticePopup.classList.add("show");
+    reviewNoticePopup.setAttribute("aria-hidden", "false");
+  }
+  function closeReviewNoticePopup(showMessage = false) {
+    if (reviewNoticeHideCheck?.checked) {
+      try { localStorage.setItem(REVIEW_NOTICE_HIDE_KEY, String(Date.now() + REVIEW_NOTICE_HIDE_MS)); } catch(e) {}
+    }
+    reviewNoticePopup?.classList.remove("show");
+    reviewNoticePopup?.setAttribute("aria-hidden", "true");
+    if (showMessage && reviewNoticeHideCheck?.checked) showToast("Notis disembunyikan selama 1 jam 30 minit.", "success");
+  }
+  document.getElementById("btnOkReviewNotice")?.addEventListener("click", () => closeReviewNoticePopup(true));
+  document.getElementById("btnCloseReviewNotice")?.addEventListener("click", () => closeReviewNoticePopup(false));
+
   document.getElementById('btnScrollUlasan')?.addEventListener('click', () => {
     const sasaran = document.querySelector('.reviews-col-title') || document.getElementById('kotakPaparan');
     sasaran?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -134,6 +166,7 @@
   async function semakStatusKedai() {
     if (isPreviewBypass()) {
       document.getElementById('shopClosedOverlay').classList.remove('active');
+      openReviewNoticePopup();
       return;
     }
     try {
@@ -183,7 +216,11 @@
 
       // Semua ok — kedai buka
       document.getElementById('shopClosedOverlay').classList.remove('active');
-    } catch (e) { console.log('Gagal semak status kedai', e); }
+      openReviewNoticePopup();
+    } catch (e) {
+      console.log('Gagal semak status kedai', e);
+      setTimeout(openReviewNoticePopup, 900);
+    }
   }
   semakStatusKedai();
   setInterval(semakStatusKedai, 60000); // Semak setiap 1 minit
