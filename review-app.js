@@ -390,10 +390,47 @@
   badgeOverlayBg.addEventListener('click', tutupBadgeModal);
   btnCancelBadge.addEventListener('click', tutupBadgeModal);
 
+  const blockedReviewNamePatterns = [
+    /^(anjing|babi|sial|bodoh|bangang|bangsat|celaka|laknat)+$/,
+    /(pukimak|kimak|puki|butoh|butuh|kontol|memek|lancau|lanjiao|cibai|jibai|pundek)/,
+    /(fuck|fucker|shit|bitch|asshole|dick|pussy)/,
+    /(nigger|nigga|keling)/
+  ];
+
+  function normalizeReviewNameText(value = "") {
+    return String(value)
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[@4]/g, "a")
+      .replace(/[!1|]/g, "i")
+      .replace(/0/g, "o")
+      .replace(/3/g, "e")
+      .replace(/[$5]/g, "s")
+      .replace(/7/g, "t")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  function isBlockedReviewName(name = "") {
+    const clean = normalizeReviewNameText(name);
+    if (!clean) return false;
+    return blockedReviewNamePatterns.some(pattern => pattern.test(clean));
+  }
+
+  function cleanReplyName(name = "") {
+    const clean = String(name || "pelanggan").replace(/\s+/g, " ").trim();
+    return clean.slice(0, 40) || "pelanggan";
+  }
+
+  function buildAutoReply(name = "") {
+    const replyName = cleanReplyName(name);
+    return `Terima kasih, ${replyName}! Kami hargai masa anda memberi ulasan kepada H4SX STORE. Sokongan anda membantu pelanggan lain lebih yakin, dan kami akan terus perbaiki servis supaya pengalaman anda lebih kemas, laju dan selamat. 🙏💙`;
+  }
+
   function withAutoReply(payload, dataDoc = {}) {
     const next = { ...payload };
     if (!dataDoc.balasanAdmin?.trim()) {
-      next.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+      next.balasanAdmin = buildAutoReply(dataDoc.nama || payload.nama);
       next.balasanPada = serverTimestamp();
     }
     return next;
@@ -726,11 +763,7 @@
   async function simpanCustomerPayload(payload, mesejBerjaya, dataDoc) {
     if (!editingCustomerId) return;
     try {
-      if (!dataDoc.balasanAdmin?.trim()) {
-        payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
-        payload.balasanPada = serverTimestamp();
-      }
-      await updateDoc(doc(db, "ratings", editingCustomerId), payload);
+      await updateDoc(doc(db, "ratings", editingCustomerId), withAutoReply(payload, dataDoc));
       showToast(mesejBerjaya, "success");
       tutupCustomerModal();
     } catch (err) {
@@ -1722,6 +1755,9 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
 
     if (!kod)  return showToast("Sila masukkan Kod Pengesahan.", "error");
     if (!nama) return showToast("Sila isi nama atau username.", "error");
+    if (isBlockedReviewName(nama)) {
+      return showToast("Nama ini tidak dibenarkan. Sila guna nama yang sopan.", "error");
+    }
     if (ulasan && ulasan.length < 1) {
       return showToast("Ulasan mesti sekurang-kurangnya 10 aksara, atau kosongkan untuk rating sahaja.", "error");
     }
@@ -1765,7 +1801,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       // sah ikut rules 'update' sebab nama/bintang/ulasan/diciptaPada tak diubah.
       try {
         await updateDoc(doc(db,"ratings",refBaru.id), {
-          balasanAdmin: "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙",
+          balasanAdmin: buildAutoReply(nama),
           balasanPada: serverTimestamp()
         });
       } catch(errBalasan) {
@@ -1818,7 +1854,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     try {
       const payload = { ulasan: ulasanBaru, ulasanDieditPada: serverTimestamp() };
       if (!dataDoc.balasanAdmin?.trim()) {
-        payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+        payload.balasanAdmin = buildAutoReply(dataDoc.nama);
         payload.balasanPada = serverTimestamp();
       }
       await updateDoc(doc(db,"ratings",id), payload);
@@ -1851,7 +1887,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     try {
       const payload = { diciptaPada: Timestamp.fromDate(date), masaDieditPada: serverTimestamp() };
       if (!dataDoc.balasanAdmin?.trim()) {
-        payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+        payload.balasanAdmin = buildAutoReply(dataDoc.nama);
         payload.balasanPada = serverTimestamp();
       }
       await updateDoc(doc(db,"ratings",id), payload);
@@ -2126,7 +2162,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           // Kalau ulasan lama ni tak pernah dapat balasan lagi, isi dulu auto-reply
           // supaya update pin ni tak ditolak oleh Firestore rules.
           if (!data.balasanAdmin?.trim()) {
-            payload.balasanAdmin = "Terima kasih kerana meluangkan masa memberi ulasan kepada kami! Kepuasan anda adalah keutamaan H4SX STORE. 🙏💙";
+            payload.balasanAdmin = buildAutoReply(data.nama);
             payload.balasanPada = serverTimestamp();
           }
           await updateDoc(doc(db,"ratings",id), payload);
