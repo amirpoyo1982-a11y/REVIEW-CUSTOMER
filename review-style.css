@@ -2452,3 +2452,70 @@ body::before {
     linear-gradient(180deg, rgba(240,249,255,.92), rgba(219,234,244,.86)),
     radial-gradient(circle at 50% 0%, rgba(255,255,255,.68), transparent 44%) !important;
 }
+
+/* Cleaner closed-hours modal */
+.shop-closed-overlay {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(56,189,248,.2), transparent 32%),
+    linear-gradient(145deg, #061827 0%, #0b3552 45%, #06111f 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.shop-closed-overlay::before {
+  background:
+    linear-gradient(135deg, rgba(14,165,233,.08) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(255,255,255,.05) 25%, transparent 25%) !important;
+  background-size: 36px 36px !important;
+  opacity: .46 !important;
+}
+.shop-closed-modal {
+  width: min(92vw, 460px) !important;
+  max-width: 460px !important;
+  min-height: 0 !important;
+  padding: clamp(22px, 4vw, 30px) !important;
+  border-radius: 24px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(231,246,255,.92)) !important;
+  border: 1px solid rgba(186,230,253,.92) !important;
+  box-shadow: 0 24px 70px rgba(2,6,23,.34), inset 0 1px 0 rgba(255,255,255,.96) !important;
+}
+.shop-closed-modal::after {
+  content: "" !important;
+}
+.shop-closed-icon {
+  width: 52px !important;
+  height: 52px !important;
+  margin: 0 auto 12px !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, #e0f2fe, #38bdf8) !important;
+  color: #083344 !important;
+  border: 1px solid rgba(14,165,233,.35) !important;
+  font-size: 22px !important;
+  box-shadow: 0 14px 34px rgba(14,165,233,.25) !important;
+}
+.shop-closed-kicker {
+  color: #0369a1 !important;
+  background: rgba(14,165,233,.1) !important;
+  border: 1px solid rgba(14,165,233,.22) !important;
+  font-size: 11px !important;
+  letter-spacing: .07em !important;
+}
+.shop-closed-title {
+  margin: 12px 0 8px !important;
+  color: #06263d !important;
+  font-size: clamp(25px, 5vw, 32px) !important;
+  letter-spacing: -.035em !important;
+}
+.shop-closed-msg {
+  color: #38566f !important;
+  margin-bottom: 15px !important;
+}
+.shop-closed-time {
+  padding: 9px 16px !important;
+  background: linear-gradient(135deg, #0ea5e9, #0369a1) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.5) !important;
+  box-shadow: 0 14px 28px rgba(14,165,233,.24) !important;
+}
+.shop-closed-overlay[data-closed-type="maintenance"] .shop-closed-modal {
+  background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(232,247,255,.94)) !important;
+}
