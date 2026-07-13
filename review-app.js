@@ -1607,12 +1607,12 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   const EMOJI  = ['😀','😎','🔥','🎮','👾','🐉','⚡','💎'];
   let pilihanWarna = null, pilihanEmoji = null, profileImgB64 = null, feedbackImgB64 = null;
   const NAMA_AUTO = [
-    "Aiman", "Hakim", "Danish", "Irfan", "Aqil", "Farish", "Arif", "Nazri",
+    "Aiman", "Hakim", "Danish", "Aqil", "Farish", "Arif", "Nazri",
     "Syafiq", "Ammar", "Haziq", "Danial", "Adam", "Rizqi", "Rayyan", "Naufal",
     "Izzah", "Syahira", "Alya", "Nadia", "Sofea", "Humaira", "Aina", "Maisarah",
     "Zara", "Hana", "Mia", "Qistina", "Putri", "Nurul"
   ];
-  const NAMA_TAG = ["R.", "H.", "F.", "Z.", "P.", "A.", "N.", "S.", "M.", "K."];
+  const NAMA_SUFFIX = ["X", "Pro", "MY", "GG", "ID", "V2", "OP", "YT", "RX", "VX"];
 
   WARNA.forEach(w => {
     const sw = document.createElement("div");
@@ -1660,8 +1660,8 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   namaPelanggan.addEventListener("input", updatePreview);
   btnGenerateName.addEventListener("click", () => {
     const nama = NAMA_AUTO[Math.floor(Math.random() * NAMA_AUTO.length)];
-    const tag = NAMA_TAG[Math.floor(Math.random() * NAMA_TAG.length)];
-    namaPelanggan.value = `${nama} ${tag}`;
+    const suffix = NAMA_SUFFIX[Math.floor(Math.random() * NAMA_SUFFIX.length)];
+    namaPelanggan.value = `${nama}${suffix}`;
     pilihanWarna = WARNA[Math.floor(Math.random() * WARNA.length)];
     pilihanEmoji = null;
     document.querySelectorAll(".emoji-opt").forEach(o=>o.classList.remove("active"));
@@ -1875,41 +1875,43 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   });
 
   // ── Dadu ──────────────────────────────────────────────────────
+  const CDG_PREFIX = "cdg - ";
+  let reviewSuggestionUsed = false;
   const CADANGAN = {
     5:[
-      "Perkhidmatan sangat memuaskan! Barang sampai cepat dan dalam keadaan sempurna. Memang akan order lagi. Syabas H4SX STORE! 🔥",
-      "Seller sangat responsif dan barang berkualiti tinggi. Packaging cantik dan selamat. 5 bintang pun rasa tak cukup! Highly recommended! ⭐",
-      "Laju gila proses dan penghantaran. Barang sama macam dalam gambar. H4SX STORE memang boleh dipercayai 100%. Terima kasih! 🙏",
-      "First time order tapi dah terus jadi pelanggan setia. Harga berpatutan, kualiti memang top. Tak rugi langsung! 💎",
-      "Best seller! Comm cepat, barang tak tipu, hantar on time. Kalau boleh bagi 10 bintang bagi je! 🚀"
+      "Servis memang laju dan mudah faham. Lepas payment terus diproses, seller pun friendly. Memang trusted untuk beli digital item. 🔥",
+      "Urusan sangat smooth dari mula sampai siap. Detail produk jelas, seller respons cepat, dan item masuk seperti yang dijanjikan. ⭐",
+      "First time beli dekat sini tapi puas hati. Proses pantas, harga okay, dan seller bantu sampai selesai. Recommended. 🙏",
+      "Digital item diterima dengan selamat dan tak pening nak deal. Seller explain elok-elok, jadi rasa yakin nak repeat order. 💎",
+      "Servis terbaik, cepat respond dan tak buat customer tertunggu lama. H4SX STORE memang boleh dipercayai untuk order online. 🚀"
     ],
     4:[
-      "Keseluruhannya puas hati. Barang okay dan seller senang nak communicate. Sedikit lambat tapi faham la. 👍",
-      "Produk memuaskan dan sesuai dengan harga. Packaging standard tapi barang selamat. Boleh order lagi. 🙂",
-      "Seller baik dan membantu. Barang sampai dalam masa dijanjikan. Ada minor issue tapi seller selesaikan cepat.",
-      "Pengalaman membeli yang menyenangkan. Komunikasi aktif dan barang mengikut spesifikasi. Satu bintang kurang sebab delay sikit.",
-      "H4SX STORE ada potensi besar. Kali ni 4 bintang, next time boleh dapat 5! 😊"
+      "Keseluruhan puas hati. Proses order jelas dan seller senang bincang. Ada lambat sikit tapi masih okay. 👍",
+      "Produk digital diterima seperti info yang diberi. Harga berpatutan dan support pun membantu. Boleh repeat lagi. 🙂",
+      "Seller baik dan cepat bantu bila ada soalan. Ada minor delay, tapi urusan tetap selesai dengan baik.",
+      "Pengalaman beli yang menyenangkan. Komunikasi aktif dan item mengikut detail. Satu bintang kurang sebab tunggu sikit.",
+      "H4SX STORE bagus untuk beli item digital. Kalau proses lagi laju sikit, memang boleh jadi 5 bintang. 😊"
     ],
     3:[
-      "Barang okay tapi masa penghantaran agak lambat. Seller okay tapi perlu improve komunikasi sikit.",
-      "Produk sampai dalam keadaan baik tapi packaging boleh ditingkatkan. Untuk harga yang dibayar, sesuailah.",
-      "Pengalaman sederhana. Ada expectation yang tak dipenuhi tapi barang berfungsi. Mungkin order lagi.",
-      "Seller respond lambat sikit. Barang pun okay-okay je. Harap H4SX boleh improve.",
-      "Neutral je. Tak terlalu kecewa, tak terlalu gembira. Ada sesuatu yang kurang tapi okay lah."
+      "Urusan okay, cuma masa proses agak lambat daripada jangkaan. Seller masih bantu sampai selesai.",
+      "Item digital diterima, tapi komunikasi boleh diperkemas lagi supaya customer tak tertanya-tanya.",
+      "Pengalaman sederhana. Order selesai, cuma ada beberapa bahagian yang boleh dibuat lebih smooth.",
+      "Seller respond lambat sikit. Item okay, cuma harap update status order lebih kerap lepas ni.",
+      "Neutral saja. Tak kecewa sangat, tapi masih ada ruang untuk improve dari segi kelajuan dan info."
     ],
     2:[
-      "Agak kecewa. Masa penghantaran sangat lama dan komunikasi kurang memuaskan. Harap ada penambahbaikan.",
-      "Barang sampai dalam keadaan tidak memuaskan. Seller ada tolong tapi proses panjang. Perlu improve.",
-      "Penghantaran lambat, seller lambat reply. Barang tak sama macam gambar. Memang tak berapa puas hati.",
-      "Ada masalah dengan order tapi nasib baik seller akhirnya settle. Belum pasti nak order lagi.",
-      "Kurang puas hati. Harap H4SX ambil maklum feedback ini untuk tingkatkan perkhidmatan."
+      "Agak kecewa sebab proses ambil masa lama dan update kurang jelas. Harap boleh diperbaiki.",
+      "Order selesai tapi proses agak panjang. Seller ada bantu, cuma komunikasi perlu lebih kemas.",
+      "Respons lambat dan status order kurang jelas. Untuk digital product, customer memang perlukan update cepat.",
+      "Ada masalah dengan order tapi akhirnya settle. Belum pasti nak repeat kalau proses masih sama.",
+      "Kurang puas hati. Harap H4SX ambil maklum supaya servis digital item jadi lebih pantas dan tersusun."
     ],
     1:[
-      "Sangat kecewa. Barang lambat, seller susah nak contact, dan barang tak sesuai. Harap ada penambahbaikan segera.",
-      "Pengalaman yang sangat tidak memuaskan. Semoga H4SX ambil serius feedback ni.",
-      "Barang langsung tak seperti yang diiklankan. Tidak akan recommend kepada sesiapa.",
-      "Proses yang sangat menyusahkan dari awal sampai akhir. Harap ada perubahan besar.",
-      "Satu bintang pun rasa banyak. Pengalaman terburuk. Mohon H4SX perbaiki kualiti segera."
+      "Sangat kecewa dengan proses order kali ini. Respons lambat dan masalah tidak diterangkan dengan jelas.",
+      "Pengalaman tidak memuaskan. Harap H4SX ambil serius feedback ini dan perbaiki cara handle customer.",
+      "Detail produk tidak sama seperti yang saya faham semasa order. Mohon lebih jelas untuk pembeli seterusnya.",
+      "Proses menyusahkan dari awal sampai akhir. Harap ada perubahan besar pada support dan update order.",
+      "Satu bintang untuk pengalaman kali ini. Mohon H4SX perbaiki kualiti servis digital product segera."
     ]
   };
   let lastDaduIdx = -1;
@@ -1919,7 +1921,8 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     let idx;
     do { idx = Math.floor(Math.random()*pool.length); } while (idx===lastDaduIdx && pool.length>1);
     lastDaduIdx = idx;
-    const teks = pool[idx];
+    const teks = CDG_PREFIX + pool[idx];
+    reviewSuggestionUsed = true;
     ulasanPelanggan.value = ""; charCounter.textContent = "0 / 500";
     ulasanPelanggan.focus();
     let i = 0;
@@ -1937,6 +1940,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     const l = ulasanPelanggan.value.length;
     charCounter.textContent = `${l} / 500`;
     charCounter.classList.toggle("warn", l>450);
+    if (!ulasanPelanggan.value.trim()) reviewSuggestionUsed = false;
   });
 
   // ── Submit ────────────────────────────────────────────────────
@@ -1944,7 +1948,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     const kod    = kodVerification.value.trim().toUpperCase();
     const nama   = namaPelanggan.value.trim();
     const bintang = parseInt(pilihBintang.value);
-    const ulasan = ulasanPelanggan.value.trim();
+    let ulasan = ulasanPelanggan.value.trim();
 
     if (!kod)  return showToast("Sila masukkan Kod Pengesahan.", "error");
     if (!nama) return showToast("Sila isi nama atau username.", "error");
@@ -1953,6 +1957,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     }
     if (ulasan && ulasan.length < 1) {
       return showToast("Ulasan mesti sekurang-kurangnya 10 aksara, atau kosongkan untuk rating sahaja.", "error");
+    }
+    const gunaCadangan = reviewSuggestionUsed || /^cdg\s*[-:]/i.test(ulasan);
+    if (gunaCadangan && ulasan && !/^cdg\s*[-:]/i.test(ulasan)) {
+      ulasan = (CDG_PREFIX + ulasan).slice(0, 500);
     }
     
     // Block nama yang mengandungi "h4sx" jika bukan admin
@@ -2000,10 +2008,21 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       } catch(errBalasan) {
         console.error("Auto-reply gagal (ulasan tetap tersimpan):", errBalasan);
       }
+      if (gunaCadangan) {
+        try {
+          await updateDoc(doc(db,"ratings",refBaru.id), {
+            cdg: true,
+            cadanganDigunakan: true
+          });
+        } catch(errCdg) {
+          console.warn("Flag cdg gagal disimpan, prefix cdg masih ada dalam teks ulasan:", errCdg);
+        }
+      }
 
       // Reset
       kodVerification.value = namaPelanggan.value = ulasanPelanggan.value = "";
       pilihBintang.value = "5";
+      reviewSuggestionUsed = false;
       pilihanWarna = pilihanEmoji = null;
       document.querySelectorAll(".swatch,.emoji-opt").forEach(el=>el.classList.remove("active"));
       clearProfileImg(false); clearFeedbackImage(false); charCounter.textContent = "0 / 500"; updatePreview();
@@ -2187,6 +2206,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const avatarIsi=data.emojiProfil||rawNama.charAt(0).toUpperCase();
       const adaBalasan=!!(data.balasanAdmin?.trim());
       const adaUlasan = !!(data.ulasan?.trim()) && data.ulasan !== "Tiada ulasan ditinggalkan.";
+      const gunaCadangan = data.cdg === true || data.cadanganDigunakan === true || /^cdg\s*[-:]/i.test(String(data.ulasan || "").trim());
       const adaFeedbackImg = !!(data.feedbackImg);
       const gunaTextToggle = adaUlasan && data.reviewTextCollapsed === true;
       const textMulaBuka = data.reviewTextDefaultOpen === true;
@@ -2225,6 +2245,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
               ${medalMarkup(data)}
               ${(rawBintang<0||rawBintang>5)?`<span style="background:linear-gradient(90deg,#f0a500,#e05252);color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.3px;">${rawBintang} Bintang</span>`:""}
               ${verifiedTag}
+              ${gunaCadangan?`<span class="suggestion-badge">cdg</span>`:""}
             </div>
             <div class="star-display">${starHtml}</div>
           </div>
