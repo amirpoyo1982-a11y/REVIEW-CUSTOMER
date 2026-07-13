@@ -44,6 +44,49 @@
     setThemeMode(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
   });
 
+  // -- Hard refresh --------------------------------------
+  const btnHardRefreshReview = document.getElementById("btnHardRefreshReview");
+  function cleanHardRefreshParam() {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("refresh")) return;
+    url.searchParams.delete("refresh");
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+  }
+  async function hardRefreshReviewSite() {
+    if (btnHardRefreshReview?.classList.contains("is-refreshing")) return;
+    btnHardRefreshReview?.classList.add("is-refreshing");
+    if (btnHardRefreshReview) btnHardRefreshReview.querySelector(".hard-refresh-text").textContent = "Refreshing";
+    try {
+      const keysToClear = [
+        "h4sx_review_notice_hidden_until",
+        "h4sxReviewCache",
+        "h4sx_review_cache",
+        "h4sx_reviews_cache"
+      ];
+      keysToClear.forEach(key => {
+        try { localStorage.removeItem(key); } catch(e) {}
+        try { sessionStorage.removeItem(key); } catch(e) {}
+      });
+      if ("caches" in window) {
+        const names = await caches.keys();
+        await Promise.all(names.map(name => caches.delete(name)));
+      }
+      if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(reg => reg.unregister()));
+      }
+    } catch (e) {
+      console.log("Hard refresh review gagal clear cache sepenuhnya", e);
+    } finally {
+      const url = new URL(window.location.href);
+      url.searchParams.set("refresh", Date.now().toString());
+      window.location.replace(url.toString());
+    }
+  }
+  cleanHardRefreshParam();
+  btnHardRefreshReview?.addEventListener("click", hardRefreshReviewSite);
+  window.hardRefreshReviewSite = hardRefreshReviewSite;
+
   // ── Butang scroll terus ke bahagian ulasan ──────────────────────
 
   // -- Review notice popup ---------------------------------
@@ -194,6 +237,14 @@
     return fit === "contain" || fit === "cover" ? fit : "cover";
   }
 
+  function escapePromoAttr(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
   function getReviewPromoImage(item) {
     if (!item) return "";
     const isPhone = window.matchMedia("(max-width: 640px)").matches;
@@ -246,14 +297,15 @@
     reviewPromoShell.hidden = false;
     reviewPromoTrack.innerHTML = reviewPromoItems.map((item, index) => {
       const img = getReviewPromoImage(item);
-      const alt = String(item.alt || item.title || "Promo H4SX Store").replace(/"/g, "&quot;");
+      const alt = escapePromoAttr(item.alt || item.title || "Promo H4SX Store");
       const fit = normalizePromoFit(item.fit);
-      const pos = String(item.position || "center center").replace(/"/g, "&quot;");
-      const hasLink = String(item.link || "").trim() ? " has-link" : "";
+      const pos = escapePromoAttr(item.position || "center center");
+      const link = String(item.link || "").trim();
+      const safeLink = escapePromoAttr(link);
       return `
-        <article class="review-promo-slide${hasLink}" data-promo-index="${index}" data-fit="${fit}" style="--promo-pos:${pos};">
+        <a class="review-promo-slide${link ? " has-link" : ""}" data-promo-index="${index}" data-fit="${fit}" style="--promo-pos:${pos};" href="${safeLink || "#"}" aria-label="${alt}">
           <img src="${img}" alt="${alt}" loading="${index === 0 ? "eager" : "lazy"}" decoding="async" draggable="false">
-        </article>
+        </a>
       `;
     }).join("");
 
@@ -262,9 +314,14 @@
     )).join("");
 
     reviewPromoTrack.querySelectorAll(".review-promo-slide").forEach(slide => {
-      slide.addEventListener("click", () => {
-        if (Math.abs(reviewPromoDragDelta) > 8) return;
-        openReviewPromoLink(reviewPromoItems[Number(slide.dataset.promoIndex) || 0]);
+      slide.addEventListener("click", (event) => {
+        const item = reviewPromoItems[Number(slide.dataset.promoIndex) || 0];
+        if (Math.abs(reviewPromoDragDelta) > 8 || !String(item?.link || "").trim()) {
+          event.preventDefault();
+          return;
+        }
+        event.preventDefault();
+        openReviewPromoLink(item);
       });
     });
     reviewPromoDots.querySelectorAll("button").forEach(dot => {
@@ -301,9 +358,11 @@
     reviewPromoDragging = false;
     if (Math.abs(reviewPromoDragDelta) > 42) showReviewPromo(reviewPromoIndex + (reviewPromoDragDelta < 0 ? 1 : -1));
     startReviewPromoAuto();
+    setTimeout(() => { reviewPromoDragDelta = 0; }, 80);
   });
   reviewPromoViewport?.addEventListener("pointercancel", () => {
     reviewPromoDragging = false;
+    reviewPromoDragDelta = 0;
     startReviewPromoAuto();
   });
   window.addEventListener("resize", () => {

@@ -16,7 +16,7 @@
       } catch(e) {}
     })();
   </script>
-  <link rel="stylesheet" href="review-style.css?v=promo-banner-1">
+  <link rel="stylesheet" href="review-style.css?v=promo-link-fix-1">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
@@ -398,6 +398,10 @@
     <div class="topbar-divider"></div>
     <span class="topbar-page-title">Ulasan Pelanggan</span>
     <div class="topbar-spacer"></div>
+    <button class="hard-refresh-review" id="btnHardRefreshReview" title="Clear cache dan muat semula versi terbaru" type="button">
+      <span class="hard-refresh-icon">↻</span>
+      <span class="hard-refresh-text">Hard Refresh</span>
+    </button>
     <button class="theme-toggle" id="btnThemeToggle" title="Tukar mode" type="button">Light</button>
     <div class="topbar-badge" style="cursor:pointer; background:var(--bg2); color:var(--navy); border-color:var(--line-mid);" id="btnOpenAdminConfig" title="Tetapan Admin">⚙️ Admin</div>
     <div class="topbar-badge" style="cursor:pointer; background:#fef0f0; color:#b83232; border-color:rgba(224,82,82,.28); display:none;" id="btnLogoutAdmin" title="Log Keluar Admin" onclick="logoutAdmin()">Keluar Admin</div>
@@ -609,7 +613,7 @@
 <!-- ════════════════════════════════════════════
      SCRIPT
 ════════════════════════════════════════════ -->
-<script type="module" src="review-app.js?v=promo-banner-1"></script>
+<script type="module" src="review-app.js?v=promo-link-fix-1"></script>
 </body>
 </html>
 
