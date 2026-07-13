@@ -174,6 +174,142 @@
     }
   }
 
+  // ── Promo Banner From Kedai Gist ───────────────────────────────
+  const reviewPromoShell = document.getElementById("reviewPromoShell");
+  const reviewPromoViewport = document.getElementById("reviewPromoViewport");
+  const reviewPromoTrack = document.getElementById("reviewPromoTrack");
+  const reviewPromoDots = document.getElementById("reviewPromoDots");
+  const reviewPromoPrev = document.getElementById("reviewPromoPrev");
+  const reviewPromoNext = document.getElementById("reviewPromoNext");
+  let reviewPromoItems = [];
+  let reviewPromoIndex = 0;
+  let reviewPromoTimer = null;
+  let reviewPromoInterval = 5500;
+  let reviewPromoDragStart = 0;
+  let reviewPromoDragDelta = 0;
+  let reviewPromoDragging = false;
+
+  function normalizePromoFit(value) {
+    const fit = String(value || "").toLowerCase();
+    return fit === "contain" || fit === "cover" ? fit : "cover";
+  }
+
+  function getReviewPromoImage(item) {
+    if (!item) return "";
+    const isPhone = window.matchMedia("(max-width: 640px)").matches;
+    return isPhone && item.mobileImg ? item.mobileImg : (item.img || item.image || "");
+  }
+
+  function stopReviewPromoAuto() {
+    if (reviewPromoTimer) clearInterval(reviewPromoTimer);
+    reviewPromoTimer = null;
+  }
+
+  function startReviewPromoAuto() {
+    stopReviewPromoAuto();
+    if (reviewPromoItems.length <= 1) return;
+    reviewPromoTimer = setInterval(() => showReviewPromo(reviewPromoIndex + 1), reviewPromoInterval);
+  }
+
+  function showReviewPromo(nextIndex) {
+    if (!reviewPromoTrack || !reviewPromoItems.length) return;
+    reviewPromoIndex = (nextIndex + reviewPromoItems.length) % reviewPromoItems.length;
+    reviewPromoTrack.style.transform = `translateX(-${reviewPromoIndex * 100}%)`;
+    reviewPromoDots?.querySelectorAll("button").forEach((dot, index) => {
+      dot.classList.toggle("active", index === reviewPromoIndex);
+      dot.setAttribute("aria-current", index === reviewPromoIndex ? "true" : "false");
+    });
+  }
+
+  function openReviewPromoLink(item) {
+    const link = String(item?.link || "").trim();
+    if (!link) return;
+    window.location.href = link;
+  }
+
+  function renderReviewPromoBanners(config = {}) {
+    if (!reviewPromoShell || !reviewPromoTrack || !reviewPromoDots) return;
+    const active = flagOn(config.promo_banner_active);
+    const banners = Array.isArray(config.promo_banners) ? config.promo_banners.filter(item => getReviewPromoImage(item)) : [];
+    reviewPromoItems = active ? banners : [];
+    reviewPromoInterval = Math.max(2500, Number(config.promo_banner_interval) || 5500);
+    reviewPromoIndex = 0;
+    stopReviewPromoAuto();
+
+    if (!reviewPromoItems.length) {
+      reviewPromoShell.hidden = true;
+      reviewPromoTrack.innerHTML = "";
+      reviewPromoDots.innerHTML = "";
+      return;
+    }
+
+    reviewPromoShell.hidden = false;
+    reviewPromoTrack.innerHTML = reviewPromoItems.map((item, index) => {
+      const img = getReviewPromoImage(item);
+      const alt = String(item.alt || item.title || "Promo H4SX Store").replace(/"/g, "&quot;");
+      const fit = normalizePromoFit(item.fit);
+      const pos = String(item.position || "center center").replace(/"/g, "&quot;");
+      const hasLink = String(item.link || "").trim() ? " has-link" : "";
+      return `
+        <article class="review-promo-slide${hasLink}" data-promo-index="${index}" data-fit="${fit}" style="--promo-pos:${pos};">
+          <img src="${img}" alt="${alt}" loading="${index === 0 ? "eager" : "lazy"}" decoding="async" draggable="false">
+        </article>
+      `;
+    }).join("");
+
+    reviewPromoDots.innerHTML = reviewPromoItems.map((_, index) => (
+      `<button type="button" aria-label="Banner ${index + 1}" data-promo-dot="${index}"></button>`
+    )).join("");
+
+    reviewPromoTrack.querySelectorAll(".review-promo-slide").forEach(slide => {
+      slide.addEventListener("click", () => {
+        if (Math.abs(reviewPromoDragDelta) > 8) return;
+        openReviewPromoLink(reviewPromoItems[Number(slide.dataset.promoIndex) || 0]);
+      });
+    });
+    reviewPromoDots.querySelectorAll("button").forEach(dot => {
+      dot.addEventListener("click", () => {
+        showReviewPromo(Number(dot.dataset.promoDot) || 0);
+        startReviewPromoAuto();
+      });
+    });
+    showReviewPromo(0);
+    startReviewPromoAuto();
+  }
+
+  function moveReviewPromoBy(delta) {
+    showReviewPromo(reviewPromoIndex + delta);
+    startReviewPromoAuto();
+  }
+
+  reviewPromoPrev?.addEventListener("click", () => moveReviewPromoBy(-1));
+  reviewPromoNext?.addEventListener("click", () => moveReviewPromoBy(1));
+  reviewPromoViewport?.addEventListener("pointerdown", (event) => {
+    if (reviewPromoItems.length <= 1) return;
+    reviewPromoDragging = true;
+    reviewPromoDragStart = event.clientX;
+    reviewPromoDragDelta = 0;
+    reviewPromoViewport.setPointerCapture?.(event.pointerId);
+    stopReviewPromoAuto();
+  });
+  reviewPromoViewport?.addEventListener("pointermove", (event) => {
+    if (!reviewPromoDragging) return;
+    reviewPromoDragDelta = event.clientX - reviewPromoDragStart;
+  });
+  reviewPromoViewport?.addEventListener("pointerup", () => {
+    if (!reviewPromoDragging) return;
+    reviewPromoDragging = false;
+    if (Math.abs(reviewPromoDragDelta) > 42) showReviewPromo(reviewPromoIndex + (reviewPromoDragDelta < 0 ? 1 : -1));
+    startReviewPromoAuto();
+  });
+  reviewPromoViewport?.addEventListener("pointercancel", () => {
+    reviewPromoDragging = false;
+    startReviewPromoAuto();
+  });
+  window.addEventListener("resize", () => {
+    if (reviewPromoItems.length) renderReviewPromoBanners({ promo_banner_active: true, promo_banner_interval: reviewPromoInterval, promo_banners: reviewPromoItems });
+  });
+
   function paparKedaiTutup(icon, tajuk, mesej, jamTeks) {
     const iconEl = document.querySelector('.shop-closed-icon');
     if (iconEl) iconEl.textContent = icon;
@@ -200,6 +336,7 @@
     try {
       const res = await fetch(KEDAI_GIST_URL + '?t=' + Date.now(), { cache: "no-store" });
       const data = await res.json();
+      renderReviewPromoBanners(data);
 
       // 1. Maintenance khas untuk page ulasan sahaja.
       if (data && (

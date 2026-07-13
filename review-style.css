@@ -2519,3 +2519,172 @@ body::before {
 .shop-closed-overlay[data-closed-type="maintenance"] .shop-closed-modal {
   background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(232,247,255,.94)) !important;
 }
+
+/* =========================================================
+   GIST PROMO BANNER
+   ========================================================= */
+.review-promo-shell {
+  width: min(1120px, calc(100vw - 34px));
+  margin: -34px auto 22px;
+  position: relative;
+  z-index: 4;
+}
+
+.review-promo-shell[hidden] {
+  display: none !important;
+}
+
+.review-promo-slider {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(14, 165, 233, .22);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(240, 249, 255, .92), rgba(224, 242, 254, .72)),
+    radial-gradient(circle at 20% 0%, rgba(56, 189, 248, .18), transparent 34%);
+  box-shadow: 0 20px 46px rgba(2, 132, 199, .16);
+}
+
+.review-promo-viewport {
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+
+.review-promo-viewport:active {
+  cursor: grabbing;
+}
+
+.review-promo-track {
+  display: flex;
+  transition: transform .45s cubic-bezier(.22, .78, .22, 1);
+  will-change: transform;
+}
+
+.review-promo-slide {
+  min-width: 100%;
+  aspect-ratio: 16 / 4.7;
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(3, 105, 161, .12), rgba(14, 165, 233, .06)),
+    #e0f2fe;
+}
+
+.review-promo-slide.has-link {
+  cursor: pointer;
+}
+
+.review-promo-slide img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: var(--promo-pos, center center);
+  pointer-events: none;
+}
+
+.review-promo-slide[data-fit="contain"] img {
+  object-fit: contain;
+  background:
+    radial-gradient(circle at center, rgba(224, 242, 254, .86), rgba(186, 230, 253, .36)),
+    #071827;
+}
+
+.review-promo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 242, 254, .7);
+  background: rgba(7, 24, 39, .48);
+  color: #fff;
+  font-size: 30px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 14px 28px rgba(8, 47, 73, .18);
+  backdrop-filter: blur(10px);
+}
+
+.review-promo-prev { left: 16px; }
+.review-promo-next { right: 16px; }
+
+.review-promo-nav:hover {
+  background: rgba(14, 165, 233, .78);
+}
+
+.review-promo-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 3;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(7, 24, 39, .28);
+  backdrop-filter: blur(10px);
+}
+
+.review-promo-dots button {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(224, 242, 254, .7);
+  padding: 0;
+}
+
+.review-promo-dots button.active {
+  width: 24px;
+  background: linear-gradient(90deg, #0ea5e9, #67e8f9);
+}
+
+:root[data-theme="dark"] .review-promo-slider {
+  border-color: rgba(125, 211, 252, .22);
+  background:
+    linear-gradient(180deg, rgba(8, 47, 73, .82), rgba(2, 6, 23, .9)),
+    radial-gradient(circle at 20% 0%, rgba(56, 189, 248, .16), transparent 34%);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, .28);
+}
+
+@media (max-width: 760px) {
+  .review-promo-shell {
+    width: min(100% - 22px, 560px);
+    margin: -22px auto 16px;
+  }
+
+  .review-promo-slider {
+    border-radius: 16px;
+  }
+
+  .review-promo-slide {
+    aspect-ratio: 16 / 7.4;
+  }
+
+  .review-promo-nav {
+    width: 34px;
+    height: 34px;
+    font-size: 24px;
+  }
+
+  .review-promo-prev { left: 9px; }
+  .review-promo-next { right: 9px; }
+  .review-promo-dots { bottom: 8px; }
+}
+
+@media (max-width: 430px) {
+  .review-promo-shell {
+    width: calc(100% - 16px);
+    margin-top: -16px;
+  }
+
+  .review-promo-slide {
+    aspect-ratio: 16 / 8.8;
+  }
+}
