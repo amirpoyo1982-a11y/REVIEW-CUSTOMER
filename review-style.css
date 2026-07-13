@@ -2614,6 +2614,51 @@ body::before {
   display: none !important;
 }
 
+.review-promo-copy {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 4px 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(14, 165, 233, .2);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(240, 249, 255, .9), rgba(224, 242, 254, .68));
+  box-shadow: 0 14px 30px rgba(14, 165, 233, .1);
+}
+
+.review-promo-kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(14, 165, 233, .28);
+  background: rgba(14, 165, 233, .1);
+  color: #0369a1;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.review-promo-copy h2 {
+  margin: 7px 0 0;
+  color: #061827;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.review-promo-copy p {
+  max-width: 650px;
+  margin: 0;
+  color: #38566f;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.65;
+}
+
 .review-promo-slider {
   position: relative;
   overflow: hidden;
@@ -2736,6 +2781,25 @@ body::before {
   box-shadow: 0 20px 48px rgba(0, 0, 0, .28);
 }
 
+:root[data-theme="dark"] .review-promo-copy {
+  border-color: rgba(125, 211, 252, .18);
+  background: linear-gradient(135deg, rgba(8, 47, 73, .8), rgba(2, 6, 23, .72));
+}
+
+:root[data-theme="dark"] .review-promo-copy h2 {
+  color: #f0f9ff;
+}
+
+:root[data-theme="dark"] .review-promo-copy p {
+  color: rgba(224, 242, 254, .78);
+}
+
+:root[data-theme="dark"] .review-promo-kicker {
+  color: #bae6fd;
+  border-color: rgba(125, 211, 252, .24);
+  background: rgba(14, 165, 233, .16);
+}
+
 @media (max-width: 760px) {
   .review-promo-shell {
     width: min(100% - 22px, 560px);
@@ -2744,6 +2808,20 @@ body::before {
 
   .review-promo-slider {
     border-radius: 16px;
+  }
+
+  .review-promo-copy {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+    margin: 0 0 10px;
+    padding: 12px 13px;
+    border-radius: 15px;
+  }
+
+  .review-promo-copy p {
+    font-size: 12px;
+    line-height: 1.55;
   }
 
   .review-promo-slide {
