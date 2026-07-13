@@ -231,6 +231,7 @@
   let reviewPromoDragStart = 0;
   let reviewPromoDragDelta = 0;
   let reviewPromoDragging = false;
+  let reviewPromoDidDrag = false;
 
   function normalizePromoFit(value) {
     const fit = String(value || "").toLowerCase();
@@ -272,12 +273,6 @@
     });
   }
 
-  function openReviewPromoLink(item) {
-    const link = String(item?.link || "").trim();
-    if (!link) return;
-    window.location.href = link;
-  }
-
   function renderReviewPromoBanners(config = {}) {
     if (!reviewPromoShell || !reviewPromoTrack || !reviewPromoDots) return;
     const active = flagOn(config.promo_banner_active);
@@ -316,12 +311,9 @@
     reviewPromoTrack.querySelectorAll(".review-promo-slide").forEach(slide => {
       slide.addEventListener("click", (event) => {
         const item = reviewPromoItems[Number(slide.dataset.promoIndex) || 0];
-        if (Math.abs(reviewPromoDragDelta) > 8 || !String(item?.link || "").trim()) {
+        if (reviewPromoDidDrag || !String(item?.link || "").trim()) {
           event.preventDefault();
-          return;
         }
-        event.preventDefault();
-        openReviewPromoLink(item);
       });
     });
     reviewPromoDots.querySelectorAll("button").forEach(dot => {
@@ -344,25 +336,30 @@
   reviewPromoViewport?.addEventListener("pointerdown", (event) => {
     if (reviewPromoItems.length <= 1) return;
     reviewPromoDragging = true;
+    reviewPromoDidDrag = false;
     reviewPromoDragStart = event.clientX;
     reviewPromoDragDelta = 0;
-    reviewPromoViewport.setPointerCapture?.(event.pointerId);
     stopReviewPromoAuto();
   });
   reviewPromoViewport?.addEventListener("pointermove", (event) => {
     if (!reviewPromoDragging) return;
     reviewPromoDragDelta = event.clientX - reviewPromoDragStart;
+    if (Math.abs(reviewPromoDragDelta) > 10) reviewPromoDidDrag = true;
   });
   reviewPromoViewport?.addEventListener("pointerup", () => {
     if (!reviewPromoDragging) return;
     reviewPromoDragging = false;
     if (Math.abs(reviewPromoDragDelta) > 42) showReviewPromo(reviewPromoIndex + (reviewPromoDragDelta < 0 ? 1 : -1));
     startReviewPromoAuto();
-    setTimeout(() => { reviewPromoDragDelta = 0; }, 80);
+    setTimeout(() => {
+      reviewPromoDragDelta = 0;
+      reviewPromoDidDrag = false;
+    }, 120);
   });
   reviewPromoViewport?.addEventListener("pointercancel", () => {
     reviewPromoDragging = false;
     reviewPromoDragDelta = 0;
+    reviewPromoDidDrag = false;
     startReviewPromoAuto();
   });
   window.addEventListener("resize", () => {
