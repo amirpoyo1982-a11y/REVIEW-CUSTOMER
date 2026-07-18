@@ -3052,6 +3052,14 @@ textarea:focus,
   box-shadow: 0 20px 44px rgba(37,211,102,.34);
   transition: .22s ease;
 }
+.review-helper-bubble i,
+.review-helper-avatar i {
+  font-family: "Font Awesome 6 Brands";
+}
+.review-helper-bubble i::before,
+.review-helper-avatar i::before {
+  content: "\f232";
+}
 .review-helper-bubble:hover { transform: translateY(-4px) scale(1.03); }
 .review-helper-bubble.hide { opacity: 0; transform: scale(.82); pointer-events: none; }
 .review-helper-bubble span {
@@ -3063,6 +3071,27 @@ textarea:focus,
   border: 2px solid #fff;
   border-radius: 999px;
   background: #22c55e;
+}
+.review-helper::before {
+  content: "H4SX Helper";
+  position: absolute;
+  right: 74px;
+  bottom: 13px;
+  width: max-content;
+  max-width: 170px;
+  padding: 9px 12px;
+  border: 1px solid rgba(34,197,94,.2);
+  border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  color: #075e54;
+  font-size: 12px;
+  font-weight: 950;
+  box-shadow: 0 14px 34px rgba(15,42,69,.12);
+  pointer-events: none;
+}
+.review-helper:has(.review-helper-panel.show)::before,
+.review-helper.is-open::before {
+  opacity: 0;
 }
 .review-helper-panel {
   pointer-events: auto;
@@ -3245,6 +3274,47 @@ textarea:focus,
   color: #fff;
   box-shadow: 0 16px 32px rgba(37,211,102,.22);
 }
+@media (min-width: 900px) {
+  .page-body {
+    max-width: 1180px;
+  }
+  .hero-band-inner {
+    max-width: 820px !important;
+  }
+  .stats-row {
+    gap: 18px !important;
+  }
+  .stat-card {
+    min-height: 126px;
+    padding: 22px 24px !important;
+  }
+  .main-card {
+    border-radius: 32px !important;
+  }
+  .card-grid {
+    grid-template-columns: minmax(410px, .92fr) minmax(480px, 1.08fr) !important;
+  }
+  .reviews-col .rating-box {
+    max-height: 720px !important;
+  }
+  .review-helper-panel {
+    width: 430px;
+    height: min(650px, calc(100vh - 92px));
+    right: 0;
+    bottom: 0;
+  }
+  .review-helper-head {
+    padding: 18px;
+  }
+  .review-helper-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+  .review-helper-head h2 {
+    font-size: 20px;
+  }
+}
 :root[data-theme="dark"] .stat-card,
 :root[data-theme="dark"] .review-card,
 :root[data-theme="dark"] .launch-notice,
@@ -3263,6 +3333,9 @@ textarea:focus,
   .review-helper {
     right: 12px;
     bottom: calc(74px + env(safe-area-inset-bottom));
+  }
+  .review-helper::before {
+    display: none;
   }
   .review-helper-panel {
     position: fixed;

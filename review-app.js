@@ -2548,11 +2548,13 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
 
   function openReviewHelper() {
     reviewHelperPanel?.classList.add("show");
+    document.getElementById("reviewHelper")?.classList.add("is-open");
     reviewHelperBubble?.classList.add("hide");
     setTimeout(() => reviewHelperInput?.focus(), 80);
   }
   function closeReviewHelper() {
     reviewHelperPanel?.classList.remove("show");
+    document.getElementById("reviewHelper")?.classList.remove("is-open");
     reviewHelperBubble?.classList.remove("hide");
   }
   function reviewHelperFormat(text) {
