@@ -16,7 +16,7 @@
       } catch(e) {}
     })();
   </script>
-  <link rel="stylesheet" href="review-style.css?v=review-cdg-name-1">
+  <link rel="stylesheet" href="review-style.css?v=review-premium-helper-2">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
@@ -620,7 +620,38 @@
 <!-- ════════════════════════════════════════════
      SCRIPT
 ════════════════════════════════════════════ -->
-<script type="module" src="review-app.js?v=review-cdg-name-1"></script>
+<!-- H4SX REVIEW HELPER -->
+<div class="review-helper" id="reviewHelper" aria-live="polite">
+  <button class="review-helper-bubble" id="reviewHelperBubble" type="button" aria-label="Buka H4SX Helper">
+    <i class="fa-brands fa-whatsapp"></i>
+    <span></span>
+  </button>
+  <aside class="review-helper-panel" id="reviewHelperPanel" role="dialog" aria-modal="false" aria-labelledby="reviewHelperTitle">
+    <div class="review-helper-head">
+      <div class="review-helper-avatar"><i class="fa-brands fa-whatsapp"></i></div>
+      <div>
+        <small>H4SX Helper</small>
+        <h2 id="reviewHelperTitle">Tanya pasal review</h2>
+      </div>
+      <button class="review-helper-close" id="reviewHelperClose" type="button" aria-label="Tutup helper"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="review-helper-status"><span></span> Online bantu kod review, rating, ulasan, website & support.</div>
+    <div class="review-helper-presets">
+      <button type="button" data-helper-preset="Macam mana nak hantar review?">Cara review</button>
+      <button type="button" data-helper-preset="Kod review tu apa?">Kod review</button>
+      <button type="button" data-helper-preset="Nak buka website utama H4SX">Website H4SX</button>
+    </div>
+    <div class="review-helper-messages" id="reviewHelperMessages">
+      <div class="review-helper-msg bot">Hai boss. Saya H4SX Helper untuk page ulasan. Tanya pasal cara hantar review, kod pengesahan, rating, website utama, atau support admin.</div>
+    </div>
+    <div class="review-helper-compose">
+      <textarea id="reviewHelperInput" maxlength="500" placeholder="Tanya helper... contoh: kod review mana nak dapat?"></textarea>
+      <button id="reviewHelperSend" type="button" aria-label="Hantar soalan"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </aside>
+</div>
+
+<script type="module" src="review-app.js?v=review-premium-helper-2"></script>
 </body>
 </html>
 

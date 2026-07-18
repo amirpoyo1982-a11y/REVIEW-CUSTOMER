@@ -2538,6 +2538,110 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       });
   }
 
+  // -- H4SX Review Helper --------------------------------
+  const reviewHelperPanel = document.getElementById("reviewHelperPanel");
+  const reviewHelperBubble = document.getElementById("reviewHelperBubble");
+  const reviewHelperClose = document.getElementById("reviewHelperClose");
+  const reviewHelperMessages = document.getElementById("reviewHelperMessages");
+  const reviewHelperInput = document.getElementById("reviewHelperInput");
+  const reviewHelperSend = document.getElementById("reviewHelperSend");
+
+  function openReviewHelper() {
+    reviewHelperPanel?.classList.add("show");
+    reviewHelperBubble?.classList.add("hide");
+    setTimeout(() => reviewHelperInput?.focus(), 80);
+  }
+  function closeReviewHelper() {
+    reviewHelperPanel?.classList.remove("show");
+    reviewHelperBubble?.classList.remove("hide");
+  }
+  function reviewHelperFormat(text) {
+    return formatMessageText(text).replace(/\n/g, "<br>");
+  }
+  function appendReviewHelperMessage(type, text) {
+    if (!reviewHelperMessages) return null;
+    const msg = document.createElement("div");
+    msg.className = `review-helper-msg ${type === "user" ? "user" : "bot"}`;
+    msg.innerHTML = reviewHelperFormat(text);
+    reviewHelperMessages.appendChild(msg);
+    reviewHelperMessages.scrollTop = reviewHelperMessages.scrollHeight;
+    return msg;
+  }
+  function setReviewHelperTyping(msg) {
+    if (!msg) return;
+    msg.classList.add("typing");
+    msg.innerHTML = "<span></span><span></span><span></span>";
+  }
+  function typeReviewHelperMessage(msg, text) {
+    if (!msg) return;
+    const fullText = String(text || "");
+    let index = 0;
+    msg.classList.remove("typing");
+    msg.textContent = "";
+    const step = () => {
+      index = Math.min(fullText.length, index + 12);
+      msg.textContent = fullText.slice(0, index);
+      reviewHelperMessages.scrollTop = reviewHelperMessages.scrollHeight;
+      if (index < fullText.length) setTimeout(step, 8);
+      else msg.innerHTML = reviewHelperFormat(fullText);
+    };
+    step();
+  }
+  function reviewHelperAnswer(question) {
+    const q = String(question || "").toLowerCase();
+    const wantsCode = /kod|code|verification|pengesahan/.test(q);
+    const wantsReview = /review|ulasan|rating|bintang|hantar|cara/.test(q);
+    const wantsAdmin = /admin|support|whatsapp|nombor|agent|chat/.test(q);
+    const wantsMain = /website|kedai|store|utama|barang|produk|item|beli/.test(q);
+    const wantsSafe = /safe|selamat|trusted|scam|tipu|legit|percaya/.test(q);
+    const wantsThanks = /terima kasih|thanks|thank|tq/.test(q);
+    const wantsHello = /^(hai|hi|hello|helo|weh|yo|assalam|salam)\b/.test(q.trim());
+
+    if (wantsHello) {
+      return "Hai boss. Saya helper untuk page review H4SX. Boleh tanya cara hantar ulasan, kod review, rating, link website utama atau WhatsApp admin.";
+    }
+    if (wantsThanks) {
+      return "Sama-sama boss. Kalau nak hantar review, pastikan ada kod pengesahan dan pilih rating yang betul.";
+    }
+    if (wantsCode) {
+      return "Kod pengesahan review ialah kod unik daripada admin selepas pembelian. Satu kod hanya boleh digunakan untuk satu ulasan supaya review kekal sah.\n\nKalau belum ada kod, chat admin: https://wa.me/60193263016";
+    }
+    if (wantsReview) {
+      return "Cara hantar review:\n1. Masukkan kod pengesahan.\n2. Isi nama atau username.\n3. Pilih rating bintang.\n4. Tulis ulasan jika mahu, atau kosongkan untuk rating sahaja.\n5. Tekan Hantar Ulasan.";
+    }
+    if (wantsSafe) {
+      return "Betul boss, pembeli memang patut semak dulu. Page ni kumpul review pembeli sah dengan kod pengesahan. Kalau ragu, boleh baca ulasan pelanggan dan tanya admin sebelum beli.\n\nWhatsApp admin: https://wa.me/60193263016";
+    }
+    if (wantsMain) {
+      return "Boleh boss. Website utama H4SX untuk tengok item dan produk:\nhttps://h4sx-store.vercel.app/\n\nPage review ni pula untuk tengok pengalaman customer:\nhttps://review-customer-six.vercel.app/";
+    }
+    if (wantsAdmin) {
+      return "Boleh boss. Untuk tanya lanjut atau minta kod review, terus WhatsApp admin H4SX:\nhttps://wa.me/60193263016";
+    }
+    return "Boleh boss, saya cuba bantu. Untuk page review ni, soalan paling sesuai ialah pasal kod pengesahan, cara hantar ulasan, rating, website utama, atau WhatsApp admin.";
+  }
+  function askReviewHelper(text) {
+    const question = String(text ?? reviewHelperInput?.value ?? "").trim();
+    if (!question) { showToast("Tulis soalan dulu.", "error"); return; }
+    appendReviewHelperMessage("user", question);
+    if (reviewHelperInput) reviewHelperInput.value = "";
+    const thinking = appendReviewHelperMessage("bot", "");
+    setReviewHelperTyping(thinking);
+    setTimeout(() => typeReviewHelperMessage(thinking, reviewHelperAnswer(question)), 320);
+  }
+  reviewHelperBubble?.addEventListener("click", openReviewHelper);
+  reviewHelperClose?.addEventListener("click", closeReviewHelper);
+  reviewHelperSend?.addEventListener("click", () => askReviewHelper());
+  reviewHelperInput?.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      askReviewHelper();
+    }
+  });
+  document.querySelectorAll("[data-helper-preset]").forEach(btn => {
+    btn.addEventListener("click", () => askReviewHelper(btn.dataset.helperPreset || btn.textContent));
+  });
+
   // ── Block Inspect Element & DevTools ──────────────────────────
   function blockInspect() {
     // Halang klik kanan (Right Click)
