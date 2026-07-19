@@ -3051,14 +3051,19 @@ textarea:focus,
   background: linear-gradient(135deg, #25d366, #128c7e);
   box-shadow: 0 20px 44px rgba(37,211,102,.34);
   transition: .22s ease;
+  overflow: hidden;
 }
-.review-helper-bubble i,
-.review-helper-avatar i {
-  font-family: "Font Awesome 6 Brands";
+.review-helper-logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
 }
-.review-helper-bubble i::before,
-.review-helper-avatar i::before {
-  content: "\f232";
+.review-helper-bubble .review-helper-logo-img {
+  transform: scale(1.42);
+  filter: drop-shadow(0 8px 14px rgba(0,0,0,.22));
 }
 .review-helper-bubble:hover { transform: translateY(-4px) scale(1.03); }
 .review-helper-bubble.hide { opacity: 0; transform: scale(.82); pointer-events: none; }
@@ -3133,7 +3138,9 @@ textarea:focus,
   place-items: center;
   background: rgba(255,255,255,.18);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+  overflow: hidden;
 }
+.review-helper-avatar .review-helper-logo-img { transform: scale(1.45); }
 .review-helper-head small {
   display: block;
   color: rgba(255,255,255,.72);
