@@ -2584,7 +2584,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       index = Math.min(fullText.length, index + 12);
       msg.textContent = fullText.slice(0, index);
       reviewHelperMessages.scrollTop = reviewHelperMessages.scrollHeight;
-      if (index < fullText.length) setTimeout(step, 8);
+      if (index < fullText.length) setTimeout(step, 3);
       else msg.innerHTML = reviewHelperFormat(fullText);
     };
     step();
@@ -2629,7 +2629,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     if (reviewHelperInput) reviewHelperInput.value = "";
     const thinking = appendReviewHelperMessage("bot", "");
     setReviewHelperTyping(thinking);
-    setTimeout(() => typeReviewHelperMessage(thinking, reviewHelperAnswer(question)), 320);
+    setTimeout(() => typeReviewHelperMessage(thinking, reviewHelperAnswer(question)), 180);
   }
   reviewHelperBubble?.addEventListener("click", openReviewHelper);
   reviewHelperClose?.addEventListener("click", closeReviewHelper);
@@ -2693,3 +2693,4 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   
   // Password admin sudah tiada dalam HTML. JangagVxzrkpQAOQ8DSsC3ykhHajavKq2n block inspect secara agresif
   // supaya Firebase Auth boleh restore sesi admin tanpa UI jadi pelik.
+
