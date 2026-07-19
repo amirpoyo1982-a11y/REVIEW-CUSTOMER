@@ -1,4 +1,4 @@
-﻿import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import {
     getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -1136,7 +1136,7 @@
   const AUTO_ZIXU_CONFIG_ID = "auto_post_zixu";
   const DEFAULT_ZIXU_MESSAGE = `📞 Link admin : https://wa.me/60193263016
 ☎️ Support Service : https://wa.me/60193263016
-🛒 Website Market : https://h4sx-store.vercel.app/
+🛒 Website Market : https://h4sxmy.vercel.app/
 
 ⚠️ PERHATIAN ⚠️
 Zixu tidak mempunyai sebarang akaun clone. Jika anda menemui mana-mana akaun yang mengaku sebagai Zixu, itu adalah 100% palsu (FAKE).
@@ -2495,7 +2495,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           </div>
         </div>
         <div class="ss-review-grid">${list.map(makeScreenshotReviewCard).join("")}</div>
-        <div class="ss-board-foot">h4sx-store.vercel.app</div>`;
+        <div class="ss-board-foot">h4sxmy.vercel.app</div>`;
       document.body.appendChild(board);
       const canvas = await html2canvas(board, {
         backgroundColor: null,
@@ -2615,7 +2615,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       return "Betul boss, pembeli memang patut semak dulu. Page ni kumpul review pembeli sah dengan kod pengesahan. Kalau ragu, boleh baca ulasan pelanggan dan tanya admin sebelum beli.\n\nWhatsApp admin: https://wa.me/60193263016";
     }
     if (wantsMain) {
-      return "Boleh boss. Website utama H4SX untuk tengok item dan produk:\nhttps://h4sx-store.vercel.app/\n\nPage review ni pula untuk tengok pengalaman customer:\nhttps://review-customer-six.vercel.app/";
+      return "Alamat baru H4SX:\nWebsite utama untuk tengok item dan produk:\nhttps://h4sxmy.vercel.app/\n\nPage review untuk tengok pengalaman customer:\nhttps://h4sxreview.vercel.app/";
     }
     if (wantsAdmin) {
       return "Boleh boss. Untuk tanya lanjut atau minta kod review, terus WhatsApp admin H4SX:\nhttps://wa.me/60193263016";
@@ -2693,4 +2693,5 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   
   // Password admin sudah tiada dalam HTML. JangagVxzrkpQAOQ8DSsC3ykhHajavKq2n block inspect secara agresif
   // supaya Firebase Auth boleh restore sesi admin tanpa UI jadi pelik.
+
 
