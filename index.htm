@@ -17,7 +17,7 @@
       } catch(e) {}
     })();
   </script>
-<link rel="stylesheet" href="review-style.css?v=review-url-update-1">
+<link rel="stylesheet" href="review-style.css?v=review-vote-2">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
@@ -111,6 +111,18 @@
       <textarea id="autoZixuMessage" rows="7" maxlength="500" placeholder="Mesej auto post Z!xu"></textarea>
       <div class="admin-code-hint" id="autoZixuStatus">Auto post hanya jalan bila admin login dan website review dibuka.</div>
       <button class="admin-btn admin-btn-save" id="btnRunZixuNow" type="button">Post Z!xu Sekarang</button>
+    </div>
+  </div>
+  <div class="admin-form-group review-vote-admin-tools">
+    <label>Custom Vote Review</label>
+    <div class="review-vote-admin-card">
+      <label class="badge-switch"><input type="checkbox" id="reviewVoteActive"> Paparkan undian di website review</label>
+      <input id="reviewVoteTitleInput" maxlength="80" placeholder="Contoh: Apa patut kami tambah pada review?">
+      <textarea id="reviewVoteDescriptionInput" rows="2" maxlength="180" placeholder="Penerangan ringkas untuk pengunjung."></textarea>
+      <textarea id="reviewVoteOptionsInput" rows="4" maxlength="420" placeholder="Pilihan A&#10;Pilihan B&#10;Pilihan C"></textarea>
+      <label>Vote tamat pada <small>Kosongkan jika tiada masa tamat.</small><input id="reviewVoteEndAtInput" type="datetime-local"></label>
+      <div class="review-vote-admin-actions"><button class="admin-btn admin-btn-save" id="btnSaveReviewVote" type="button">Simpan Vote Review</button><button class="admin-btn review-vote-reset-btn" id="btnNewReviewVote" type="button">Vote Baru</button></div>
+      <div class="admin-code-hint" id="reviewVoteAdminStatus">Login admin untuk urus vote review.</div>
     </div>
   </div>
   <div class="admin-btn-row">
@@ -466,6 +478,12 @@
   </div>
 
   <!-- ══ MAIN CARD ══ -->
+  <section class="review-vote is-hidden" id="reviewVoteSection" aria-live="polite" aria-label="Undian H4SX Review">
+    <div class="review-vote-head"><div class="review-vote-icon"><img src="https://i.imgur.com/cLPulXQ.png" alt="H4SX STORE"></div><div><span id="reviewVoteStatus">UNDIAN REVIEW</span><h2 id="reviewVoteTitle">Vote H4SX Review</h2><p id="reviewVoteDescription">Pilih cadangan anda.</p></div><div class="review-vote-total"><strong id="reviewVoteTotal">0</strong><small>undi</small></div></div>
+    <div class="review-vote-options" id="reviewVoteOptions"></div>
+    <p class="review-vote-note" id="reviewVoteNote">Satu undi untuk satu perangkat. Keputusan dikemas kini secara langsung.</p>
+  </section>
+
   <div class="main-card">
     <!-- Notice -->
     <div class="launch-notice">
@@ -652,7 +670,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=review-url-update-1"></script>
+<script type="module" src="review-app.js?v=review-vote-2"></script>
 </body>
 </html>
 

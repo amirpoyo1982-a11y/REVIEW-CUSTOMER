@@ -4,7 +4,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
   import {
     getFirestore, collection, addDoc, onSnapshot,
-    query, orderBy, serverTimestamp,
+    query, where, orderBy, serverTimestamp,
     doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -1111,6 +1111,153 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     }, "Pingat pelanggan dibuang.", dataDoc);
   });
 
+  // -- Custom vote khusus website review --------------------------
+  const REVIEW_VOTE_CONFIG_ID = 'review_custom_vote';
+  const REVIEW_VOTE_ENTRIES = 'review_vote_entries';
+  const REVIEW_VOTE_DEVICE_KEY = 'h4sx_review_vote_device';
+  const REVIEW_VOTE_CHOICE_PREFIX = 'h4sx_review_vote_choice_';
+  let reviewVoteConfig = null;
+  let reviewVoteEntries = [];
+  let reviewVoteConfigUnsubscribe = null;
+  let reviewVoteEntriesUnsubscribe = null;
+  let reviewVoteEndTimer = null;
+  const reviewVoteSection = document.getElementById('reviewVoteSection');
+  const reviewVoteStatus = document.getElementById('reviewVoteStatus');
+  const reviewVoteTitle = document.getElementById('reviewVoteTitle');
+  const reviewVoteDescription = document.getElementById('reviewVoteDescription');
+  const reviewVoteTotal = document.getElementById('reviewVoteTotal');
+  const reviewVoteOptions = document.getElementById('reviewVoteOptions');
+  const reviewVoteNote = document.getElementById('reviewVoteNote');
+  const reviewVoteActive = document.getElementById('reviewVoteActive');
+  const reviewVoteTitleInput = document.getElementById('reviewVoteTitleInput');
+  const reviewVoteDescriptionInput = document.getElementById('reviewVoteDescriptionInput');
+  const reviewVoteOptionsInput = document.getElementById('reviewVoteOptionsInput');
+  const reviewVoteEndAtInput = document.getElementById('reviewVoteEndAtInput');
+  const reviewVoteAdminStatus = document.getElementById('reviewVoteAdminStatus');
+  const btnSaveReviewVote = document.getElementById('btnSaveReviewVote');
+  const btnNewReviewVote = document.getElementById('btnNewReviewVote');
+
+  function reviewVoteEscape(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[char]));
+  }
+  function reviewVoteNewId() {
+    const values = crypto.getRandomValues(new Uint32Array(2));
+    return 'review_vote_' + Date.now().toString(36) + '_' + values[0].toString(36) + values[1].toString(36).slice(0, 5);
+  }
+  function reviewVoteDeviceId() {
+    let id = localStorage.getItem(REVIEW_VOTE_DEVICE_KEY);
+    if (!id) { id = 'review_device_' + reviewVoteNewId().replace('review_vote_', ''); localStorage.setItem(REVIEW_VOTE_DEVICE_KEY, id); }
+    return id;
+  }
+  function reviewVoteNormalise(data = {}) {
+    const options = [...new Set((Array.isArray(data.options) ? data.options : []).map(item => String(item || '').trim()).filter(Boolean))].slice(0, 6);
+    return {
+      active: data.active === true,
+      pollId: String(data.pollId || 'review_vote_default').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 60) || 'review_vote_default',
+      title: String(data.title || 'Vote H4SX Review').trim().slice(0, 80) || 'Vote H4SX Review',
+      description: String(data.description || 'Pilih cadangan anda.').trim().slice(0, 180),
+      options: options.length >= 2 ? options : ['Pilihan A', 'Pilihan B'],
+      endAt: Number.isFinite(Date.parse(data.endAt || '')) ? new Date(data.endAt).toISOString() : null
+    };
+  }
+  function reviewVoteEndTime(config = reviewVoteConfig) { const value = Date.parse(config?.endAt || ''); return Number.isFinite(value) ? value : null; }
+  function reviewVoteIsOpen(config = reviewVoteConfig) { const end = reviewVoteEndTime(config); return !!config?.active && (!end || Date.now() < end); }
+  function reviewVoteLocalDate(endAt) {
+    const date = new Date(endAt || ''); if (Number.isNaN(date.getTime())) return '';
+    const pad = value => String(value).padStart(2, '0');
+    return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+  }
+  function reviewVoteEndLabel(endAt) {
+    try { return new Intl.DateTimeFormat('ms-MY', { dateStyle:'medium', timeStyle:'short' }).format(new Date(endAt)); }
+    catch(e) { return endAt; }
+  }
+  function reviewVoteSetAdminStatus(text, type = '') {
+    if (!reviewVoteAdminStatus) return;
+    reviewVoteAdminStatus.textContent = text;
+    reviewVoteAdminStatus.style.color = type === 'error' ? '#c2414a' : type === 'success' ? '#07855b' : '';
+  }
+  function syncReviewVoteAdmin(config = reviewVoteConfig) {
+    if (!config) return;
+    if (reviewVoteActive) reviewVoteActive.checked = config.active;
+    if (reviewVoteTitleInput) reviewVoteTitleInput.value = config.title;
+    if (reviewVoteDescriptionInput) reviewVoteDescriptionInput.value = config.description;
+    if (reviewVoteOptionsInput) reviewVoteOptionsInput.value = config.options.join('\n');
+    if (reviewVoteEndAtInput) reviewVoteEndAtInput.value = reviewVoteLocalDate(config.endAt);
+    if (!adminOk()) reviewVoteSetAdminStatus('Login admin untuk urus vote review.');
+    else if (config.active && !reviewVoteIsOpen(config)) reviewVoteSetAdminStatus('Vote review sudah tamat. Keputusan masih dipaparkan.');
+    else reviewVoteSetAdminStatus(config.active ? 'Vote review sedang dipaparkan.' : 'Vote review sedang dimatikan.', config.active ? 'success' : '');
+  }
+  function renderReviewVote() {
+    const config = reviewVoteConfig;
+    if (!reviewVoteSection || !reviewVoteOptions || !config?.active) { reviewVoteSection?.classList.add('is-hidden'); return; }
+    reviewVoteSection.classList.remove('is-hidden');
+    reviewVoteTitle.textContent = config.title;
+    reviewVoteDescription.textContent = config.description;
+    const counts = Array.from({ length: config.options.length }, () => 0);
+    reviewVoteEntries.forEach(entry => { const index = Number(entry.optionIndex); if (Number.isInteger(index) && index >= 0 && index < counts.length) counts[index] += 1; });
+    const total = counts.reduce((sum, value) => sum + value, 0);
+    const stored = localStorage.getItem(REVIEW_VOTE_CHOICE_PREFIX + config.pollId);
+    const choice = stored === null ? null : Number(stored);
+    const voteOpen = reviewVoteIsOpen(config);
+    reviewVoteTotal.textContent = String(total);
+    if (reviewVoteStatus) reviewVoteStatus.textContent = voteOpen ? 'UNDIAN REVIEW' : 'VOTE TELAH TAMAT';
+    reviewVoteSection.classList.toggle('is-ended', !voteOpen);
+    reviewVoteOptions.innerHTML = config.options.map((option, index) => {
+      const count = counts[index]; const percent = total ? Math.round(count / total * 100) : 0;
+      const disabled = !voteOpen || Number.isInteger(choice) ? ' disabled' : '';
+      return '<button class="review-vote-option' + (choice === index ? ' is-voted' : '') + '" type="button" data-review-vote="' + index + '"' + disabled + '><span class="review-vote-fill" style="--percent:' + percent + '%"></span><span class="review-vote-label">' + reviewVoteEscape(option) + '</span><span class="review-vote-count">' + count + '<small>' + percent + '%</small></span></button>';
+    }).join('');
+    reviewVoteOptions.querySelectorAll('[data-review-vote]').forEach(button => button.addEventListener('click', () => submitReviewVote(Number(button.dataset.reviewVote))));
+    const end = reviewVoteEndTime(config);
+    if (reviewVoteNote) reviewVoteNote.textContent = end ? (voteOpen ? 'Undian tamat pada ' + reviewVoteEndLabel(config.endAt) + '.' : 'Vote telah tamat. Keputusan terakhir masih dipaparkan.') : 'Satu undi untuk satu perangkat. Keputusan dikemas kini secara langsung.';
+    if (reviewVoteEndTimer) clearTimeout(reviewVoteEndTimer);
+    if (voteOpen && end) reviewVoteEndTimer = setTimeout(renderReviewVote, Math.min(Math.max(1000, end - Date.now() + 250), 2147483647));
+  }
+  function listenReviewVoteEntries() {
+    if (reviewVoteEntriesUnsubscribe) reviewVoteEntriesUnsubscribe();
+    reviewVoteEntries = [];
+    if (!reviewVoteConfig?.active) return renderReviewVote();
+    reviewVoteEntriesUnsubscribe = onSnapshot(query(collection(db, REVIEW_VOTE_ENTRIES), where('pollId', '==', reviewVoteConfig.pollId)), snapshot => {
+      reviewVoteEntries = snapshot.docs.map(item => item.data()); renderReviewVote();
+    }, error => { console.error(error); renderReviewVote(); });
+  }
+  function listenReviewVoteConfig() {
+    if (reviewVoteConfigUnsubscribe) reviewVoteConfigUnsubscribe();
+    reviewVoteConfigUnsubscribe = onSnapshot(doc(db, 'config', REVIEW_VOTE_CONFIG_ID), snapshot => {
+      reviewVoteConfig = reviewVoteNormalise(snapshot.exists() ? snapshot.data() : {});
+      syncReviewVoteAdmin(); listenReviewVoteEntries();
+    }, error => { console.error(error); reviewVoteSetAdminStatus('Tak dapat baca vote review. Semak Firestore Rules.', 'error'); });
+  }
+  async function submitReviewVote(optionIndex) {
+    const config = reviewVoteConfig;
+    if (!config?.active || !reviewVoteIsOpen(config)) return showToast('Masa undian sudah tamat.', 'error');
+    if (!Number.isInteger(optionIndex) || !config.options[optionIndex]) return;
+    const choiceKey = REVIEW_VOTE_CHOICE_PREFIX + config.pollId;
+    if (localStorage.getItem(choiceKey) !== null) return showToast('Anda sudah mengundi untuk vote ini.', 'error');
+    const deviceId = reviewVoteDeviceId();
+    try {
+      await setDoc(doc(db, REVIEW_VOTE_ENTRIES, config.pollId + '_' + deviceId), { pollId:config.pollId, optionIndex, deviceId, createdAt:serverTimestamp() });
+      localStorage.setItem(choiceKey, String(optionIndex)); renderReviewVote(); showToast('Undi berjaya direkodkan. Terima kasih!', 'success');
+    } catch(error) { console.error(error); showToast('Tak dapat hantar undi. Semak sambungan atau rules.', 'error'); }
+  }
+  async function saveReviewVote(startNew = false) {
+    if (!adminOk()) return mintaAdmin();
+    const title = String(reviewVoteTitleInput?.value || '').trim();
+    const description = String(reviewVoteDescriptionInput?.value || '').trim();
+    const options = [...new Set(String(reviewVoteOptionsInput?.value || '').split(/\r?\n/).map(item => item.trim()).filter(Boolean))];
+    const endInput = String(reviewVoteEndAtInput?.value || '').trim();
+    const endTime = endInput ? new Date(endInput).getTime() : null;
+    if (!title || options.length < 2 || options.length > 6 || options.some(item => item.length > 60) || (endInput && !Number.isFinite(endTime))) return reviewVoteSetAdminStatus('Semak tajuk, 2-6 pilihan dan masa tamat.', 'error');
+    try {
+      await setDoc(doc(db, 'config', REVIEW_VOTE_CONFIG_ID), { active:reviewVoteActive?.checked === true, pollId:startNew ? reviewVoteNewId() : (reviewVoteConfig?.pollId || reviewVoteNewId()), title:title.slice(0,80), description:description.slice(0,180), options:options.slice(0,6), endAt:endTime ? new Date(endTime).toISOString() : null, updatedAt:serverTimestamp(), updatedBy:currentUser.email || 'admin' }, { merge:true });
+      reviewVoteSetAdminStatus(startNew ? 'Vote review baru dibuka, kiraan kembali 0.' : 'Vote review berjaya disimpan.', 'success');
+      showToast(startNew ? 'Pusingan vote review baru dimulakan.' : 'Vote review berjaya disimpan.', 'success');
+    } catch(error) { console.error(error); reviewVoteSetAdminStatus('Gagal simpan. Semak Firestore Rules.', 'error'); }
+  }
+  btnSaveReviewVote?.addEventListener('click', () => saveReviewVote(false));
+  btnNewReviewVote?.addEventListener('click', () => { if (adminOk() && confirm('Mula pusingan vote review baru? Vote lama tidak lagi dikira.')) saveReviewVote(true); });
+  listenReviewVoteConfig();
+
   // -- Admin Config Modal ────────────────────────────────────────
   const btnOpenAdminConfig = document.getElementById('btnOpenAdminConfig');
   const btnLogoutAdmin = document.getElementById('btnLogoutAdmin');
@@ -1314,6 +1461,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       return;
     }
     updateAdminUi();
+    syncReviewVoteAdmin();
     if (latestCodeSnapshot) renderCodeListFromSnapshot(latestCodeSnapshot);
     try { renderReviews(); } catch (e) {}
     if (adminOk()) checkAutoZixuPost();
@@ -1349,6 +1497,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
 
   btnOpenAdminConfig.addEventListener('click', async () => {
     if (!mintaAdmin()) return;
+    syncReviewVoteAdmin();
     
     try {
       const snap = await getDoc(doc(db, "config", "announcement"));
