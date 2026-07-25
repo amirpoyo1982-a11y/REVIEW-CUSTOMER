@@ -3674,3 +3674,57 @@ textarea:focus,
 }
 .review-helper .review-helper-msg a { color: #0284c7 !important; }
 .review-helper .review-helper-logo-img { filter: drop-shadow(0 8px 16px rgba(20,200,255,.18)); }
+
+/* Final glass closed state: keep the review page visible behind the panel. */
+.shop-closed-overlay,
+.shop-closed-overlay[data-closed-type="maintenance"] {
+  background: rgba(5, 49, 76, .29) !important;
+  backdrop-filter: blur(15px) saturate(1.05) !important;
+  -webkit-backdrop-filter: blur(15px) saturate(1.05) !important;
+}
+.shop-closed-overlay::before,
+.shop-closed-overlay[data-closed-type="maintenance"]::before {
+  background: linear-gradient(135deg, rgba(125,211,252,.1), rgba(45,212,191,.08)) !important;
+  background-size: auto !important;
+  opacity: 1 !important;
+}
+.shop-closed-modal,
+.shop-closed-overlay[data-closed-type="maintenance"] .shop-closed-modal {
+  width: min(92vw, 520px) !important;
+  max-width: 520px !important;
+  min-height: 0 !important;
+  padding: clamp(27px, 5vw, 42px) !important;
+  border: 1px solid rgba(255,255,255,.72) !important;
+  border-radius: 26px !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(225,245,255,.78)) !important;
+  box-shadow: 0 28px 75px rgba(2,34,52,.26), inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+.shop-closed-modal::after { content: none !important; }
+.shop-closed-icon {
+  display: grid !important;
+  place-items: center !important;
+  width: 62px !important;
+  height: 62px !important;
+  margin: 0 auto 14px !important;
+  border: 0 !important;
+  border-radius: 19px !important;
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6) !important;
+  box-shadow: 0 14px 28px rgba(14,165,233,.24) !important;
+  font-size: 25px !important;
+}
+.shop-closed-kicker {
+  color: #0284c7 !important;
+  background: rgba(224,247,255,.78) !important;
+  border: 1px solid rgba(56,189,248,.32) !important;
+  letter-spacing: .08em !important;
+}
+.shop-closed-title { margin: 13px 0 10px !important; color: #082f49 !important; font-size: clamp(26px, 5vw, 36px) !important; letter-spacing: 0 !important; }
+.shop-closed-msg { max-width: 420px; margin: 0 auto 19px !important; color: #35556d !important; font-size: 15px !important; line-height: 1.7 !important; }
+.shop-closed-time { background: rgba(8,47,73,.9) !important; color: #fff !important; box-shadow: none !important; }
+@media (max-width: 520px) {
+  .shop-closed-overlay { align-items: center !important; padding: 14px !important; }
+  .shop-closed-modal { width: min(100%, 430px) !important; padding: 27px 20px !important; border-radius: 21px !important; }
+  .shop-closed-icon { width: 56px !important; height: 56px !important; font-size: 23px !important; }
+  .shop-closed-title { font-size: 27px !important; }
+  .shop-closed-msg { font-size: 14px !important; }
+}
