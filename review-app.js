@@ -1325,7 +1325,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const AUTO_ZIXU_CONFIG_ID = "auto_post_zixu";
   const DEFAULT_ZIXU_MESSAGE = `📞 Link admin : https://wa.me/60193263016
 ☎️ Support Service : https://wa.me/60193263016
-🛒 Website Market : https://h4sxmy.vercel.app/
+🛒 Website Market : https://www.h4sxmy.xyz/
 
 ⚠️ PERHATIAN ⚠️
 Zixu tidak mempunyai sebarang akaun clone. Jika anda menemui mana-mana akaun yang mengaku sebagai Zixu, itu adalah 100% palsu (FAKE).
@@ -2744,7 +2744,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           </div>
         </div>
         <div class="ss-review-grid">${list.map(makeScreenshotReviewCard).join("")}</div>
-        <div class="ss-board-foot">h4sxmy.vercel.app</div>`;
+        <div class="ss-board-foot">www.h4sxmy.xyz</div>`;
       document.body.appendChild(board);
       const canvas = await html2canvas(board, {
         backgroundColor: null,
@@ -2864,7 +2864,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       return "Betul boss, pembeli memang patut semak dulu. Page ni kumpul review pembeli sah dengan kod pengesahan. Kalau ragu, boleh baca ulasan pelanggan dan tanya admin sebelum beli.\n\nWhatsApp admin: https://wa.me/60193263016";
     }
     if (wantsMain) {
-      return "Alamat baru H4SX:\nWebsite utama untuk tengok item dan produk:\nhttps://h4sxmy.vercel.app/\n\nPage review untuk tengok pengalaman customer:\nhttps://h4sxreview.vercel.app/";
+      return "Alamat rasmi H4SX:\nWebsite utama untuk tengok item dan produk:\nhttps://www.h4sxmy.xyz/\n\nPage review untuk tengok pengalaman customer:\nhttps://review.h4sxmy.xyz/";
     }
     if (wantsAdmin) {
       return "Boleh boss. Untuk tanya lanjut atau minta kod review, terus WhatsApp admin H4SX:\nhttps://wa.me/60193263016";
