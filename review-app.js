@@ -1121,6 +1121,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   let reviewVoteConfigUnsubscribe = null;
   let reviewVoteEntriesUnsubscribe = null;
   let reviewVoteEndTimer = null;
+  let reviewVoteDirectLinkHandled = false;
   const reviewVoteSection = document.getElementById('reviewVoteSection');
   const reviewVoteStatus = document.getElementById('reviewVoteStatus');
   const reviewVoteTitle = document.getElementById('reviewVoteTitle');
@@ -1136,6 +1137,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const reviewVoteAdminStatus = document.getElementById('reviewVoteAdminStatus');
   const btnSaveReviewVote = document.getElementById('btnSaveReviewVote');
   const btnNewReviewVote = document.getElementById('btnNewReviewVote');
+  const btnCopyReviewVoteLink = document.getElementById('btnCopyReviewVoteLink');
 
   function reviewVoteEscape(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[char]));
@@ -1176,6 +1178,44 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     reviewVoteAdminStatus.textContent = text;
     reviewVoteAdminStatus.style.color = type === 'error' ? '#c2414a' : type === 'success' ? '#07855b' : '';
   }
+  function reviewVoteDirectLink(config = reviewVoteConfig) {
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.set('vote', config?.pollId || 'active');
+    url.hash = 'reviewVoteSection';
+    return url.toString();
+  }
+  async function copyReviewVoteLink() {
+    if (!adminOk()) return mintaAdmin();
+    if (!reviewVoteConfig?.active) return reviewVoteSetAdminStatus('Hidupkan dan simpan vote dahulu sebelum copy link.', 'error');
+    const link = reviewVoteDirectLink();
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(link);
+      else {
+        const input = document.createElement('textarea');
+        input.value = link;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        input.remove();
+      }
+      reviewVoteSetAdminStatus('Link vote sudah disalin. Bila dibuka, terus pergi ke undian ini.', 'success');
+      showToast('Link undian review sudah copy.', 'success');
+    } catch(error) {
+      console.error(error);
+      reviewVoteSetAdminStatus('Tak dapat copy link. Cuba semula.', 'error');
+    }
+  }
+  function focusReviewVoteFromLink(config = reviewVoteConfig) {
+    if (reviewVoteDirectLinkHandled || !reviewVoteSection || !config?.active) return;
+    const requestedVote = new URLSearchParams(window.location.search).get('vote');
+    if (!requestedVote || (requestedVote !== 'active' && requestedVote !== config.pollId)) return;
+    reviewVoteDirectLinkHandled = true;
+    requestAnimationFrame(() => {
+      reviewVoteSection.scrollIntoView({ behavior:'smooth', block:'center' });
+      reviewVoteSection.classList.add('is-direct-link');
+      setTimeout(() => reviewVoteSection.classList.remove('is-direct-link'), 1900);
+    });
+  }
   function syncReviewVoteAdmin(config = reviewVoteConfig) {
     if (!config) return;
     if (reviewVoteActive) reviewVoteActive.checked = config.active;
@@ -1191,6 +1231,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const config = reviewVoteConfig;
     if (!reviewVoteSection || !reviewVoteOptions || !config?.active) { reviewVoteSection?.classList.add('is-hidden'); return; }
     reviewVoteSection.classList.remove('is-hidden');
+    focusReviewVoteFromLink(config);
     reviewVoteTitle.textContent = config.title;
     reviewVoteDescription.textContent = config.description;
     const counts = Array.from({ length: config.options.length }, () => 0);
@@ -1256,6 +1297,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   }
   btnSaveReviewVote?.addEventListener('click', () => saveReviewVote(false));
   btnNewReviewVote?.addEventListener('click', () => { if (adminOk() && confirm('Mula pusingan vote review baru? Vote lama tidak lagi dikira.')) saveReviewVote(true); });
+  btnCopyReviewVoteLink?.addEventListener('click', copyReviewVoteLink);
   listenReviewVoteConfig();
 
   // -- Admin Config Modal ────────────────────────────────────────
@@ -2142,15 +2184,28 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       if (feedbackImgB64) dataToSave.feedbackImg = feedbackImgB64;
       console.log("Data yang cuba disimpan:", dataToSave);
       
-      const refBaru = await addDoc(collection(db,"ratings"), dataToSave);
-      await deleteDoc(doc(db,"review_codes",kod));
+      const reviewRef = doc(db,"ratings","review_" + kod);
+      const existingReview = await getDoc(reviewRef);
+      if (existingReview.exists()) {
+        showToast("Kod pengesahan ini telah digunakan.", "error");
+        butangHantar.disabled = false; butangHantar.textContent = "ðŸš€ Hantar Ulasan";
+        return;
+      }
+      await setDoc(reviewRef, dataToSave);
+      try {
+        await deleteDoc(doc(db,"review_codes",kod));
+      } catch (codeDeleteError) {
+        // The current rules reserve code deletion for admins. The stable document ID above
+        // blocks a second review from this code even when the cleanup is denied.
+        console.warn("Kod review perlu dibersihkan oleh admin:", codeDeleteError);
+      }
 
       // ── Auto-reply "terima kasih" untuk setiap ulasan baru ──────
       // Nota: rules 'create' sengaja block balasanAdmin (kena null semasa create),
       // jadi auto-reply ni kena dihantar sebagai 'update' selepas create berjaya —
       // sah ikut rules 'update' sebab nama/bintang/ulasan/diciptaPada tak diubah.
       try {
-        await updateDoc(doc(db,"ratings",refBaru.id), {
+        await updateDoc(reviewRef, {
           balasanAdmin: buildAutoReply(nama),
           balasanPada: serverTimestamp()
         });
@@ -2159,7 +2214,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       }
       if (gunaCadangan) {
         try {
-          await updateDoc(doc(db,"ratings",refBaru.id), {
+          await updateDoc(reviewRef, {
             cdg: true,
             cadanganDigunakan: true
           });
@@ -2264,6 +2319,46 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
 
   // ── Filter & sort ─────────────────────────────────────────────
   let filterStar="all", sortMode="newest", allDocs=[];
+  let directReviewFocusHandled = false;
+  function reviewRecordTime(value) {
+    if (typeof value?.toMillis === "function") return value.toMillis();
+    if (typeof value?.toDate === "function") return value.toDate().getTime();
+    const time = new Date(value || "").getTime();
+    return Number.isFinite(time) ? time : 0;
+  }
+  function uniqueReviewRecords(list = []) {
+    const seen = new Set();
+    return list.filter(data => {
+      const time = reviewRecordTime(data.diciptaPada || data.timestamp || data.date);
+      // Exact copies created in the same minute are treated as one review.
+      if (!time) return true;
+      const key = [
+        String(data.nama || "").trim().toLowerCase(),
+        clampBintang(data.bintang),
+        String(data.ulasan || "").trim().toLowerCase(),
+        Math.floor(time / 60000)
+      ].join("|");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+  function focusDirectReview() {
+    if (directReviewFocusHandled) return;
+    const reviewId = new URLSearchParams(window.location.search).get("reviewId");
+    if (!reviewId) return;
+    const card = [...kotakPaparan.querySelectorAll('[data-review-id]')]
+      .find(item => item.dataset.reviewId === reviewId);
+    if (!card) return;
+    directReviewFocusHandled = true;
+    requestAnimationFrame(() => {
+      card.scrollIntoView({ behavior:"smooth", block:"center" });
+      card.classList.add("is-direct-link");
+      const replyButton = card.querySelector(".admin-reply-view-toggle");
+      if (replyButton?.getAttribute("aria-expanded") !== "true") replyButton?.click();
+      setTimeout(() => card.classList.remove("is-direct-link"), 1900);
+    });
+  }
   document.querySelectorAll(".filter-btn").forEach(btn=>{
     btn.addEventListener("click",()=>{
       document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
@@ -2293,6 +2388,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       total+=b; count++;
       if (b===5) lima++;
     });
+    allDocs = uniqueReviewRecords(allDocs);
+    total = allDocs.reduce((sum, item) => sum + clampBintang(item.bintang), 0);
+    count = allDocs.length;
+    lima = allDocs.filter(item => clampBintang(item.bintang) === 5).length;
     if (count===0) {
       purataSkor.textContent="0.0"; purataBintang.textContent="☆☆☆☆☆";
       jumlahUlasanVal.textContent="0"; pctLima.textContent="—";
@@ -2551,6 +2650,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
         }
       });
     });
+    focusDirectReview();
   }
 
   function reviewDateText(data) {

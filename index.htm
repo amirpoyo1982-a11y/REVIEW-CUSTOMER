@@ -17,7 +17,7 @@
       } catch(e) {}
     })();
   </script>
-<link rel="stylesheet" href="review-style.css?v=review-vote-2">
+<link rel="stylesheet" href="review-style.css?v=review-dedupe-1">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
@@ -121,7 +121,7 @@
       <textarea id="reviewVoteDescriptionInput" rows="2" maxlength="180" placeholder="Penerangan ringkas untuk pengunjung."></textarea>
       <textarea id="reviewVoteOptionsInput" rows="4" maxlength="420" placeholder="Pilihan A&#10;Pilihan B&#10;Pilihan C"></textarea>
       <label>Vote tamat pada <small>Kosongkan jika tiada masa tamat.</small><input id="reviewVoteEndAtInput" type="datetime-local"></label>
-      <div class="review-vote-admin-actions"><button class="admin-btn admin-btn-save" id="btnSaveReviewVote" type="button">Simpan Vote Review</button><button class="admin-btn review-vote-reset-btn" id="btnNewReviewVote" type="button">Vote Baru</button></div>
+      <div class="review-vote-admin-actions"><button class="admin-btn admin-btn-save" id="btnSaveReviewVote" type="button">Simpan Vote Review</button><button class="admin-btn review-vote-reset-btn" id="btnNewReviewVote" type="button">Vote Baru</button><button class="admin-btn review-vote-copy-btn" id="btnCopyReviewVoteLink" type="button">Copy Link Vote</button></div>
       <div class="admin-code-hint" id="reviewVoteAdminStatus">Login admin untuk urus vote review.</div>
     </div>
   </div>
@@ -670,7 +670,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=review-vote-2"></script>
+<script type="module" src="review-app.js?v=review-code-guard-1"></script>
 </body>
 </html>
 
