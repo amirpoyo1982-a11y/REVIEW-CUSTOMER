@@ -366,13 +366,23 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     if (reviewPromoItems.length) renderReviewPromoBanners({ promo_banner_active: true, promo_banner_interval: reviewPromoInterval, promo_banners: reviewPromoItems });
   });
 
+  let reviewClosureCopy = {};
+
   function paparKedaiTutup(icon, tajuk, mesej, jamTeks) {
+    const fallbackTitle = tajuk;
+    if (fallbackTitle === 'Dalam Penyelenggaraan') {
+      tajuk = reviewClosureCopy.maintenanceTitle || tajuk;
+      mesej = reviewClosureCopy.maintenanceMessage || mesej;
+    } else if (['Kedai Ditutup Sementara', 'Kedai Tutup Hari Ini', 'Di Luar Waktu Operasi'].includes(fallbackTitle)) {
+      tajuk = reviewClosureCopy.closedTitle || tajuk;
+      mesej = reviewClosureCopy.closedMessage || mesej;
+    }
     const iconEl = document.querySelector('.shop-closed-icon');
     if (iconEl) iconEl.textContent = icon;
     document.querySelector('.shop-closed-title').textContent = tajuk;
     document.getElementById('shopClosedMsg').textContent = mesej;
     const overlayEl = document.getElementById('shopClosedOverlay');
-    const type = /luar waktu/i.test(tajuk) ? 'hours' : (/(penyelenggaraan|selenggara|maintenance|maintain|update)/i.test(tajuk) ? 'maintenance' : 'closed');
+    const type = /luar waktu/i.test(fallbackTitle) ? 'hours' : (/(penyelenggaraan|selenggara|maintenance|maintain|update)/i.test(fallbackTitle) ? 'maintenance' : 'closed');
     overlayEl?.setAttribute('data-closed-type', type);
     const timeEl = document.getElementById('shopClosedTime');
     if (jamTeks) {
@@ -392,6 +402,12 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     try {
       const res = await fetch(KEDAI_GIST_URL + '?t=' + Date.now(), { cache: "no-store" });
       const data = await res.json();
+      reviewClosureCopy = {
+        closedTitle: String(data?.tajuk_tutup || data?.closed_title || '').trim(),
+        closedMessage: String(data?.mesej_tutup || data?.closed_message || '').trim(),
+        maintenanceTitle: String(data?.tajuk_maintenance || data?.maintenance_title || '').trim(),
+        maintenanceMessage: String(data?.mesej_maintenance || data?.maintenance_message || '').trim()
+      };
       renderReviewPromoBanners(data);
 
       // 1. Maintenance khas untuk page ulasan sahaja.
