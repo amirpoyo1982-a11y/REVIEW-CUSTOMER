@@ -1253,6 +1253,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const counts = Array.from({ length: config.options.length }, () => 0);
     reviewVoteEntries.forEach(entry => { const index = Number(entry.optionIndex); if (Number.isInteger(index) && index >= 0 && index < counts.length) counts[index] += 1; });
     const total = counts.reduce((sum, value) => sum + value, 0);
+    const leadingCount = total ? Math.max(...counts) : 0;
     const stored = localStorage.getItem(REVIEW_VOTE_CHOICE_PREFIX + config.pollId);
     const choice = stored === null ? null : Number(stored);
     const voteOpen = reviewVoteIsOpen(config);
@@ -1261,8 +1262,9 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     reviewVoteSection.classList.toggle('is-ended', !voteOpen);
     reviewVoteOptions.innerHTML = config.options.map((option, index) => {
       const count = counts[index]; const percent = total ? Math.round(count / total * 100) : 0;
+      const leading = leadingCount > 0 && count === leadingCount;
       const disabled = !voteOpen || Number.isInteger(choice) ? ' disabled' : '';
-      return '<button class="review-vote-option' + (choice === index ? ' is-voted' : '') + '" type="button" data-review-vote="' + index + '"' + disabled + '><span class="review-vote-fill" style="--percent:' + percent + '%"></span><span class="review-vote-label">' + reviewVoteEscape(option) + '</span><span class="review-vote-count">' + count + '<small>' + percent + '%</small></span></button>';
+      return '<button class="review-vote-option' + (choice === index ? ' is-voted' : '') + (leading ? ' is-leading' : '') + '" type="button" data-review-vote="' + index + '"' + disabled + '><span class="review-vote-fill" style="--percent:' + percent + '%"></span><span class="review-vote-label">' + (leading ? '<span class="vote-leader-crown" title="Undian paling tinggi"><i class="fa-solid fa-crown"></i></span>' : '') + reviewVoteEscape(option) + '</span><span class="review-vote-count">' + count + '<small>' + percent + '%</small></span></button>';
     }).join('');
     reviewVoteOptions.querySelectorAll('[data-review-vote]').forEach(button => button.addEventListener('click', () => submitReviewVote(Number(button.dataset.reviewVote))));
     const end = reviewVoteEndTime(config);
