@@ -3929,3 +3929,30 @@ body {
 :root[data-theme="dark"] .reviews-col { background: rgba(12,27,43,.64) !important; }
 :root[data-theme="dark"] .form-section-title, :root[data-theme="dark"] .reviews-col-title, :root[data-theme="dark"] .sc-val { color: #e9f5ff !important; border-color: #65d7ce !important; }
 :root[data-theme="dark"] .profile-picker, :root[data-theme="dark"] .profile-image-section, :root[data-theme="dark"] .star-select-wrap, :root[data-theme="dark"] .feedback-image-picker, :root[data-theme="dark"] .filter-bar, :root[data-theme="dark"] .form-group input, :root[data-theme="dark"] .form-group textarea, :root[data-theme="dark"] .form-group select { background: rgba(7,18,30,.82) !important; }
+
+/* Invite button uses native sharing on phone and copies the link on desktop. */
+.hero-share-link {
+  appearance: none;
+  border: 1px solid rgba(102, 224, 213, .4);
+  border-radius: 8px;
+  padding: 10px 13px;
+  color: #dffcff;
+  background: rgba(255, 255, 255, .08);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+.hero-share-link:hover {
+  transform: translateY(-1px);
+  color: #071f32;
+  border-color: #66e0d5;
+  background: #66e0d5;
+}
+.hero-share-link i { margin-right: 6px; }
+:root[data-theme="dark"] .hero-share-link { color: #dffcff; }
+@media (max-width: 560px) {
+  .hero-actions { gap: 8px !important; }
+  .hero-share-link { padding: 10px 11px; font-size: 11px; }
+}

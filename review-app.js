@@ -1769,6 +1769,36 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     t.addEventListener("click", ()=>{ clearTimeout(tid); rm(); });
   }
 
+  window.shareH4sxReview = async function shareH4sxReview() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("preview");
+    url.searchParams.delete("refresh");
+    const shareUrl = url.toString();
+    const shareData = {
+      title: "H4SX Review",
+      text: "Semak pengalaman pembeli sebenar di H4SX Review.",
+      url: shareUrl
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        showToast("Terima kasih sebab kongsi H4SX Review!", "success");
+        return;
+      }
+      await navigator.clipboard.writeText(shareUrl);
+      showToast("Link review sudah disalin. Hantar dekat kawan anda!", "success");
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showToast("Link review sudah disalin. Hantar dekat kawan anda!", "success");
+      } catch (copyError) {
+        window.prompt("Copy link H4SX Review ini:", shareUrl);
+      }
+    }
+  };
+
   // ── DOM ───────────────────────────────────────────────────────
   const kodVerification = document.getElementById("kodVerification");
   const namaPelanggan   = document.getElementById("namaPelanggan");
