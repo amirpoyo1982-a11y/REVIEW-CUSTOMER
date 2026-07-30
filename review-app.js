@@ -20,6 +20,76 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   });
   const db = getFirestore(app);
   const auth = getAuth(app);
+  const TURNSTILE_SITE_KEY = '0x4AAAAAAECCSulruVRqWTEI';
+  let reviewTurnstileWidgetId = null;
+  let reviewTurnstileResolver = null;
+  let reviewTurnstileRejecter = null;
+  let reviewTurnstileTimeout = null;
+
+  function resetReviewTurnstile() {
+    if (reviewTurnstileTimeout) { clearTimeout(reviewTurnstileTimeout); reviewTurnstileTimeout = null; }
+    reviewTurnstileResolver = null;
+    reviewTurnstileRejecter = null;
+    if (reviewTurnstileWidgetId !== null && window.turnstile?.reset) {
+      try { window.turnstile.reset(reviewTurnstileWidgetId); } catch (_) {}
+    }
+  }
+  function ensureReviewTurnstile() {
+    let container = document.getElementById('review-turnstile');
+    if (!container) {
+      const submitButton = document.getElementById('butangHantar');
+      if (!submitButton) throw new Error('turnstile-container-missing');
+      container = document.createElement('div');
+      container.id = 'review-turnstile';
+      container.className = 'review-turnstile';
+      container.setAttribute('aria-hidden', 'true');
+      const note = document.createElement('small');
+      note.className = 'review-turnstile-note';
+      note.innerHTML = 'Dilindungi oleh Cloudflare Turnstile. <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Privasi</a>';
+      submitButton.before(container);
+      submitButton.before(note);
+    }
+    if (!window.turnstile) throw new Error('turnstile-not-ready');
+    if (reviewTurnstileWidgetId !== null) return reviewTurnstileWidgetId;
+    reviewTurnstileWidgetId = window.turnstile.render(container, {
+      sitekey: TURNSTILE_SITE_KEY,
+      size: 'invisible',
+      execution: 'execute',
+      action: 'review_submit',
+      callback(token) {
+        if (reviewTurnstileTimeout) clearTimeout(reviewTurnstileTimeout);
+        reviewTurnstileTimeout = null;
+        const resolve = reviewTurnstileResolver;
+        reviewTurnstileResolver = null;
+        reviewTurnstileRejecter = null;
+        resolve?.(token);
+      },
+      'expired-callback'() { reviewTurnstileRejecter?.(new Error('turnstile-expired')); },
+      'error-callback'() { reviewTurnstileRejecter?.(new Error('turnstile-error')); }
+    });
+    return reviewTurnstileWidgetId;
+  }
+  async function verifyReviewTurnstile() {
+    const widgetId = ensureReviewTurnstile();
+    resetReviewTurnstile();
+    const token = await new Promise((resolve, reject) => {
+      reviewTurnstileResolver = resolve;
+      reviewTurnstileRejecter = reject;
+      reviewTurnstileTimeout = setTimeout(() => reject(new Error('turnstile-timeout')), 18000);
+      try { window.turnstile.execute(widgetId); }
+      catch (_) { reject(new Error('turnstile-execute')); }
+    });
+    try {
+      const response = await fetch('/api/verify-turnstile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, action: 'review_submit' })
+      });
+      if (!response.ok) throw new Error('turnstile-rejected');
+    } finally {
+      resetReviewTurnstile();
+    }
+  }
 
   // -- Opening loader -----------------------------------
   const pageLoader = document.getElementById("pageLoader");
@@ -2211,6 +2281,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     butangHantar.disabled = true;
     butangHantar.textContent = "Menghantar...";
     try {
+      await verifyReviewTurnstile();
       const codeSnap = await getDoc(doc(db,"review_codes",kod));
       if (!codeSnap.exists()) {
         showToast("Kod pengesahan tidak sah atau telah digunakan.", "error"); 
@@ -2283,6 +2354,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       setMobileReviewTab("reviews", true);
     } catch(err) {
       console.error("Ralat Firebase (Details):", err.code, err.message, err);
+      if (String(err?.message || '').startsWith('turnstile-')) {
+        showToast("Pengesahan keselamatan gagal. Cuba tekan Hantar Ulasan sekali lagi.", "error");
+        return;
+      }
       // Papar sebab sebenar terus dalam toast supaya senang debug tanpa F12
       const sebab = err.code ? `(${err.code})` : (err.message || "");
       showToast(`Gagal hantar ulasan ${sebab}. Cuba lagi.`, "error");
