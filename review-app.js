@@ -1591,6 +1591,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       return;
     }
     updateAdminUi();
+    syncVisitStatsListener();
     syncReviewVoteAdmin();
     if (latestCodeSnapshot) renderCodeListFromSnapshot(latestCodeSnapshot);
     try { renderReviews(); } catch (e) {}
@@ -1767,6 +1768,41 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     return id;
   }
   const visitorId = getVisitorId();
+  let stopVisitStatsListener = null;
+
+  function readVisitTime(value) {
+    if (value?.toMillis) return value.toMillis();
+    const parsed = Date.parse(value || "");
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function syncVisitStatsListener() {
+    if (!adminOk()) {
+      if (stopVisitStatsListener) {
+        stopVisitStatsListener();
+        stopVisitStatsListener = null;
+      }
+      if (adminOnlineVisitors) adminOnlineVisitors.textContent = "0";
+      if (adminTotalVisitors) adminTotalVisitors.textContent = "0";
+      return;
+    }
+    if (stopVisitStatsListener) return;
+
+    stopVisitStatsListener = onSnapshot(collection(db, "review_visits"), snapshot => {
+      const now = Date.now();
+      let online = 0;
+      snapshot.forEach(item => {
+        const data = item.data();
+        if (data.online === true && now - readVisitTime(data.lastSeen) < 45000) online++;
+      });
+      if (adminOnlineVisitors) adminOnlineVisitors.textContent = String(online);
+      if (adminTotalVisitors) adminTotalVisitors.textContent = String(snapshot.size);
+    }, err => {
+      // Visitor statistics are intentionally admin-only in Firestore.
+      if (adminOk()) console.warn("Gagal baca visit stats:", err);
+    });
+  }
+
   async function updateVisitPresence(online = true) {
     try {
       const firstSeenKey = "h4sx_review_first_seen";
@@ -1779,36 +1815,18 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
         page: "review",
         online,
         firstSeen,
-        lastSeen: serverTimestamp(),
+        // Keep this a plain ISO value so both older and newer Firestore rules accept it.
+        lastSeen: new Date().toISOString(),
         userAgent: navigator.userAgent.slice(0, 140)
       }, { merge: true });
     } catch(e) {
-      console.warn("Presence update gagal:", e);
+      // Presence is optional. Do not spam the visitor console if analytics rules are disabled.
     }
   }
   updateVisitPresence(true);
   setInterval(() => updateVisitPresence(document.visibilityState !== "hidden"), 20000);
   document.addEventListener("visibilitychange", () => updateVisitPresence(document.visibilityState !== "hidden"));
   window.addEventListener("pagehide", () => updateVisitPresence(false));
-
-  onSnapshot(collection(db, "review_visits"), snapshot => {
-    if (!adminOk()) {
-      if (adminOnlineVisitors) adminOnlineVisitors.textContent = "0";
-      if (adminTotalVisitors) adminTotalVisitors.textContent = "0";
-      return;
-    }
-    const now = Date.now();
-    let online = 0;
-    snapshot.forEach(item => {
-      const data = item.data();
-      const last = data.lastSeen?.toMillis?.() || 0;
-      if (data.online === true && now - last < 45000) online++;
-    });
-    adminOnlineVisitors.textContent = String(online);
-    adminTotalVisitors.textContent = String(snapshot.size);
-  }, err => {
-    console.warn("Gagal baca visit stats:", err);
-  });
 
   // ── Ticker ────────────────────────────────────────────────────
   const tickerItems = [
