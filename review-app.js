@@ -3036,52 +3036,43 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
 
   // ── Block Inspect Element & DevTools ──────────────────────────
   function blockInspect() {
-    // Halang klik kanan (Right Click)
-    document.addEventListener('contextmenu', e => e.preventDefault());
+    const notifyBlocked = message => {
+      if (typeof showToast === 'function') showToast(message, 'error');
+    };
 
-    // Halang shortcut keyboard popular (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
-    document.addEventListener('keydown', e => {
-      if (
-        e.key === 'F12' || 
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
-        (e.ctrlKey && (e.key === 'U' || e.key === 'u')) ||
-        (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
-        (e.metaKey && (e.key === 'U' || e.key === 'u'))
-      ) {
-        e.preventDefault();
-        return false;
-      }
-    });
+    document.addEventListener('contextmenu', event => {
+      event.preventDefault();
+      notifyBlocked('Klik kanan dinyahaktifkan pada halaman ulasan.');
+    }, { capture: true });
 
-    // Detect DevTools dengan console profile
-    let devtoolsOpen = false;
-    const element = new Image();
-    Object.defineProperty(element, 'id', {
-      get: function () {
-        devtoolsOpen = true;
-        window.location.replace("about:blank"); // Kick keluar kalau buka console
-      }
-    });
-    setInterval(() => {
-      devtoolsOpen = false;
-      console.log(element);
-      console.clear(); // Clear terus supaya tak nampak apa-apa
-    }, 1000);
+    document.addEventListener('keydown', event => {
+      const key = String(event.key || '').toLowerCase();
+      const modifier = event.ctrlKey || event.metaKey;
+      const inspectShortcut = modifier && event.shiftKey && ['i', 'j', 'c'].includes(key);
+      const macInspectShortcut = event.metaKey && event.altKey && ['i', 'j', 'c'].includes(key);
+      const sourceShortcut = modifier && key === 'u';
 
-    // Detect DevTools dengan debugger
-    setInterval(() => {
-      const before = new Date().getTime();
-      debugger;
-      const after = new Date().getTime();
-      if (after - before > 100) {
-        // DevTools is open and paused at debugger
-        document.body.innerHTML = "Akses Ditolak";
-        window.location.replace("about:blank");
-      }
-    }, 1000);
+      if (key !== 'f12' && !inspectShortcut && !macInspectShortcut && !sourceShortcut) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      notifyBlocked('Inspect Element dinyahaktifkan pada halaman ulasan.');
+    }, { capture: true });
+
+    // Jika overlay aktif dipadam melalui DevTools, pasang semula tanpa refresh.
+    const protectedOverlay = document.getElementById('shopClosedOverlay');
+    if (protectedOverlay && document.documentElement) {
+      const overlayGuard = new MutationObserver(() => {
+        if (protectedOverlay.classList.contains('active') && !protectedOverlay.isConnected) {
+          document.body.prepend(protectedOverlay);
+        }
+      });
+      overlayGuard.observe(document.documentElement, { childList: true, subtree: true });
+    }
   }
-  
-  // Password admin sudah tiada dalam HTML. JangagVxzrkpQAOQ8DSsC3ykhHajavKq2n block inspect secara agresif
-  // supaya Firebase Auth boleh restore sesi admin tanpa UI jadi pelik.
+
+  blockInspect();
+
+  // Penghalang UI sahaja; data sensitif tetap dilindungi oleh Firebase Rules.
 
 
