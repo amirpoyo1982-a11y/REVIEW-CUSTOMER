@@ -4167,3 +4167,130 @@ body {
 :root[data-theme="dark"] .form-col { background: #0b1d2b !important; }
 :root[data-theme="dark"] .launch-notice, :root[data-theme="dark"] .filter-bar, :root[data-theme="dark"] .profile-picker, :root[data-theme="dark"] .profile-image-section, :root[data-theme="dark"] .star-select-wrap, :root[data-theme="dark"] .feedback-image-picker { background: #0d2433 !important; }
 :root[data-theme="dark"] .hero-band h1, :root[data-theme="dark"] .form-section-title, :root[data-theme="dark"] .reviews-col-title, :root[data-theme="dark"] .sc-val { color: #e8f7ff !important; }
+
+/* Mobile containment: keep long review lists and overlays inside the viewport. */
+@media (max-width: 859px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip !important;
+  }
+
+  .topbar-inner {
+    gap: 8px !important;
+  }
+
+  .topbar-logo,
+  .topbar-logo-name,
+  .topbar-spacer,
+  .hard-refresh-review,
+  .theme-toggle {
+    min-width: 0 !important;
+  }
+
+  .topbar-logo {
+    flex: 0 1 auto !important;
+  }
+
+  .topbar-logo-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .filter-bar {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .filter-btn {
+    min-width: 0 !important;
+    padding-inline: 6px !important;
+    font-size: 10px !important;
+    white-space: nowrap;
+  }
+
+  .sort-select {
+    grid-column: 1 / -1 !important;
+  }
+
+  .reviews-col .rating-box {
+    height: clamp(360px, calc(100dvh - 300px), 650px) !important;
+    max-height: clamp(360px, calc(100dvh - 300px), 650px) !important;
+    min-height: 360px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    border-radius: 10px !important;
+    contain: layout paint;
+  }
+
+  .review-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 380px;
+    overflow-wrap: anywhere;
+  }
+
+  .buyer-feedback,
+  .buyer-no-text,
+  .admin-reply-box,
+  .review-vote-label {
+    overflow-wrap: anywhere;
+  }
+
+  .admin-panel-modal,
+  .feedback-modal-box {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    padding: 18px 14px !important;
+    border-radius: 16px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  .admin-code-row,
+  .auto-post-row,
+  .auto-post-row + .auto-post-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-btn-row,
+  .review-vote-admin-actions {
+    flex-wrap: wrap;
+  }
+
+  .admin-btn-row > *,
+  .review-vote-admin-actions > * {
+    flex: 1 1 130px !important;
+  }
+
+  .review-helper-panel {
+    width: min(355px, calc(100vw - 20px)) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 92px) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .topbar-logo {
+    flex: 0 0 48px !important;
+    width: 48px !important;
+  }
+
+  .topbar-logo-name {
+    display: none !important;
+  }
+
+  .topbar-spacer {
+    flex: 1 1 auto !important;
+  }
+
+  .hard-refresh-review,
+  .theme-toggle {
+    flex: 0 0 auto !important;
+  }
+}
