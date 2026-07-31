@@ -4573,3 +4573,47 @@ button, input, select, textarea { font-family: inherit !important; }
   .stats-row { margin-inline: 10px !important; }
   .launch-notice, .mobile-review-tabs { margin-inline: 10px !important; }
 }
+
+/* Sky-blue palette: keep red only for destructive admin actions. */
+:root {
+  --lounge-coral: #0ea5e9;
+  --lounge-blue: #0284c7;
+  --lounge-teal: #14b8a6;
+  --lounge-soft-blue: #e9f7ff;
+  --lounge-soft-teal: #e8fbf8;
+}
+
+.top-announcement {
+  background: linear-gradient(105deg, #0284c7 0%, #06b6d4 52%, #14b8a6 100%) !important;
+}
+
+.hero-band h1 span,
+.review-promo-kicker {
+  color: #0284c7 !important;
+}
+
+.hero-eyebrow {
+  background: #e6f7ff !important;
+  color: #0369a1 !important;
+}
+
+.hard-refresh-review {
+  background: #e7f6ff !important;
+  color: #0369a1 !important;
+}
+
+.btn-scroll-reviews {
+  background: linear-gradient(100deg, #0284c7, #06b6d4) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 22px rgba(2, 132, 199, .2) !important;
+}
+
+.review-card.is-pinned {
+  border-color: #7dd3fc !important;
+  background: #f0f9ff !important;
+}
+
+:root[data-theme="dark"] .review-card.is-pinned {
+  border-color: #075985 !important;
+  background: #102637 !important;
+}
