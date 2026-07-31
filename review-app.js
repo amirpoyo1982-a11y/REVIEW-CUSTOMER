@@ -5,7 +5,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   import {
     getFirestore, collection, addDoc, onSnapshot,
     query, where, orderBy, serverTimestamp,
-    doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp
+    doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, Timestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   // ── Firebase ──────────────────────────────────────────────────
@@ -579,6 +579,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const badgeGlowColorInput  = document.getElementById('badgeGlowColorInput');
   const badgeGradientToggle  = document.getElementById('badgeGradientToggle');
   const badgeAnimatedToggle  = document.getElementById('badgeAnimatedToggle');
+  const badgeRainbowToggle   = document.getElementById('badgeRainbowToggle');
   const badgeLivePreview     = document.getElementById('badgeLivePreview');
   const btnSaveBadge         = document.getElementById('btnSaveBadge');
   const btnApplyBadgeAll     = document.getElementById('btnApplyBadgeAll');
@@ -595,8 +596,11 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const text = warnaHexSah(data.badgeTextColor, '#ffffff');
     const glow = warnaHexSah(data.badgeGlowColor, c1);
     const gradient = data.badgeGradient !== false;
-    const bg = gradient ? `linear-gradient(120deg, ${c1}, ${c2}, ${c1})` : c1;
-    return `background:${bg}; color:${text}; --badge-glow:${glow}; box-shadow:0 4px 16px -8px ${glow}, inset 0 1px 0 rgba(255,255,255,.26); border:none;`;
+    const rainbow = data.badgeRainbow === true;
+    const bg = rainbow
+      ? 'linear-gradient(90deg,#ff3158,#ff9f1c,#ffe600,#20d67b,#19bfff,#6558ff,#d946ef,#ff3158)'
+      : (gradient ? `linear-gradient(120deg, ${c1}, ${c2}, ${c1})` : c1);
+    return `background:${bg}; background-size:${rainbow ? '400% 100%' : '230% 230%'}; color:${text}; --badge-glow:${rainbow ? '#7c3aed' : glow}; box-shadow:0 4px 16px -8px ${rainbow ? '#7c3aed' : glow}, inset 0 1px 0 rgba(255,255,255,.26); border:none;`;
   }
   function medalStyle(data = {}) {
     const c1 = warnaHexSah(data.medalColor, '#f0a500');
@@ -604,10 +608,13 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const text = warnaHexSah(data.medalTextColor, '#ffffff');
     const glow = warnaHexSah(data.medalGlowColor, c1);
     const gradient = data.medalGradient !== false;
+    const rainbow = data.medalRainbow === true;
     const outline = data.medalOutline === true;
-    const bg = gradient ? `linear-gradient(120deg, ${c1}, ${c2}, ${c1})` : c1;
-    const border = outline ? `1.5px solid ${glow}` : '1px solid rgba(255,255,255,.48)';
-    return `background:${bg}; color:${text}; --medal-glow:${glow}; border:${border}; box-shadow:0 5px 18px -9px ${glow}, inset 0 1px 0 rgba(255,255,255,.28);`;
+    const bg = rainbow
+      ? 'linear-gradient(90deg,#ff3158,#ff9f1c,#ffe600,#20d67b,#19bfff,#6558ff,#d946ef,#ff3158)'
+      : (gradient ? `linear-gradient(120deg, ${c1}, ${c2}, ${c1})` : c1);
+    const border = outline ? `1.5px solid ${rainbow ? '#7c3aed' : glow}` : '1px solid rgba(255,255,255,.48)';
+    return `background:${bg}; background-size:${rainbow ? '400% 100%' : '230% 230%'}; color:${text}; --medal-glow:${rainbow ? '#7c3aed' : glow}; border:${border}; box-shadow:0 5px 18px -9px ${rainbow ? '#7c3aed' : glow}, inset 0 1px 0 rgba(255,255,255,.28);`;
   }
   function nameStyle(data = {}, isReviewAdmin = false) {
     if (data.nameColorEnabled !== true) {
@@ -618,22 +625,27 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const glow = warnaHexSah(data.nameGlowColor, c1);
     const weight = ['700','800','900'].includes(String(data.nameWeight)) ? String(data.nameWeight) : '800';
     const gradient = data.nameGradient !== false;
+    const rainbow = data.nameRainbow === true;
     const base = `font-weight:${weight}; text-shadow:0 2px 12px ${glow}55;`;
+    if (rainbow) return `${base} color:#ff3158; background:linear-gradient(90deg,#ff3158,#ff9f1c,#ffe600,#20d67b,#19bfff,#6558ff,#d946ef,#ff3158); background-size:400% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;`;
     if (!gradient) return `${base} color:${c1};`;
     return `${base} color:${c1}; background:linear-gradient(120deg, ${c1}, ${c2}, ${c1}); background-size:230% 230%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;`;
   }
   function nameClass(data = {}) {
-    return 'buyer-name custom-name' + (data.nameColorEnabled === true && data.nameAnimated !== false && data.nameGradient !== false ? ' is-animated' : '');
+    const rainbow = data.nameColorEnabled === true && data.nameRainbow === true;
+    const animated = data.nameColorEnabled === true && (rainbow || (data.nameAnimated !== false && data.nameGradient !== false));
+    return 'buyer-name custom-name' + (animated ? ' is-animated' : '') + (rainbow ? ' is-rainbow' : '');
   }
   function medalMarkup(data = {}) {
     const teks = (data.medalText || '').trim();
     if (!teks) return '';
     const shape = ['pill','shield','round','ticket'].includes(data.medalShape) ? data.medalShape : 'pill';
     const size = ['sm','md','lg'].includes(data.medalSize) ? data.medalSize : 'sm';
-    const animated = data.medalAnimated === false ? '' : ' is-animated';
-    return `<span class="medal-badge medal-${shape} medal-${size}${animated}" style="${medalStyle(data)}">${escapeHtml(teks)}</span>`;
+    const animated = data.medalAnimated === false && data.medalRainbow !== true ? '' : ' is-animated';
+    const rainbow = data.medalRainbow === true ? ' is-rainbow' : '';
+    return `<span class="medal-badge medal-${shape} medal-${size}${animated}${rainbow}" style="${medalStyle(data)}">${escapeHtml(teks)}</span>`;
   }
-  function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia) {
+  function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia, rainbowSedia) {
     editingBadgeId = id;
     badgeTextInput.value = teksSedia || '';
     badgeColorInput.value = warnaHexSah(warnaSedia, '#2fa8e0');
@@ -642,6 +654,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     badgeGlowColorInput.value = warnaHexSah(glowSedia, warnaHexSah(warnaSedia, '#2fa8e0'));
     badgeGradientToggle.checked = gradientSedia !== false;
     badgeAnimatedToggle.checked = animasiSedia !== false;
+    badgeRainbowToggle.checked = rainbowSedia === true;
     kemaskiniBadgePreview();
     badgeOverlayBg.classList.add('show');
     badgePanelModal.classList.add('show');
@@ -655,16 +668,17 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   function kemaskiniBadgePreview() {
     const teks = badgeTextInput.value.trim() || 'Preview';
     badgeLivePreview.textContent = teks;
-    badgeLivePreview.className = 'verified-badge custom-badge' + (badgeAnimatedToggle.checked ? ' is-animated' : '');
+    badgeLivePreview.className = 'verified-badge custom-badge' + (badgeAnimatedToggle.checked || badgeRainbowToggle.checked ? ' is-animated' : '') + (badgeRainbowToggle.checked ? ' is-rainbow' : '');
     badgeLivePreview.style.cssText = badgeStyle({
       badgeColor: badgeColorInput.value,
       badgeColor2: badgeColorInput2.value,
       badgeTextColor: badgeTextColorInput.value,
       badgeGlowColor: badgeGlowColorInput.value,
-      badgeGradient: badgeGradientToggle.checked
+      badgeGradient: badgeGradientToggle.checked,
+      badgeRainbow: badgeRainbowToggle.checked
     });
   }
-  [badgeTextInput, badgeColorInput, badgeColorInput2, badgeTextColorInput, badgeGlowColorInput, badgeGradientToggle, badgeAnimatedToggle]
+  [badgeTextInput, badgeColorInput2, badgeColorInput, badgeTextColorInput, badgeGlowColorInput, badgeGradientToggle, badgeAnimatedToggle, badgeRainbowToggle]
     .forEach(el => el.addEventListener('input', kemaskiniBadgePreview));
   badgeOverlayBg.addEventListener('click', tutupBadgeModal);
   btnCancelBadge.addEventListener('click', tutupBadgeModal);
@@ -708,7 +722,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
 
   function withAutoReply(payload, dataDoc = {}) {
     const next = { ...payload };
-    if (!dataDoc.balasanAdmin?.trim()) {
+    if (!dataDoc.balasanAdmin?.trim() && dataDoc.balasanDibuang !== true) {
       next.balasanAdmin = buildAutoReply(dataDoc.nama || payload.nama);
       next.balasanPada = serverTimestamp();
     }
@@ -844,7 +858,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       badgeTextColor: badgeTextColorInput.value,
       badgeGlowColor: badgeGlowColorInput.value,
       badgeGradient: badgeGradientToggle.checked,
-      badgeAnimated: badgeAnimatedToggle.checked
+      badgeAnimated: badgeAnimatedToggle.checked,
+      badgeRainbow: badgeRainbowToggle.checked
     };
   }
 
@@ -881,7 +896,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       badgeTextColor: null,
       badgeGlowColor: null,
       badgeGradient: null,
-      badgeAnimated: null
+      badgeAnimated: null,
+      badgeRainbow: null
     }, "Badge dibuang, kembali ke default.", dataDoc);
   });
 
@@ -900,6 +916,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const nameGlowColorInput = document.getElementById('nameGlowColorInput');
   const nameGradientToggle = document.getElementById('nameGradientToggle');
   const nameAnimatedToggle = document.getElementById('nameAnimatedToggle');
+  const nameRainbowToggle = document.getElementById('nameRainbowToggle');
   const nameWeightSelect = document.getElementById('nameWeightSelect');
   const customerMedalPreview = document.getElementById('customerMedalPreview');
   const medalLivePreview = document.getElementById('medalLivePreview');
@@ -913,6 +930,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const medalGradientToggle = document.getElementById('medalGradientToggle');
   const medalAnimatedToggle = document.getElementById('medalAnimatedToggle');
   const medalOutlineToggle = document.getElementById('medalOutlineToggle');
+  const medalRainbowToggle = document.getElementById('medalRainbowToggle');
   const reviewCollapseToggle = document.getElementById('reviewCollapseToggle');
   const reviewCollapseDefaultOpenToggle = document.getElementById('reviewCollapseDefaultOpenToggle');
   const reviewCollapseLinesSelect = document.getElementById('reviewCollapseLinesSelect');
@@ -959,13 +977,14 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const avatar = (customerEmojiInput.value.trim() || nama.charAt(0) || 'H').slice(0, 4).toUpperCase();
     const medalText = medalTextInput.value.trim();
     const medalPreviewText = medalText || 'Preview';
-    const medalClass = `medal-badge medal-${medalShapeSelect.value} medal-${medalSizeSelect.value}${medalAnimatedToggle.checked ? ' is-animated' : ''}`;
+    const medalClass = `medal-badge medal-${medalShapeSelect.value} medal-${medalSizeSelect.value}${medalAnimatedToggle.checked || medalRainbowToggle.checked ? ' is-animated' : ''}${medalRainbowToggle.checked ? ' is-rainbow' : ''}`;
     const medalCss = medalStyle({
       medalColor: medalColorInput.value,
       medalColor2: medalColor2Input.value,
       medalTextColor: medalTextColorInput.value,
       medalGlowColor: medalGlowColorInput.value,
       medalGradient: medalGradientToggle.checked,
+      medalRainbow: medalRainbowToggle.checked,
       medalOutline: medalOutlineToggle.checked
     });
     customerAvatarPreview.style.background = warna;
@@ -974,7 +993,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     customerNamePreview.className = nameClass({
       nameColorEnabled: nameColorEnabledToggle.checked,
       nameAnimated: nameAnimatedToggle.checked,
-      nameGradient: nameGradientToggle.checked
+      nameGradient: nameGradientToggle.checked,
+      nameRainbow: nameRainbowToggle.checked
     });
     customerNamePreview.style.cssText = nameStyle({
       nameColorEnabled: nameColorEnabledToggle.checked,
@@ -983,6 +1003,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       nameGlowColor: nameGlowColorInput.value,
       nameGradient: nameGradientToggle.checked,
       nameAnimated: nameAnimatedToggle.checked,
+      nameRainbow: nameRainbowToggle.checked,
       nameWeight: nameWeightSelect.value
     });
     customerMedalPreview.textContent = medalPreviewText;
@@ -1007,6 +1028,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     nameGlowColorInput.value = warnaHexSah(data.nameGlowColor, warnaHexSah(data.nameColor, '#2fa8e0'));
     nameGradientToggle.checked = data.nameGradient !== false;
     nameAnimatedToggle.checked = data.nameAnimated !== false;
+    nameRainbowToggle.checked = data.nameRainbow === true;
     nameWeightSelect.value = ['700','800','900'].includes(String(data.nameWeight)) ? String(data.nameWeight) : '800';
     medalTextInput.value = data.medalText || '';
     medalColorInput.value = warnaHexSah(data.medalColor, '#f0a500');
@@ -1018,6 +1040,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     medalGradientToggle.checked = data.medalGradient !== false;
     medalAnimatedToggle.checked = data.medalAnimated !== false;
     medalOutlineToggle.checked = data.medalOutline === true;
+    medalRainbowToggle.checked = data.medalRainbow === true;
     reviewCollapseToggle.checked = data.reviewTextCollapsed === true;
     reviewCollapseDefaultOpenToggle.checked = data.reviewTextDefaultOpen === true;
     reviewCollapseLinesSelect.value = String(Math.min(6, Math.max(2, parseInt(data.reviewTextLines) || 4)));
@@ -1051,7 +1074,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     }
   }
 
-  [customerNameInput, customerColorInput, customerEmojiInput, nameColorEnabledToggle, nameColorInput, nameColor2Input, nameGlowColorInput, nameGradientToggle, nameAnimatedToggle, nameWeightSelect, medalTextInput, medalColorInput, medalColor2Input, medalTextColorInput, medalGlowColorInput, medalShapeSelect, medalSizeSelect, medalGradientToggle, medalAnimatedToggle, medalOutlineToggle]
+  [customerNameInput, customerColorInput, customerEmojiInput, nameColorEnabledToggle, nameColorInput, nameColor2Input, nameGlowColorInput, nameGradientToggle, nameAnimatedToggle, nameRainbowToggle, nameWeightSelect, medalTextInput, medalColorInput, medalColor2Input, medalTextColorInput, medalGlowColorInput, medalShapeSelect, medalSizeSelect, medalGradientToggle, medalAnimatedToggle, medalOutlineToggle, medalRainbowToggle]
     .forEach(el => {
       el.addEventListener('input', kemaskiniCustomerPreview);
       el.addEventListener('change', kemaskiniCustomerPreview);
@@ -1070,6 +1093,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       medalGradientToggle.checked = preset.gradient;
       medalAnimatedToggle.checked = preset.animated;
       medalOutlineToggle.checked = preset.outline;
+      medalRainbowToggle.checked = false;
       kemaskiniCustomerPreview();
     });
   });
@@ -1110,6 +1134,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       nameGlowColor: nameColorEnabledToggle.checked ? nameGlowColorInput.value : null,
       nameGradient: nameColorEnabledToggle.checked ? nameGradientToggle.checked : null,
       nameAnimated: nameColorEnabledToggle.checked ? nameAnimatedToggle.checked : null,
+      nameRainbow: nameColorEnabledToggle.checked ? nameRainbowToggle.checked : null,
       nameWeight: nameColorEnabledToggle.checked ? nameWeightSelect.value : null,
       medalText: medal || null,
       medalColor: medal ? medalColorInput.value : null,
@@ -1121,6 +1146,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       medalGradient: medal ? medalGradientToggle.checked : null,
       medalAnimated: medal ? medalAnimatedToggle.checked : null,
       medalOutline: medal ? medalOutlineToggle.checked : null,
+      medalRainbow: medal ? medalRainbowToggle.checked : null,
       reviewTextCollapsed: reviewCollapseToggle.checked,
       reviewTextDefaultOpen: reviewCollapseDefaultOpenToggle.checked,
       reviewTextLines: parseInt(reviewCollapseLinesSelect.value) || 4,
@@ -1140,6 +1166,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       nameGlowColor: nameGlowColorInput.value,
       nameGradient: nameGradientToggle.checked,
       nameAnimated: nameAnimatedToggle.checked,
+      nameRainbow: nameRainbowToggle.checked,
       nameWeight: nameWeightSelect.value
     };
   }
@@ -1157,6 +1184,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       nameGlowColor: null,
       nameGradient: null,
       nameAnimated: null,
+      nameRainbow: null,
       nameWeight: null
     }, "Warna nama dibuang.", dataDoc);
   });
@@ -1173,7 +1201,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       medalSize: medalSizeSelect.value,
       medalGradient: medalGradientToggle.checked,
       medalAnimated: medalAnimatedToggle.checked,
-      medalOutline: medalOutlineToggle.checked
+      medalOutline: medalOutlineToggle.checked,
+      medalRainbow: medalRainbowToggle.checked
     };
   }
   btnApplyMedalAll.addEventListener('click', () => {
@@ -1193,7 +1222,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       medalSize: null,
       medalGradient: null,
       medalAnimated: null,
-      medalOutline: null
+      medalOutline: null,
+      medalRainbow: null
     }, "Pingat pelanggan dibuang.", dataDoc);
   });
 
@@ -2389,7 +2419,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     if (!teks.trim()) { showToast("Taip balasan dahulu.", "error"); return; }
     btn.disabled=true; btn.textContent="Menghantar...";
     try {
-      await updateDoc(doc(db,"ratings",id), { balasanAdmin:teks.trim(), balasanPada:serverTimestamp() });
+      await updateDoc(doc(db,"ratings",id), { balasanAdmin:teks.trim(), balasanPada:serverTimestamp(), balasanDibuang:false });
       showToast("Balasan berjaya dikemaskini.", "success");
     } catch(err) {
       console.error(err); showToast("Gagal hantar balasan.", "error");
@@ -2466,6 +2496,27 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     if (typeof value?.toDate === "function") return value.toDate().getTime();
     const time = new Date(value || "").getTime();
     return Number.isFinite(time) ? time : 0;
+  }
+
+  async function padamBalasanAdmin(id, nama, btn) {
+    if (!mintaAdmin()) return;
+    if (!confirm(`Padam balasan admin untuk ulasan "${nama}"? Ulasan pelanggan tidak akan dipadam.`)) return;
+    const asalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Memadam...";
+    try {
+      await updateDoc(doc(db, "ratings", id), {
+        balasanAdmin: deleteField(),
+        balasanPada: deleteField(),
+        balasanDibuang: true
+      });
+      showToast("Balasan admin berjaya dipadam.", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Gagal padam balasan admin. Semak Firebase Rules.", "error");
+      btn.disabled = false;
+      btn.textContent = asalText;
+    }
   }
   function uniqueReviewRecords(list = []) {
     const seen = new Set();
@@ -2613,7 +2664,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const avatarInner=hasImg?`<img src="${escapeHtml(data.profileImg)}" alt="">`:escapeHtml(avatarIsi);
       
       const customBadgeStyle = badgeStyle(data);
-      const customBadgeClass = "verified-badge custom-badge" + (data.badgeAnimated === false ? "" : " is-animated");
+      const customBadgeClass = "verified-badge custom-badge" + (data.badgeAnimated === false && data.badgeRainbow !== true ? "" : " is-animated") + (data.badgeRainbow === true ? " is-rainbow" : "");
       const verifiedTag = data.badgeText?.trim()
         ? `<span class="${customBadgeClass}" style="${customBadgeStyle}">${escapeHtml(data.badgeText)}</span>`
         : isReviewAdmin 
@@ -2670,12 +2721,13 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           </div>`:""}
           <div class="admin-reply-form-actions" style="margin-top:6px;${adminOk()?"":"display:none;"}" data-admin-ctrl-row>
             <button class="reply-toggle-btn admin-action-btn admin-action-edit" title="Edit balasan">${adaBalasan?"Edit":"Balas"}</button>
+            ${adaBalasan ? `<button class="btn-padam-balasan admin-action-btn admin-action-reply-delete" type="button" title="Padam balasan admin sahaja">Padam Balasan</button>` : ""}
             <button class="btn-edit-ulasan admin-action-btn admin-action-review" title="Edit ulasan pelanggan">Edit Ulasan</button>
             <button class="btn-edit-masa admin-action-btn admin-action-time" title="Edit tarikh masa">Masa</button>
             <button class="btn-profile-ulasan admin-action-btn admin-action-profile" title="Edit nama, profil dan pingat">Profile</button>
             <button class="btn-pin-ulasan admin-action-btn admin-action-pin${data.pinned===true?" is-active":""}" title="Semat ulasan">${data.pinned===true?"Unpin":"Pin"}</button>
             <button class="btn-badge-ulasan admin-action-btn admin-action-badge" title="Edit role badge">Role</button>
-            <button class="btn-padam-ulasan admin-action-btn admin-action-delete" title="Padam ulasan">Del</button>
+            <button class="btn-padam-ulasan admin-action-btn admin-action-delete" type="button" title="Padam ulasan secara kekal" aria-label="Padam ulasan">Padam</button>
           </div>
           <div class="admin-reply-form">
             <textarea maxlength="400" placeholder="Taip balasan rasmi H4SX STORE...">${adaBalasan?escapeHtml(data.balasanAdmin):""}</textarea>
@@ -2692,6 +2744,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const btnH=form.querySelector(".btn-hantar-balasan");
       const btnB=form.querySelector(".btn-batal-balasan");
       const toggleB=card.querySelector(".reply-toggle-btn");
+      const btnPadamBalasan=card.querySelector(".btn-padam-balasan");
       const editReviewForm=card.querySelector(".admin-review-edit-form");
       const editReviewTa=editReviewForm.querySelector("textarea");
       const btnEditReview=card.querySelector(".btn-edit-ulasan");
@@ -2731,6 +2784,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       toggleB.addEventListener("click",()=>{ if(!mintaAdmin())return; form.classList.toggle("show"); if(form.classList.contains("show"))ta.focus(); });
       btnB.addEventListener("click",()=>form.classList.remove("show"));
       btnH.addEventListener("click",()=>hantarBalasan(id,ta.value,btnH));
+      btnPadamBalasan?.addEventListener("click",()=>padamBalasanAdmin(id, rawNama, btnPadamBalasan));
       btnEditReview.addEventListener("click",()=>{
         if(!mintaAdmin())return;
         editReviewForm.classList.toggle("show");
@@ -2747,7 +2801,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       btnSaveEditTime.addEventListener("click",()=>simpanEditMasa(id, editTimeInput.value, btnSaveEditTime, data));
       btnBadge.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
-        bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor);
+        bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor, data.badgeRainbow);
       });
       btnProfile.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
@@ -2787,7 +2841,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
         } catch(err) {
           console.error(err);
           showToast("Gagal padam ulasan.", "error");
-          btnPadam.disabled=false; btnPadam.textContent="Del";
+          btnPadam.disabled=false; btnPadam.textContent="Padam";
         }
       });
     });
