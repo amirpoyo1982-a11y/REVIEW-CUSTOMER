@@ -1946,6 +1946,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   const btnPasteProfileImg = document.getElementById("btnPasteProfileImg");
   const btnClearImg     = document.getElementById("btnClearImg");
   const btnDadu         = document.getElementById("btnDadu");
+  const ratingSuggestion = document.getElementById("ratingSuggestion");
+  const ratingSuggestionLabel = document.getElementById("ratingSuggestionLabel");
+  const ratingSuggestionText = document.getElementById("ratingSuggestionText");
+  const btnUseRatingSuggestion = document.getElementById("btnUseRatingSuggestion");
   const feedbackImageInput   = document.getElementById("feedbackImageInput");
   const btnPickFeedbackImage = document.getElementById("btnPickFeedbackImage");
   const btnClearFeedbackImage = document.getElementById("btnClearFeedbackImage");
@@ -2235,6 +2239,13 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   // ── Dadu ──────────────────────────────────────────────────────
   const CDG_PREFIX = "cdg - ";
   let reviewSuggestionUsed = false;
+  const CONTOH_RATING = {
+    5: "Perfect product, fast response, proses sangat pantas dan seller trusted. Memang recommended!",
+    4: "Produk diterima dengan baik dan seller responsif. Servis memuaskan, cuma ada sedikit kelewatan.",
+    3: "Produk diterima dan urusan selesai. Servis okay, tetapi komunikasi dan masa proses boleh diperbaiki.",
+    2: "Produk diterima, tetapi proses agak lambat dan kemas kini kurang jelas. Harap servis dapat ditambah baik.",
+    1: "Pengalaman kali ini kurang memuaskan. Respons dan penyelesaian masalah perlu diperbaiki dengan segera."
+  };
   const CADANGAN = {
     5:[
       "Servis memang laju dan mudah faham. Lepas payment terus diproses, seller pun friendly. Memang trusted untuk beli digital item. 🔥",
@@ -2272,6 +2283,26 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       "Satu bintang untuk pengalaman kali ini. Mohon H4SX perbaiki kualiti servis digital product segera."
     ]
   };
+  function syncRatingSuggestion() {
+    const rating = Math.max(1, Math.min(5, parseInt(pilihBintang.value) || 5));
+    ratingSuggestionLabel.textContent = `Contoh ayat ${rating} bintang`;
+    ratingSuggestionText.textContent = CONTOH_RATING[rating];
+    ratingSuggestion.dataset.rating = String(rating);
+  }
+
+  function useRatingSuggestion() {
+    const rating = Math.max(1, Math.min(5, parseInt(pilihBintang.value) || 5));
+    const text = CDG_PREFIX + CONTOH_RATING[rating];
+    ulasanPelanggan.value = text;
+    charCounter.textContent = `${text.length} / 500`;
+    reviewSuggestionUsed = true;
+    ulasanPelanggan.focus();
+  }
+
+  pilihBintang.addEventListener("change", syncRatingSuggestion);
+  btnUseRatingSuggestion.addEventListener("click", useRatingSuggestion);
+  syncRatingSuggestion();
+
   let lastDaduIdx = -1;
   btnDadu.addEventListener("click", () => {
     const rating = parseInt(pilihBintang.value)||5;
