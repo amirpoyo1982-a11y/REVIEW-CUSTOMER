@@ -2695,14 +2695,14 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
             ?`<p class="buyer-feedback${gunaTextToggle && !textMulaBuka ? " is-collapsed" : ""}" style="--review-lines:${textLines};">${formatMessageText(data.ulasan)}</p>
               ${gunaTextToggle ? `<button class="review-text-toggle" type="button" style="--toggle-color:${toggleColor};" data-open="${textMulaBuka ? "1" : "0"}" data-expand="${escapeHtml(expandLabel)}" data-collapse="${escapeHtml(collapseLabel)}">${escapeHtml(textMulaBuka ? collapseLabel : expandLabel)}</button>` : ""}`
             :`<p class="buyer-no-text">— Tiada ulasan teks —</p>`}
-          <div class="admin-review-edit-form">
+          <div class="admin-review-edit-form" data-nosnippet>
             <textarea maxlength="500" placeholder="Edit ulasan pelanggan...">${escapeHtml(data.ulasan || "")}</textarea>
             <div class="admin-reply-form-actions">
               <button class="btn-simpan-edit-ulasan">Simpan Ulasan</button>
               <button class="btn-batal-edit-ulasan">Batal</button>
             </div>
           </div>
-          <div class="admin-time-edit-form">
+          <div class="admin-time-edit-form" data-nosnippet>
             <input type="datetime-local" value="${escapeHtml(timestampToDatetimeLocal(data.diciptaPada))}">
             <div class="admin-reply-form-actions">
               <button class="btn-simpan-edit-masa">Simpan Masa</button>
@@ -2720,7 +2720,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
             <p class="admin-reply-text">${formatMessageText(data.balasanAdmin)}</p>
             <p class="admin-reply-time">${masaBalasan}</p>
           </div>`:""}
-          <div class="admin-reply-form-actions" style="margin-top:6px;${adminOk()?"":"display:none;"}" data-admin-ctrl-row>
+          <div class="admin-reply-form-actions" style="margin-top:6px;${adminOk()?"":"display:none;"}" data-admin-ctrl-row data-nosnippet>
             <button class="reply-toggle-btn admin-action-btn admin-action-edit" title="Edit balasan">${adaBalasan?"Edit":"Balas"}</button>
             ${adaBalasan ? `<button class="btn-padam-balasan admin-action-btn admin-action-reply-delete" type="button" title="Padam balasan admin sahaja">Padam Balasan</button>` : ""}
             <button class="btn-edit-ulasan admin-action-btn admin-action-review" title="Edit ulasan pelanggan">Edit Ulasan</button>
@@ -2730,7 +2730,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
             <button class="btn-badge-ulasan admin-action-btn admin-action-badge" title="Edit role badge">Role</button>
             <button class="btn-padam-ulasan admin-action-btn admin-action-delete" type="button" title="Padam ulasan secara kekal" aria-label="Padam ulasan">Padam</button>
           </div>
-          <div class="admin-reply-form">
+          <div class="admin-reply-form" data-nosnippet>
             <textarea maxlength="400" placeholder="Taip balasan rasmi H4SX STORE...">${adaBalasan?escapeHtml(data.balasanAdmin):""}</textarea>
             <div class="admin-reply-form-actions">
               <button class="btn-hantar-balasan">Hantar Balasan</button>
