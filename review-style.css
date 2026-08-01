@@ -4625,10 +4625,16 @@ button, input, select, textarea { font-family: inherit !important; }
 
 html[data-admin-auth="true"] [data-admin-ctrl-row] {
   display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
-@media (min-width: 900px) {
-  html[data-admin-auth="true"] [data-admin-ctrl-row] {
-    display: grid !important;
-  }
+html[data-admin-auth="true"] [data-admin-ctrl-row] .admin-action-btn {
+  flex: 0 0 auto !important;
+  min-width: max-content !important;
 }
