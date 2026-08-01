@@ -234,10 +234,11 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   
   function updateAdminUi() {
     const loggedIn = adminOk();
+    document.documentElement.dataset.adminAuth = loggedIn ? 'true' : 'false';
     if (btnLogoutAdmin) btnLogoutAdmin.style.display = loggedIn ? 'flex' : 'none';
     if (btnOpenAdminConfig) btnOpenAdminConfig.textContent = loggedIn ? '⚙️ Admin' : '🔐 Login Admin';
     document.querySelectorAll('[data-admin-ctrl-row]').forEach(row => {
-      row.style.display = loggedIn ? 'flex' : 'none';
+      row.style.removeProperty('display');
     });
   }
   function bukaAdminLogin() {

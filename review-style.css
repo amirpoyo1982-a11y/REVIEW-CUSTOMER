@@ -4617,3 +4617,18 @@ button, input, select, textarea { font-family: inherit !important; }
   border-color: #075985 !important;
   background: #102637 !important;
 }
+
+/* Admin controls stay hidden until Firebase confirms the allowed admin UID. */
+[data-admin-ctrl-row] {
+  display: none !important;
+}
+
+html[data-admin-auth="true"] [data-admin-ctrl-row] {
+  display: flex !important;
+}
+
+@media (min-width: 900px) {
+  html[data-admin-auth="true"] [data-admin-ctrl-row] {
+    display: grid !important;
+  }
+}
