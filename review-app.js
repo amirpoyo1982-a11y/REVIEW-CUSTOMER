@@ -3210,7 +3210,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   document.getElementById("btnOpenReviewCenter")?.addEventListener("click",()=>openAdminReviewCenter());
   document.getElementById("btnCloseReviewCenter")?.addEventListener("click",closeAdminReviewCenter);
   adminCenterOverlay?.addEventListener("click",e=>{if(e.target===adminCenterOverlay)closeAdminReviewCenter();});
-  document.querySelectorAll("[data-admin-center-tab]").forEach(btn=>btn.addEventListener("click",()=>switchAdminCenterTab(btn.dataset.adminCenterTab)));
+  document.querySelectorAll("[data-admin-center-tab]").forEach(btn=>btn.addEventListener("click",()=>{
+    switchAdminCenterTab(btn.dataset.adminCenterTab);
+    if(btn.dataset.adminCenterTab==="reports")startAdminCenterStreams();
+  }));
   document.querySelectorAll("[data-jump-admin-tab]").forEach(btn=>btn.addEventListener("click",()=>{if(btn.dataset.lowOnly)document.getElementById("adminReviewRatingFilter").value="12";switchAdminCenterTab(btn.dataset.jumpAdminTab);renderAdminModeration();}));
 
   function adminReviewStatus(data){return ["published","hidden","rejected"].includes(data.moderationStatus)?data.moderationStatus:"published";}
@@ -3250,10 +3253,36 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     try{await Promise.all(records.map(r=>action==="delete"?deleteDoc(doc(db,"ratings",r.id)):action==="publish"?updateDoc(doc(db,"ratings",r.id),{moderationStatus:"published",moderatedAt:serverTimestamp()}):action==="hide"?updateDoc(doc(db,"ratings",r.id),{moderationStatus:"hidden",moderatedAt:serverTimestamp()}):action==="feature"?updateDoc(doc(db,"ratings",r.id),{featured:!r.featured,featuredAt:serverTimestamp()}):updateDoc(doc(db,"ratings",r.id),{balasanAdmin:reply.trim(),balasanPada:serverTimestamp(),balasanDibuang:false})));await logAdminAction(action,ids.join(","),`${ids.length} ulasan`);selectedAdminReviews.clear();showToast("Tindakan admin berjaya disimpan.","success");}catch(err){console.error(err);showToast("Tindakan gagal. Semak Firestore Rules admin.","error");}
   }
 
-  async function openReviewReport(reviewId,reviewName){const reason=prompt(`Kenapa anda mahu laporkan ulasan ${reviewName}?\n\nJangan masukkan maklumat peribadi.`);if(!reason?.trim())return;try{await addDoc(collection(db,"review_reports"),{reviewId,reviewName,reason:reason.trim().slice(0,300),status:"open",deviceId:getVisitorId(),createdAt:serverTimestamp()});showToast("Laporan dihantar kepada admin.","success");}catch(err){console.error(err);showToast("Laporan gagal dihantar. Cuba semula.","error");}}
+  async function openReviewReport(reviewId,reviewName){
+    const reason=prompt(`Kenapa anda mahu laporkan ulasan ${reviewName}?\n\nJangan masukkan maklumat peribadi.`);
+    if(!reason?.trim())return;
+    if(reason.trim().length<3){showToast("Sebab laporan mestilah sekurang-kurangnya 3 aksara.","error");return;}
+    try{
+      await addDoc(collection(db,"review_reports"),{
+        reviewId:String(reviewId||"").slice(0,160),
+        reviewName:String(reviewName||"Ulasan").slice(0,80),
+        reason:reason.trim().slice(0,300),
+        status:"open",
+        deviceId:getVisitorId().slice(0,100),
+        createdAt:serverTimestamp()
+      });
+      showToast("Laporan berjaya dihantar kepada admin.","success");
+    }catch(err){
+      console.error("Review report gagal:",err);
+      const denied=err?.code==="permission-denied";
+      showToast(denied?"Laporan ditolak oleh Firestore Rules. Publish rules review_reports dahulu.":"Laporan gagal dihantar. Semak sambungan dan cuba semula.","error");
+    }
+  }
   function startAdminCenterStreams(){
     if(!adminOk())return;
-    if(!stopAdminReports)stopAdminReports=onSnapshot(query(collection(db,"review_reports"),orderBy("createdAt","desc")),snap=>{adminReports=snap.docs.map(d=>({id:d.id,...d.data()}));renderAdminReports();},()=>{document.getElementById("adminReportList").innerHTML=adminEmpty("Aktifkan rules review_reports untuk melihat laporan.","fa-lock");});
+    if(!stopAdminReports)stopAdminReports=onSnapshot(collection(db,"review_reports"),snap=>{
+      adminReports=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>reviewRecordTime(b.createdAt)-reviewRecordTime(a.createdAt));
+      renderAdminReports();
+    },err=>{
+      console.error("Admin report stream gagal:",err);
+      const box=document.getElementById("adminReportList");
+      if(box)box.innerHTML=adminEmpty(err?.code==="permission-denied"?"Firestore Rules belum membenarkan admin membaca review_reports.":"Laporan gagal dimuatkan. Semak sambungan Firebase.","fa-lock");
+    });
     if(!stopAdminAudit)stopAdminAudit=onSnapshot(query(collection(db,"admin_audit"),orderBy("createdAt","desc")),snap=>{adminAudit=snap.docs.map(d=>({id:d.id,...d.data()}));renderAdminAudit();renderAdminDashboard();},()=>renderAdminAudit());
   }
   function renderAdminReports(){const box=document.getElementById("adminReportList");if(!box)return;const status=document.getElementById("adminReportStatusFilter")?.value||"open",list=adminReports.filter(r=>status==="all"||r.status===status);document.getElementById("adminReportCount").textContent=adminReports.filter(r=>r.status!=="resolved").length;box.innerHTML=list.length?list.map(r=>`<article class="admin-report-item" data-report-id="${r.id}"><div><h4>${escapeHtml(r.reviewName||"Ulasan")}</h4><p>${escapeHtml(r.reason||"Tiada sebab")}</p><small>${reviewDateAndAge(r.createdAt)} · ${escapeHtml(r.status||"open")}</small></div><div class="admin-report-actions"><button data-report-action="open" data-review-id="${escapeHtml(r.reviewId||"")}">Buka</button><button data-report-action="resolve">Selesai</button><button data-report-action="delete">Padam</button></div></article>`).join(""):adminEmpty("Tiada laporan untuk status ini.","fa-flag");}
