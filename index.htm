@@ -52,7 +52,7 @@
       } catch(e) {}
     })();
   </script>
-<link rel="stylesheet" href="review-style.css?v=review-relative-time-20260802">
+<link rel="stylesheet" href="review-style.css?v=admin-review-center-20260802">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 </head>
@@ -171,9 +171,122 @@
   </div>
   <div class="admin-btn-row">
     <button class="admin-btn admin-btn-save" id="btnSaveAdmin">Simpan</button>
+    <button class="admin-btn admin-center-launch" id="btnOpenReviewCenter" type="button"><i class="fa-solid fa-chart-line"></i> Review Center</button>
     <button class="admin-btn bulk-delete-btn" id="btnOpenBulkDelete" type="button">Delete Pilihan</button>
     <button class="admin-btn admin-btn-close" id="btnCloseAdmin">Tutup</button>
   </div>
+</div>
+
+<!-- ADMIN REVIEW CENTER -->
+<div id="adminReviewCenterOverlay" class="admin-review-center-overlay" data-nosnippet>
+  <section id="adminReviewCenter" class="admin-review-center" role="dialog" aria-modal="true" aria-labelledby="adminCenterTitle">
+    <header class="admin-center-head">
+      <div class="admin-center-brand">
+        <span class="admin-center-icon"><i class="fa-solid fa-shield-halved"></i></span>
+        <div><small>H4SX ADMIN</small><h2 id="adminCenterTitle">Review Center</h2></div>
+      </div>
+      <div class="admin-center-head-actions">
+        <span id="adminCenterSyncStatus"><i></i> Live Firebase</span>
+        <button id="btnCloseReviewCenter" type="button" aria-label="Tutup Review Center"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </header>
+
+    <nav class="admin-center-tabs" aria-label="Menu Review Center">
+      <button class="active" type="button" data-admin-center-tab="dashboard"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></button>
+      <button type="button" data-admin-center-tab="moderation"><i class="fa-solid fa-list-check"></i><span>Moderasi</span><b id="adminModerationCount">0</b></button>
+      <button type="button" data-admin-center-tab="codes"><i class="fa-solid fa-ticket"></i><span>Kod</span></button>
+      <button type="button" data-admin-center-tab="reports"><i class="fa-solid fa-flag"></i><span>Laporan</span><b id="adminReportCount">0</b></button>
+      <button type="button" data-admin-center-tab="tools"><i class="fa-solid fa-sliders"></i><span>Tools</span></button>
+    </nav>
+
+    <div class="admin-center-body">
+      <div class="admin-center-panel active" data-admin-center-panel="dashboard">
+        <div class="admin-center-section-head"><div><small>RINGKASAN LIVE</small><h3>Prestasi ulasan</h3></div><button id="btnAdminRefreshDashboard" type="button"><i class="fa-solid fa-rotate"></i> Refresh</button></div>
+        <div class="admin-dashboard-grid">
+          <article><span>Jumlah ulasan</span><strong id="adminDashTotal">0</strong><small>Semua rekod</small></article>
+          <article><span>Purata rating</span><strong id="adminDashAverage">0.0</strong><small id="adminDashStars">Belum ada rating</small></article>
+          <article><span>Hari ini</span><strong id="adminDashToday">0</strong><small>Ulasan baharu</small></article>
+          <article class="admin-low-stat"><span>Perlu perhatian</span><strong id="adminDashLow">0</strong><small>Rating 1-2 bintang</small></article>
+          <article><span>Belum dibalas</span><strong id="adminDashUnreplied">0</strong><small>Menunggu admin</small></article>
+          <article><span>Disembunyikan</span><strong id="adminDashHidden">0</strong><small>Moderasi admin</small></article>
+        </div>
+        <div class="admin-rating-distribution" id="adminRatingDistribution"></div>
+        <div class="admin-center-split">
+          <section><div class="admin-mini-title"><h4>Rating rendah terkini</h4><button type="button" data-jump-admin-tab="moderation" data-low-only="true">Semak semua</button></div><div id="adminLowReviewList" class="admin-mini-list"></div></section>
+          <section><div class="admin-mini-title"><h4>Aktiviti admin</h4><button type="button" data-jump-admin-tab="tools">Lihat log</button></div><div id="adminRecentAudit" class="admin-mini-list"></div></section>
+        </div>
+      </div>
+
+      <div class="admin-center-panel" data-admin-center-panel="moderation">
+        <div class="admin-center-section-head"><div><small>KAWALAN ULASAN</small><h3>Moderasi & carian</h3></div><span id="adminModerationResult">0 rekod</span></div>
+        <div class="admin-moderation-toolbar">
+          <label class="admin-search-box"><i class="fa-solid fa-magnifying-glass"></i><input id="adminReviewSearch" type="search" placeholder="Cari nama, teks atau role..."></label>
+          <select id="adminReviewRatingFilter"><option value="all">Semua rating</option><option value="5">5 bintang</option><option value="4">4 bintang</option><option value="3">3 bintang</option><option value="12">1-2 bintang</option></select>
+          <select id="adminReviewStatusFilter"><option value="all">Semua status</option><option value="published">Diterbitkan</option><option value="hidden">Disorok</option><option value="rejected">Ditolak</option><option value="featured">Pilihan</option><option value="unreplied">Belum dibalas</option><option value="image">Ada gambar</option></select>
+          <select id="adminReviewSort"><option value="newest">Terbaru</option><option value="oldest">Terlama</option><option value="highest">Rating tinggi</option><option value="lowest">Rating rendah</option></select>
+        </div>
+        <div class="admin-bulk-toolbar">
+          <label><input id="adminSelectAllReviews" type="checkbox"> Pilih semua</label>
+          <span id="adminSelectedReviewsCount">0 dipilih</span>
+          <button type="button" data-admin-bulk-action="publish"><i class="fa-solid fa-eye"></i> Terbit</button>
+          <button type="button" data-admin-bulk-action="hide"><i class="fa-solid fa-eye-slash"></i> Sorok</button>
+          <button type="button" data-admin-bulk-action="feature"><i class="fa-solid fa-star"></i> Pilihan</button>
+          <button type="button" data-admin-bulk-action="reply"><i class="fa-solid fa-reply"></i> Balas</button>
+          <button class="danger" type="button" data-admin-bulk-action="delete"><i class="fa-solid fa-trash"></i> Padam</button>
+        </div>
+        <div id="adminModerationList" class="admin-moderation-list"></div>
+      </div>
+
+      <div class="admin-center-panel" data-admin-center-panel="codes">
+        <div class="admin-center-section-head"><div><small>PENGESAHAN PEMBELIAN</small><h3>Pengurusan kod ulasan</h3></div><button id="btnAdminCopyAllCodes" type="button"><i class="fa-solid fa-copy"></i> Copy semua</button></div>
+        <div class="admin-code-dashboard"><article><span>Kod tersedia</span><strong id="adminCenterAvailableCodes">0</strong></article><article><span>Sudah digunakan</span><strong id="adminCenterUsedCodes">0</strong></article><article><span>Jumlah dijana</span><strong id="adminCenterTotalCodes">0</strong></article></div>
+        <div class="admin-code-create-pro">
+          <input id="adminCenterCodePrefix" maxlength="12" value="H4SX" placeholder="Prefix">
+          <input id="adminCenterCodeCount" type="number" min="1" max="200" value="10">
+          <input id="adminCenterCodeExpiry" type="number" min="0" max="365" value="0" placeholder="Luput hari">
+          <button id="btnAdminCenterGenerateCodes" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> Jana Kod</button>
+        </div>
+        <small class="admin-field-help">Tetapkan 0 hari jika kod tidak mempunyai tarikh luput.</small>
+        <div class="admin-code-search"><i class="fa-solid fa-magnifying-glass"></i><input id="adminCenterCodeSearch" type="search" placeholder="Cari kod..."></div>
+        <div id="adminCenterCodeList" class="admin-center-code-list"></div>
+      </div>
+
+      <div class="admin-center-panel" data-admin-center-panel="reports">
+        <div class="admin-center-section-head"><div><small>LAPORAN PENGUNJUNG</small><h3>Semakan kandungan</h3></div><select id="adminReportStatusFilter"><option value="open">Belum selesai</option><option value="resolved">Selesai</option><option value="all">Semua</option></select></div>
+        <div id="adminReportList" class="admin-report-list"><div class="admin-empty-state"><i class="fa-solid fa-flag"></i><p>Belum ada laporan.</p></div></div>
+      </div>
+
+      <div class="admin-center-panel" data-admin-center-panel="tools">
+        <div class="admin-tools-grid">
+          <section class="admin-tool-section">
+            <div class="admin-tool-title"><i class="fa-solid fa-message"></i><div><h3>Template balasan</h3><p>Jawapan pantas mengikut rating.</p></div></div>
+            <label>Rating<select id="adminTemplateRating"><option value="5">5 bintang</option><option value="4">4 bintang</option><option value="3">3 bintang</option><option value="2">2 bintang</option><option value="1">1 bintang</option></select></label>
+            <textarea id="adminTemplateText" maxlength="400" rows="5"></textarea>
+            <button id="btnSaveAdminTemplate" type="button"><i class="fa-solid fa-floppy-disk"></i> Simpan Template</button>
+          </section>
+          <section class="admin-tool-section">
+            <div class="admin-tool-title"><i class="fa-solid fa-display"></i><div><h3>Tetapan paparan</h3><p>Kawal maklumat yang pelanggan nampak.</p></div></div>
+            <label class="admin-setting-toggle"><span>Gambar feedback</span><input id="adminSettingImages" type="checkbox" checked></label>
+            <label class="admin-setting-toggle"><span>Role & badge</span><input id="adminSettingBadges" type="checkbox" checked></label>
+            <label class="admin-setting-toggle"><span>Balasan admin</span><input id="adminSettingReplies" type="checkbox" checked></label>
+            <label class="admin-setting-toggle"><span>Masa relatif</span><input id="adminSettingRelativeTime" type="checkbox" checked></label>
+            <label class="admin-setting-toggle"><span>Amaran rating rendah</span><input id="adminSettingLowAlert" type="checkbox" checked></label>
+            <button id="btnSaveAdminDisplay" type="button"><i class="fa-solid fa-check"></i> Simpan Paparan</button>
+          </section>
+          <section class="admin-tool-section">
+            <div class="admin-tool-title"><i class="fa-solid fa-box-archive"></i><div><h3>Backup & export</h3><p>Simpan salinan data sebelum perubahan besar.</p></div></div>
+            <button id="btnExportReviewsJson" type="button"><i class="fa-solid fa-file-code"></i> Export JSON</button>
+            <button id="btnExportReviewsCsv" type="button"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            <button id="btnPrintAdminReport" type="button"><i class="fa-solid fa-print"></i> Cetak Ringkasan</button>
+          </section>
+          <section class="admin-tool-section admin-audit-section">
+            <div class="admin-tool-title"><i class="fa-solid fa-clock-rotate-left"></i><div><h3>Sejarah admin</h3><p>Rekod tindakan pengurusan terbaru.</p></div></div>
+            <div id="adminAuditList" class="admin-audit-list"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- ══ BADGE EDITOR MODAL (Admin) ══ -->
@@ -735,7 +848,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=review-relative-time-20260802"></script>
+<script type="module" src="review-app.js?v=admin-review-center-20260802"></script>
 </body>
 </html>
 

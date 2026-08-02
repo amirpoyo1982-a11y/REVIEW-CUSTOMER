@@ -1625,8 +1625,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     syncVisitStatsListener();
     syncReviewVoteAdmin();
     if (latestCodeSnapshot) renderCodeListFromSnapshot(latestCodeSnapshot);
+    if (latestCodeSnapshot) renderAdminCodes();
     try { renderReviews(); } catch (e) {}
     if (adminOk()) checkAutoZixuPost();
+    else closeAdminReviewCenter();
   });
 
   btnAdminLogin.addEventListener('click', async () => {
@@ -1782,6 +1784,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   onSnapshot(collection(db, "review_codes"), snapshot => {
     latestCodeSnapshot = snapshot;
     renderCodeListFromSnapshot(snapshot);
+    renderAdminCodes();
   }, err => {
     console.error(err);
     if (adminCodeList) adminCodeList.textContent = "Gagal load kod. Semak rules Firebase.";
@@ -2658,11 +2661,13 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       pctLima.textContent=Math.round((lima/count)*100)+"%";
     }
     renderReviews();
+    refreshAdminCenter();
+    handleLowRatingAlerts(allDocs);
   });
 
   // ── Render ────────────────────────────────────────────────────
   function getCurrentReviewList() {
-    let list=[...allDocs];
+    let list=[...allDocs].filter(data => !["hidden", "rejected"].includes(String(data.moderationStatus || "published")));
     if (filterStar!=="all") {
       list = filterStar==="12" ? list.filter(d=>clampBintang(d.bintang)<=2) : list.filter(d=>clampBintang(d.bintang)===parseInt(filterStar));
     }
@@ -2673,8 +2678,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     // ikutan yang lain kekal ikut sortMode yang dipilih.
     const dipin = list.filter(d=>d.pinned===true)
       .sort((a,b)=>(b.pinnedAt?.toMillis?.()||0)-(a.pinnedAt?.toMillis?.()||0));
-    const takDipin = list.filter(d=>d.pinned!==true);
-    list = [...dipin, ...takDipin];
+    const pilihan = list.filter(d=>d.pinned!==true && d.featured===true)
+      .sort((a,b)=>(b.featuredAt?.toMillis?.()||0)-(a.featuredAt?.toMillis?.()||0));
+    const takDipin = list.filter(d=>d.pinned!==true && d.featured!==true);
+    list = [...dipin, ...pilihan, ...takDipin];
     return list;
   }
 
@@ -2718,9 +2725,9 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const toggleColor = warnaHexSah(data.reviewToggleColor, "#2fa8e0");
 
       const reviewTime = reviewRecordTime(data.diciptaPada || data.timestamp || data.date);
-      let masa = reviewDateAndAge(reviewTime);
+      let masa = reviewAdminSettings.showRelativeTime === false ? reviewDateText(data) : reviewDateAndAge(reviewTime);
       let masaBalasan="";
-      if (data.balasanPada) masaBalasan=reviewDateAndAge(data.balasanPada);
+      if (data.balasanPada) masaBalasan=reviewAdminSettings.showRelativeTime === false ? reviewDateAndAge(data.balasanPada, false) : reviewDateAndAge(data.balasanPada);
 
       const starHtml=Array.from({length:5},(_,si)=>`<span style="color:${si<score?"#f0a500":"#cde"}">${si<score?"★":"☆"}</span>`).join("");
       const avatarInner=hasImg?`<img src="${escapeHtml(data.profileImg)}" alt="">`:escapeHtml(avatarIsi);
@@ -2734,7 +2741,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           : `<span class="verified-badge">Verified</span>`;
 
       const card=document.createElement("div");
-      card.className="review-card"+(data.pinned===true?" is-pinned":"");
+      card.className="review-card"+(data.pinned===true?" is-pinned":"")+(data.featured===true?" is-featured":"");
       card.dataset.reviewId = id;
       card.style.animationDelay=`${i*36}ms`;
       card.innerHTML=`
@@ -2742,6 +2749,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
         <div class="review-content">
           <div class="review-header">
             <div class="buyer-name-container">
+              ${data.featured===true?`<span class="featured-review-badge">Pilihan H4SX</span>`:""}
               ${data.pinned===true?`<span class="pin-badge">📌 Disematkan</span>`:""}
               <span class="${nameClass(data)}" style="${nameStyle(data, isReviewAdmin)}">${escapeHtml(namaDisorok)}</span>
               ${medalMarkup(data)}
@@ -2771,6 +2779,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
             </div>
           </div>
           ${adaFeedbackImg?`<button class="btn-see-feedback" type="button">See image</button>`:""}
+          <button class="review-report-btn" type="button" data-nosnippet><i class="fa-regular fa-flag"></i> Lapor</button>
           ${adaBalasan?`
           <button class="admin-reply-view-toggle" type="button" aria-expanded="false">Balasan admin ↓</button>
           <div class="admin-reply-box">
@@ -2824,6 +2833,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const btnSeeFeedback=card.querySelector(".btn-see-feedback");
       const btnReplyView=card.querySelector(".admin-reply-view-toggle");
       const btnTextToggle=card.querySelector(".review-text-toggle");
+      const btnReport=card.querySelector(".review-report-btn");
       if (btnTextToggle) {
         const feedbackText = card.querySelector(".buyer-feedback");
         btnTextToggle.addEventListener("click", () => {
@@ -2843,7 +2853,15 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           btnReplyView.textContent = open ? "Tutup balasan ↑" : "Balasan admin ↓";
         });
       }
-      toggleB.addEventListener("click",()=>{ if(!mintaAdmin())return; form.classList.toggle("show"); if(form.classList.contains("show"))ta.focus(); });
+      btnReport?.addEventListener("click",()=>openReviewReport(id, rawNama));
+      toggleB.addEventListener("click",()=>{
+        if(!mintaAdmin())return;
+        form.classList.toggle("show");
+        if(form.classList.contains("show")) {
+          if (!ta.value.trim()) ta.value = getAdminReplyTemplate(score, rawNama);
+          ta.focus();
+        }
+      });
       btnB.addEventListener("click",()=>form.classList.remove("show"));
       btnH.addEventListener("click",()=>hantarBalasan(id,ta.value,btnH));
       btnPadamBalasan?.addEventListener("click",()=>padamBalasanAdmin(id, rawNama, btnPadamBalasan));
@@ -3146,6 +3164,125 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   });
 
   // ── Block Inspect Element & DevTools ──────────────────────────
+  // Admin Review Center
+  const DEFAULT_REVIEW_ADMIN_SETTINGS = {
+    showImages:true, showBadges:true, showReplies:true, showRelativeTime:true, lowRatingAlert:true,
+    replyTemplates:{
+      5:"Terima kasih {nama}! Kami sangat hargai sokongan dan ulasan anda.",
+      4:"Terima kasih {nama}! Kami gembira urusan berjalan lancar dan akan terus tingkatkan servis.",
+      3:"Terima kasih {nama}. Maklum balas anda kami ambil perhatian untuk penambahbaikan.",
+      2:"Maaf atas pengalaman tersebut, {nama}. Sila hubungi admin supaya kami boleh semak dan bantu.",
+      1:"Maaf atas masalah yang berlaku, {nama}. Hubungi admin H4SX untuk semakan segera."
+    }
+  };
+  let reviewAdminSettings = structuredClone(DEFAULT_REVIEW_ADMIN_SETTINGS);
+  let adminReports = [], adminAudit = [], stopAdminReports = null, stopAdminAudit = null, lowAlertReady = false;
+  const knownLowReviews = new Set(), selectedAdminReviews = new Set();
+  const adminCenterOverlay = document.getElementById("adminReviewCenterOverlay");
+
+  function applyReviewAdminSettings() {
+    const root=document.documentElement;
+    root.classList.toggle("hide-review-images",!reviewAdminSettings.showImages);
+    root.classList.toggle("hide-review-badges",!reviewAdminSettings.showBadges);
+    root.classList.toggle("hide-review-replies",!reviewAdminSettings.showReplies);
+    const map={Images:"showImages",Badges:"showBadges",Replies:"showReplies",RelativeTime:"showRelativeTime",LowAlert:"lowRatingAlert"};
+    Object.entries(map).forEach(([suffix,key])=>{const el=document.getElementById(`adminSetting${suffix}`);if(el)el.checked=reviewAdminSettings[key]!==false;});
+    const rating=document.getElementById("adminTemplateRating")?.value||"5", template=document.getElementById("adminTemplateText");
+    if(template)template.value=reviewAdminSettings.replyTemplates?.[rating]||"";
+  }
+  onSnapshot(doc(db,"config","review_admin"),snap=>{
+    const remote=snap.exists()?snap.data():{};
+    reviewAdminSettings={...DEFAULT_REVIEW_ADMIN_SETTINGS,...remote,replyTemplates:{...DEFAULT_REVIEW_ADMIN_SETTINGS.replyTemplates,...(remote.replyTemplates||{})}};
+    applyReviewAdminSettings(); renderReviews();
+  },applyReviewAdminSettings);
+  function getAdminReplyTemplate(score,nama="pelanggan"){return String(reviewAdminSettings.replyTemplates?.[clampBintang(score)]||DEFAULT_REVIEW_ADMIN_SETTINGS.replyTemplates[clampBintang(score)]||"Terima kasih atas ulasan anda.").replaceAll("{nama}",nama);}
+
+  function switchAdminCenterTab(name){
+    document.querySelectorAll("[data-admin-center-tab]").forEach(btn=>btn.classList.toggle("active",btn.dataset.adminCenterTab===name));
+    document.querySelectorAll("[data-admin-center-panel]").forEach(panel=>panel.classList.toggle("active",panel.dataset.adminCenterPanel===name));
+  }
+  function openAdminReviewCenter(tab="dashboard"){
+    if(!mintaAdmin())return;
+    document.getElementById("adminPanelModal")?.classList.remove("show");document.getElementById("adminOverlayBg")?.classList.remove("show");
+    adminCenterOverlay?.classList.add("show");document.body.style.overflow="hidden";switchAdminCenterTab(tab);startAdminCenterStreams();refreshAdminCenter();
+  }
+  function closeAdminReviewCenter(){adminCenterOverlay?.classList.remove("show");document.body.style.removeProperty("overflow");}
+  document.getElementById("btnOpenReviewCenter")?.addEventListener("click",()=>openAdminReviewCenter());
+  document.getElementById("btnCloseReviewCenter")?.addEventListener("click",closeAdminReviewCenter);
+  adminCenterOverlay?.addEventListener("click",e=>{if(e.target===adminCenterOverlay)closeAdminReviewCenter();});
+  document.querySelectorAll("[data-admin-center-tab]").forEach(btn=>btn.addEventListener("click",()=>switchAdminCenterTab(btn.dataset.adminCenterTab)));
+  document.querySelectorAll("[data-jump-admin-tab]").forEach(btn=>btn.addEventListener("click",()=>{if(btn.dataset.lowOnly)document.getElementById("adminReviewRatingFilter").value="12";switchAdminCenterTab(btn.dataset.jumpAdminTab);renderAdminModeration();}));
+
+  function adminReviewStatus(data){return ["published","hidden","rejected"].includes(data.moderationStatus)?data.moderationStatus:"published";}
+  function adminEmpty(text,icon="fa-inbox"){return `<div class="admin-empty-state"><i class="fa-solid ${icon}"></i><p>${escapeHtml(text)}</p></div>`;}
+  function refreshAdminCenter(){if(!document.getElementById("adminReviewCenter"))return;renderAdminDashboard();renderAdminModeration();renderAdminCodes();renderAdminReports();renderAdminAudit();}
+  function renderAdminDashboard(){
+    const total=allDocs.length, average=total?(allDocs.reduce((s,r)=>s+clampBintang(r.bintang),0)/total).toFixed(1):"0.0", start=new Date();start.setHours(0,0,0,0);
+    const today=allDocs.filter(r=>reviewRecordTime(r.diciptaPada)>=start.getTime()).length,low=allDocs.filter(r=>clampBintang(r.bintang)<=2).length,unreplied=allDocs.filter(r=>!r.balasanAdmin?.trim()).length,hidden=allDocs.filter(r=>adminReviewStatus(r)!=="published").length;
+    Object.entries({adminDashTotal:total,adminDashAverage:average,adminDashToday:today,adminDashLow:low,adminDashUnreplied:unreplied,adminDashHidden:hidden,adminModerationCount:low+unreplied+hidden}).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+    const starLabel=document.getElementById("adminDashStars");if(starLabel)starLabel.textContent=total?`${average} daripada 5 bintang`:"Belum ada rating";
+    const distribution=document.getElementById("adminRatingDistribution");if(distribution)distribution.innerHTML=[5,4,3,2,1].map(star=>{const count=allDocs.filter(r=>clampBintang(r.bintang)===star).length,pct=total?Math.round(count/total*100):0;return `<div class="admin-rating-row"><span>${star} bintang</span><i><b style="width:${pct}%"></b></i><strong>${count}</strong></div>`;}).join("");
+    const lows=allDocs.filter(r=>clampBintang(r.bintang)<=2).slice(0,5),lowList=document.getElementById("adminLowReviewList");if(lowList)lowList.innerHTML=lows.length?lows.map(r=>`<div class="admin-mini-item"><div><strong>${escapeHtml(r.nama||"Pelanggan")}</strong><span>${escapeHtml(String(r.ulasan||"Rating sahaja").slice(0,70))}</span></div><b>${clampBintang(r.bintang)} bintang</b></div>`).join(""):adminEmpty("Tiada rating rendah.","fa-circle-check");
+    const recent=document.getElementById("adminRecentAudit");if(recent)recent.innerHTML=adminAuditMarkup(adminAudit.slice(0,5));
+  }
+  function getAdminModerationList(){
+    const search=(document.getElementById("adminReviewSearch")?.value||"").trim().toLowerCase(),rating=document.getElementById("adminReviewRatingFilter")?.value||"all",status=document.getElementById("adminReviewStatusFilter")?.value||"all",sort=document.getElementById("adminReviewSort")?.value||"newest";
+    let list=allDocs.filter(r=>!search||[r.id,r.nama,r.ulasan,r.badgeText,r.balasanAdmin].some(v=>String(v||"").toLowerCase().includes(search)));
+    if(rating!=="all")list=list.filter(r=>rating==="12"?clampBintang(r.bintang)<=2:clampBintang(r.bintang)===Number(rating));
+    if(status!=="all")list=list.filter(r=>status==="featured"?r.featured===true:status==="unreplied"?!r.balasanAdmin?.trim():status==="image"?!!r.feedbackImg:adminReviewStatus(r)===status);
+    list.sort((a,b)=>sort==="oldest"?reviewRecordTime(a.diciptaPada)-reviewRecordTime(b.diciptaPada):sort==="highest"?clampBintang(b.bintang)-clampBintang(a.bintang):sort==="lowest"?clampBintang(a.bintang)-clampBintang(b.bintang):reviewRecordTime(b.diciptaPada)-reviewRecordTime(a.diciptaPada));return list;
+  }
+  function renderAdminModeration(){
+    const box=document.getElementById("adminModerationList");if(!box)return;const list=getAdminModerationList();document.getElementById("adminModerationResult").textContent=`${list.length} rekod`;
+    box.innerHTML=list.length?list.map(r=>{const status=adminReviewStatus(r),score=clampBintang(r.bintang),avatar=r.profileImg?`<img src="${escapeHtml(r.profileImg)}" alt="">`:escapeHtml(r.emojiProfil||String(r.nama||"P")[0]);return `<article class="admin-moderation-item${score<=2?" is-low":""}${status!=="published"?" is-hidden":""}" data-admin-review-id="${r.id}"><input class="admin-review-checkbox" type="checkbox" ${selectedAdminReviews.has(r.id)?"checked":""}><div class="admin-moderation-avatar" style="background:${r.warnaProfil||warnaAuto(r.nama||"P")}">${avatar}</div><div class="admin-moderation-copy"><header><strong>${escapeHtml(r.nama||"Pelanggan")}</strong><span class="admin-status-chip ${status}">${status}</span>${r.featured?'<span class="admin-status-chip featured">pilihan</span>':''}</header><p>${escapeHtml(r.ulasan||"Rating sahaja")}</p><small>${score} bintang · ${reviewDateText(r)}${r.balasanAdmin?.trim()?" · sudah dibalas":" · belum dibalas"}</small></div><div class="admin-moderation-actions"><button data-admin-row-action="publish" title="Terbit"><i class="fa-solid fa-eye"></i></button><button data-admin-row-action="hide" title="Sorok"><i class="fa-solid fa-eye-slash"></i></button><button data-admin-row-action="feature" title="Pilihan"><i class="fa-solid fa-star"></i></button><button data-admin-row-action="reply" title="Balas"><i class="fa-solid fa-reply"></i></button><button data-admin-row-action="open" title="Buka"><i class="fa-solid fa-arrow-up-right-from-square"></i></button><button class="danger" data-admin-row-action="delete" title="Padam"><i class="fa-solid fa-trash"></i></button></div></article>`;}).join(""):adminEmpty("Tiada ulasan sepadan dengan penapis.");updateAdminSelectionCount();
+  }
+  function updateAdminSelectionCount(){const el=document.getElementById("adminSelectedReviewsCount");if(el)el.textContent=`${selectedAdminReviews.size} dipilih`;}
+  ["adminReviewSearch","adminReviewRatingFilter","adminReviewStatusFilter","adminReviewSort"].forEach(id=>document.getElementById(id)?.addEventListener(id==="adminReviewSearch"?"input":"change",renderAdminModeration));
+  document.getElementById("adminModerationList")?.addEventListener("change",e=>{const row=e.target.closest("[data-admin-review-id]");if(!row||!e.target.matches(".admin-review-checkbox"))return;e.target.checked?selectedAdminReviews.add(row.dataset.adminReviewId):selectedAdminReviews.delete(row.dataset.adminReviewId);updateAdminSelectionCount();});
+  document.getElementById("adminSelectAllReviews")?.addEventListener("change",e=>{getAdminModerationList().forEach(r=>e.target.checked?selectedAdminReviews.add(r.id):selectedAdminReviews.delete(r.id));renderAdminModeration();});
+  document.getElementById("adminModerationList")?.addEventListener("click",e=>{const btn=e.target.closest("[data-admin-row-action]"),row=e.target.closest("[data-admin-review-id]");if(btn&&row)runAdminReviewAction(btn.dataset.adminRowAction,[row.dataset.adminReviewId]);});
+  document.querySelectorAll("[data-admin-bulk-action]").forEach(btn=>btn.addEventListener("click",()=>runAdminReviewAction(btn.dataset.adminBulkAction,[...selectedAdminReviews])));
+  async function runAdminReviewAction(action,ids){
+    if(!mintaAdmin()||!ids.length){showToast("Pilih sekurang-kurangnya satu ulasan.","error");return;}const records=ids.map(id=>allDocs.find(r=>r.id===id)).filter(Boolean);
+    if(action==="open"){closeAdminReviewCenter();kotakPaparan.querySelector(`[data-review-id="${ids[0]}"]`)?.scrollIntoView({behavior:"smooth",block:"center"});return;}
+    if(action==="delete"){if(!confirm(`Backup dan padam ${ids.length} ulasan secara kekal?`))return;downloadAdminData(records,`h4sx-review-backup-${Date.now()}.json`);}
+    let reply="";if(action==="reply"){reply=prompt("Balasan untuk ulasan dipilih:",getAdminReplyTemplate(records[0]?.bintang,records[0]?.nama));if(!reply?.trim())return;}
+    try{await Promise.all(records.map(r=>action==="delete"?deleteDoc(doc(db,"ratings",r.id)):action==="publish"?updateDoc(doc(db,"ratings",r.id),{moderationStatus:"published",moderatedAt:serverTimestamp()}):action==="hide"?updateDoc(doc(db,"ratings",r.id),{moderationStatus:"hidden",moderatedAt:serverTimestamp()}):action==="feature"?updateDoc(doc(db,"ratings",r.id),{featured:!r.featured,featuredAt:serverTimestamp()}):updateDoc(doc(db,"ratings",r.id),{balasanAdmin:reply.trim(),balasanPada:serverTimestamp(),balasanDibuang:false})));await logAdminAction(action,ids.join(","),`${ids.length} ulasan`);selectedAdminReviews.clear();showToast("Tindakan admin berjaya disimpan.","success");}catch(err){console.error(err);showToast("Tindakan gagal. Semak Firestore Rules admin.","error");}
+  }
+
+  async function openReviewReport(reviewId,reviewName){const reason=prompt(`Kenapa anda mahu laporkan ulasan ${reviewName}?\n\nJangan masukkan maklumat peribadi.`);if(!reason?.trim())return;try{await addDoc(collection(db,"review_reports"),{reviewId,reviewName,reason:reason.trim().slice(0,300),status:"open",deviceId:getVisitorId(),createdAt:serverTimestamp()});showToast("Laporan dihantar kepada admin.","success");}catch(err){console.error(err);showToast("Laporan gagal dihantar. Cuba semula.","error");}}
+  function startAdminCenterStreams(){
+    if(!adminOk())return;
+    if(!stopAdminReports)stopAdminReports=onSnapshot(query(collection(db,"review_reports"),orderBy("createdAt","desc")),snap=>{adminReports=snap.docs.map(d=>({id:d.id,...d.data()}));renderAdminReports();},()=>{document.getElementById("adminReportList").innerHTML=adminEmpty("Aktifkan rules review_reports untuk melihat laporan.","fa-lock");});
+    if(!stopAdminAudit)stopAdminAudit=onSnapshot(query(collection(db,"admin_audit"),orderBy("createdAt","desc")),snap=>{adminAudit=snap.docs.map(d=>({id:d.id,...d.data()}));renderAdminAudit();renderAdminDashboard();},()=>renderAdminAudit());
+  }
+  function renderAdminReports(){const box=document.getElementById("adminReportList");if(!box)return;const status=document.getElementById("adminReportStatusFilter")?.value||"open",list=adminReports.filter(r=>status==="all"||r.status===status);document.getElementById("adminReportCount").textContent=adminReports.filter(r=>r.status!=="resolved").length;box.innerHTML=list.length?list.map(r=>`<article class="admin-report-item" data-report-id="${r.id}"><div><h4>${escapeHtml(r.reviewName||"Ulasan")}</h4><p>${escapeHtml(r.reason||"Tiada sebab")}</p><small>${reviewDateAndAge(r.createdAt)} · ${escapeHtml(r.status||"open")}</small></div><div class="admin-report-actions"><button data-report-action="open" data-review-id="${escapeHtml(r.reviewId||"")}">Buka</button><button data-report-action="resolve">Selesai</button><button data-report-action="delete">Padam</button></div></article>`).join(""):adminEmpty("Tiada laporan untuk status ini.","fa-flag");}
+  document.getElementById("adminReportStatusFilter")?.addEventListener("change",renderAdminReports);
+  document.getElementById("adminReportList")?.addEventListener("click",async e=>{const btn=e.target.closest("[data-report-action]"),row=e.target.closest("[data-report-id]");if(!btn||!row)return;try{if(btn.dataset.reportAction==="open"){switchAdminCenterTab("moderation");document.getElementById("adminReviewSearch").value=btn.dataset.reviewId;renderAdminModeration();return;}if(btn.dataset.reportAction==="resolve")await updateDoc(doc(db,"review_reports",row.dataset.reportId),{status:"resolved",resolvedAt:serverTimestamp()});if(btn.dataset.reportAction==="delete")await deleteDoc(doc(db,"review_reports",row.dataset.reportId));await logAdminAction(`report_${btn.dataset.reportAction}`,row.dataset.reportId,"Laporan pengunjung");}catch(err){console.error(err);showToast("Gagal kemaskini laporan.","error");}});
+
+  function getAdminCodes(){const list=[];latestCodeSnapshot?.forEach(d=>list.push({id:d.id,...d.data()}));return list.sort((a,b)=>a.id.localeCompare(b.id));}
+  function renderAdminCodes(){const box=document.getElementById("adminCenterCodeList");if(!box)return;const codes=getAdminCodes(),search=(document.getElementById("adminCenterCodeSearch")?.value||"").toLowerCase(),filtered=codes.filter(c=>c.id.toLowerCase().includes(search));document.getElementById("adminCenterAvailableCodes").textContent=codes.length;document.getElementById("adminCenterUsedCodes").textContent=allDocs.length;document.getElementById("adminCenterTotalCodes").textContent=codes.length+allDocs.length;box.innerHTML=filtered.length?filtered.map(c=>`<div class="admin-center-code-item"><div><strong>${escapeHtml(c.id)}</strong><small>${c.expiresAt?`Luput ${reviewDateAndAge(c.expiresAt,false)}`:"Tiada luput"}</small></div><button data-admin-copy-code="${escapeHtml(c.id)}"><i class="fa-solid fa-copy"></i></button></div>`).join(""):adminEmpty("Tiada kod ditemui.");}
+  document.getElementById("adminCenterCodeSearch")?.addEventListener("input",renderAdminCodes);
+  document.getElementById("adminCenterCodeList")?.addEventListener("click",e=>{const btn=e.target.closest("[data-admin-copy-code]");if(btn)copyText(btn.dataset.adminCopyCode);});
+  document.getElementById("btnAdminCopyAllCodes")?.addEventListener("click",()=>navigator.clipboard.writeText(getAdminCodes().map(c=>c.id).join("\n")).then(()=>showToast("Semua kod dicopy.","success")));
+  document.getElementById("btnAdminCenterGenerateCodes")?.addEventListener("click",async()=>{if(!mintaAdmin())return;const prefix=cleanCodePrefix(document.getElementById("adminCenterCodePrefix").value),count=Math.max(1,Math.min(200,Number(document.getElementById("adminCenterCodeCount").value)||1)),days=Math.max(0,Number(document.getElementById("adminCenterCodeExpiry").value)||0),made=[];try{for(let i=0;i<count;i++){let code=`${prefix}-${randomCodePart(6)}`;while(made.includes(code))code=`${prefix}-${randomCodePart(6)}`;made.push(code);const payload={kod:code,diciptaPada:serverTimestamp(),diciptaOleh:currentUser.uid};if(days)payload.expiresAt=Timestamp.fromDate(new Date(Date.now()+days*86400000));await setDoc(doc(db,"review_codes",code),payload);}await logAdminAction("generate_codes",prefix,`${count} kod`);showToast(`${count} kod berjaya dijana.`,"success");}catch(err){console.error(err);showToast("Gagal jana kod.","error");}});
+
+  function adminAuditMarkup(list){return list.length?list.map(a=>`<div class="admin-audit-item"><div><strong>${escapeHtml(a.action||"Tindakan admin")}</strong><span>${escapeHtml(a.details||a.targetId||"")}</span></div><span>${reviewDateAndAge(a.createdAt||a.time)}</span></div>`).join(""):adminEmpty("Belum ada sejarah admin.","fa-clock");}
+  function renderAdminAudit(){const box=document.getElementById("adminAuditList");if(box)box.innerHTML=adminAuditMarkup(adminAudit.slice(0,50));}
+  async function logAdminAction(action,targetId,details){try{await addDoc(collection(db,"admin_audit"),{action,targetId,details,adminUid:currentUser?.uid||"",adminEmail:currentUser?.email||"",createdAt:serverTimestamp()});}catch(_){const local={action,targetId,details,time:new Date().toISOString()};adminAudit=[local,...adminAudit].slice(0,50);localStorage.setItem("h4sx_admin_audit",JSON.stringify(adminAudit));renderAdminAudit();}}
+  document.getElementById("adminTemplateRating")?.addEventListener("change",e=>{document.getElementById("adminTemplateText").value=reviewAdminSettings.replyTemplates?.[e.target.value]||"";});
+  document.getElementById("btnSaveAdminTemplate")?.addEventListener("click",async()=>{if(!mintaAdmin())return;const rating=document.getElementById("adminTemplateRating").value,text=document.getElementById("adminTemplateText").value.trim();if(!text){showToast("Template tidak boleh kosong.","error");return;}reviewAdminSettings.replyTemplates[rating]=text;try{await setDoc(doc(db,"config","review_admin"),{replyTemplates:reviewAdminSettings.replyTemplates},{merge:true});await logAdminAction("save_template",rating,`${rating} bintang`);showToast("Template balasan disimpan.","success");}catch(err){console.error(err);showToast("Gagal simpan template.","error");}});
+  document.getElementById("btnSaveAdminDisplay")?.addEventListener("click",async()=>{if(!mintaAdmin())return;const next={showImages:document.getElementById("adminSettingImages").checked,showBadges:document.getElementById("adminSettingBadges").checked,showReplies:document.getElementById("adminSettingReplies").checked,showRelativeTime:document.getElementById("adminSettingRelativeTime").checked,lowRatingAlert:document.getElementById("adminSettingLowAlert").checked};try{await setDoc(doc(db,"config","review_admin"),next,{merge:true});showToast("Tetapan paparan disimpan.","success");}catch(err){console.error(err);showToast("Gagal simpan tetapan.","error");}});
+
+  function serialiseReview(r){const out={...r};["diciptaPada","balasanPada","pinnedAt","featuredAt","moderatedAt"].forEach(k=>{if(out[k])out[k]=new Date(reviewRecordTime(out[k])).toISOString();});return out;}
+  function downloadAdminData(data,name,type="application/json"){const text=type.includes("json")?JSON.stringify(Array.isArray(data)?data.map(serialiseReview):data,null,2):data,url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+  document.getElementById("btnExportReviewsJson")?.addEventListener("click",()=>downloadAdminData(allDocs,`h4sx-reviews-${Date.now()}.json`));
+  document.getElementById("btnExportReviewsCsv")?.addEventListener("click",()=>{const esc=v=>`"${String(v??"").replaceAll('"','""')}"`,csv=[["id","nama","bintang","ulasan","status","tarikh"].join(","),...allDocs.map(r=>[r.id,r.nama,clampBintang(r.bintang),r.ulasan,adminReviewStatus(r),reviewDateText(r)].map(esc).join(","))].join("\r\n");downloadAdminData(csv,`h4sx-reviews-${Date.now()}.csv`,`text/csv;charset=utf-8`);});
+  document.getElementById("btnPrintAdminReport")?.addEventListener("click",()=>{const win=window.open("","_blank","width=900,height=700");if(!win)return;win.document.write(`<title>H4SX Review Report</title><style>body{font-family:Arial;padding:32px;color:#123}h1{color:#079bd4}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left}</style><h1>H4SX Review Report</h1><p>Dijana ${new Date().toLocaleString("ms-MY")}</p><table><tr><th>Nama</th><th>Rating</th><th>Status</th><th>Tarikh</th></tr>${allDocs.map(r=>`<tr><td>${escapeHtml(r.nama)}</td><td>${clampBintang(r.bintang)}/5</td><td>${adminReviewStatus(r)}</td><td>${reviewDateText(r)}</td></tr>`).join("")}</table>`);win.document.close();win.focus();win.print();});
+  document.getElementById("btnAdminRefreshDashboard")?.addEventListener("click",()=>{refreshAdminCenter();showToast("Dashboard dikemas kini.","success");});
+  function handleLowRatingAlerts(list){const lows=list.filter(r=>clampBintang(r.bintang)<=2);if(!lowAlertReady){lows.forEach(r=>knownLowReviews.add(r.id));lowAlertReady=true;return;}if(reviewAdminSettings.lowRatingAlert!==false&&adminOk())lows.filter(r=>!knownLowReviews.has(r.id)).forEach(r=>showToast(`Rating rendah baharu daripada ${r.nama||"pelanggan"}.`,"error"));lows.forEach(r=>knownLowReviews.add(r.id));}
+  applyReviewAdminSettings();
+
   function blockInspect() {
     const notifyBlocked = message => {
       if (typeof showToast === 'function') showToast(message, 'error');

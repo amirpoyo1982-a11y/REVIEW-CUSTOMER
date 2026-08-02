@@ -1,0 +1,42 @@
+// Tambah blok ini DI DALAM match /databases/{database}/documents { ... }
+// Letak sebelum fallback akhir: match /{document=**} { allow read, write: if false; }
+// Fungsi isAdmin() sedia ada mesti dikekalkan.
+
+match /review_reports/{reportId} {
+  allow create: if request.resource.data.keys().hasOnly([
+      'reviewId',
+      'reviewName',
+      'reason',
+      'status',
+      'deviceId',
+      'createdAt'
+    ])
+    && request.resource.data.reviewId is string
+    && request.resource.data.reviewId.size() >= 1
+    && request.resource.data.reviewId.size() <= 160
+    && request.resource.data.reviewName is string
+    && request.resource.data.reviewName.size() <= 80
+    && request.resource.data.reason is string
+    && request.resource.data.reason.size() >= 3
+    && request.resource.data.reason.size() <= 300
+    && request.resource.data.status == 'open'
+    && request.resource.data.deviceId is string
+    && request.resource.data.deviceId.size() <= 100;
+
+  allow read, update, delete: if isAdmin();
+}
+
+match /admin_audit/{auditId} {
+  allow read, create: if isAdmin();
+  allow update, delete: if false;
+}
+
+// Pastikan match ratings sedia ada masih mempunyai:
+// allow update, delete: if isAdmin();
+// Ini diperlukan untuk Sorok, Terbit, Pilihan H4SX dan moderasi pukal.
+
+// Config sedia ada sepatutnya kekal seperti berikut:
+// match /config/{document=**} {
+//   allow read: if true;
+//   allow write: if isAdmin();
+// }
