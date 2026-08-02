@@ -2530,6 +2530,36 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     return Number.isFinite(time) ? time : 0;
   }
 
+  function relativeReviewTime(value) {
+    const time = typeof value === 'number' ? value : reviewRecordTime(value);
+    if (!time) return 'Baru sahaja';
+    const seconds = Math.max(0, Math.floor((Date.now() - time) / 1000));
+    if (seconds < 60) return 'Baru sahaja';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minit yang lalu`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} jam yang lalu`;
+    if (seconds < 2592000) return `${Math.floor(seconds / 86400)} hari yang lalu`;
+    if (seconds < 31536000) return `${Math.floor(seconds / 2592000)} bulan yang lalu`;
+    return `${Math.floor(seconds / 31536000)} tahun yang lalu`;
+  }
+
+  function reviewDateAndAge(value, includeTime = true) {
+    const time = reviewRecordTime(value);
+    if (!time) return 'Baru sahaja';
+    const date = new Date(time);
+    const absolute = date.toLocaleString('ms-MY', includeTime
+      ? { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true }
+      : { day:'numeric', month:'short', year:'numeric' });
+    return `${absolute} - ${relativeReviewTime(time)}`;
+  }
+
+  function refreshRelativeReviewTimes() {
+    document.querySelectorAll('[data-review-time]').forEach(element => {
+      const time = Number(element.dataset.reviewTime || 0);
+      if (time) element.textContent = reviewDateAndAge(time);
+    });
+  }
+  setInterval(refreshRelativeReviewTimes, 60000);
+
   async function padamBalasanAdmin(id, nama, btn) {
     if (!mintaAdmin()) return;
     if (!confirm(`Padam balasan admin untuk ulasan "${nama}"? Ulasan pelanggan tidak akan dipadam.`)) return;
@@ -2687,10 +2717,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const collapseLabel = data.reviewCollapseLabel || "Tutup ↑";
       const toggleColor = warnaHexSah(data.reviewToggleColor, "#2fa8e0");
 
-      let masa="Baru sahaja";
-      if (data.diciptaPada) masa=data.diciptaPada.toDate().toLocaleString("ms-MY",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
+      const reviewTime = reviewRecordTime(data.diciptaPada || data.timestamp || data.date);
+      let masa = reviewDateAndAge(reviewTime);
       let masaBalasan="";
-      if (data.balasanPada) masaBalasan=data.balasanPada.toDate().toLocaleString("ms-MY",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
+      if (data.balasanPada) masaBalasan=reviewDateAndAge(data.balasanPada);
 
       const starHtml=Array.from({length:5},(_,si)=>`<span style="color:${si<score?"#f0a500":"#cde"}">${si<score?"★":"☆"}</span>`).join("");
       const avatarInner=hasImg?`<img src="${escapeHtml(data.profileImg)}" alt="">`:escapeHtml(avatarIsi);
@@ -2721,7 +2751,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
             </div>
             <div class="star-display">${starHtml}</div>
           </div>
-          <div class="buyer-time">${masa}</div>
+          <div class="buyer-time" data-review-time="${reviewTime}">${masa}</div>
           ${adaUlasan
             ?`<p class="buyer-feedback${gunaTextToggle && !textMulaBuka ? " is-collapsed" : ""}" style="--review-lines:${textLines};">${formatMessageText(data.ulasan)}</p>
               ${gunaTextToggle ? `<button class="review-text-toggle" type="button" style="--toggle-color:${toggleColor};" data-open="${textMulaBuka ? "1" : "0"}" data-expand="${escapeHtml(expandLabel)}" data-collapse="${escapeHtml(collapseLabel)}">${escapeHtml(textMulaBuka ? collapseLabel : expandLabel)}</button>` : ""}`
@@ -2881,12 +2911,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   }
 
   function reviewDateText(data) {
-    if (!data.diciptaPada) return "Baru sahaja";
-    try {
-      return data.diciptaPada.toDate().toLocaleDateString("ms-MY", { day:"numeric", month:"short", year:"numeric" });
-    } catch(e) {
-      return "Baru sahaja";
-    }
+    return reviewDateAndAge(data.diciptaPada || data.timestamp || data.date, false);
   }
   function makeScreenshotReviewCard(data) {
     const rawNama = data.nama || "Pelanggan Misteri";
