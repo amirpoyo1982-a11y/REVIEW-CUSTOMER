@@ -101,7 +101,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   window.addEventListener("load", () => setTimeout(hidePageLoader, 650));
   setTimeout(hidePageLoader, 4200);
 
-  // -- Light / Dark mode ---------------------------------
+  // -- Light Dark mode ---------------------------------
   const btnThemeToggle = document.getElementById("btnThemeToggle");
   function setThemeMode(mode) {
     const safeMode = mode === "dark" ? "dark" : "light";

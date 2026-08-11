@@ -4726,20 +4726,3 @@ html[data-admin-auth="true"] [data-admin-ctrl-row] .admin-action-btn {
 html.hide-review-images .btn-see-feedback { display:none !important; }
 html.hide-review-badges .verified-badge, html.hide-review-badges .custom-badge, html.hide-review-badges .medal-badge, html.hide-review-badges .featured-review-badge { display:none !important; }
 html.hide-review-replies .admin-reply-view-toggle, html.hide-review-replies .admin-reply-box { display:none !important; }
-/* SKY BLUE THEME OVERRIDES - DO NOT AFFECT ADMIN */
-:root { --sky-primary: #66b3ff; --sky-primary-600: #2fa8e0; --sky-bg: #f4fbff; --sky-text: #052033; --sky-accent: #8ecfff; }
-
-/* Global non-admin elements */
-body:not([class*="admin"]):not([id*="admin"]) { background-color: var(--sky-bg) !important; color: var(--sky-text) !important; }
-body:not([class*="admin"]):not([id*="admin"]) a, a:not([class*="admin"]) { color: var(--sky-primary-600) !important; }
-header:not([class*="admin"]), .site-header:not([class*="admin"]) { background: linear-gradient(180deg, rgba(102,179,255,0.12), transparent) !important; border-bottom:1px solid rgba(47,168,224,0.08) !important; }
-button:not([class*="admin"]), .btn:not([class*="admin"]) { background: linear-gradient(90deg,var(--sky-primary),var(--sky-primary-600)) !important; color:#fff !important; border:0 !important; box-shadow:0 6px 18px rgba(47,168,224,0.12) !important; border-radius:8px !important; padding:8px 12px !important; }
-input:not([class*="admin"]), textarea:not([class*="admin"]), select:not([class*="admin"]) { border:1px solid rgba(47,168,224,0.3) !important; }
-.card:not([class*="admin"]), .panel:not([class*="admin"]) { background: #fff !important; box-shadow:0 6px 30px rgba(15,96,170,0.06) !important; border-radius:12px !important; }
-.footer:not([class*="admin"]), .site-footer:not([class*="admin"]) { background: transparent !important; color: rgba(5,32,51,0.6) !important; }
-.badge:not([class*="admin"]) { background: linear-gradient(90deg,#bde7ff,var(--sky-primary-600)) !important; color:#00304a !important; border-radius:999px !important; padding:4px 10px !important; }
-/* Improve typography & spacing */
-body:not([class*="admin"]) { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif !important; line-height:1.5 !important; }
-h1,h2,h3,h4,h5 { color: var(--sky-text) !important; font-weight:700 !important; }
-/* Mobile tweaks */
-@media (max-width:768px) { body:not([class*="admin"]) .page-body { padding:16px !important; } }
