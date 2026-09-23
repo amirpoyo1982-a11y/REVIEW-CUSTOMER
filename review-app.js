@@ -5,7 +5,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   import {
     getFirestore, collection, addDoc, onSnapshot,
     query, where, orderBy, serverTimestamp,
-    doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, Timestamp
+    doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc, deleteField, Timestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
   import {
     getDatabase, ref as realtimeRef, onValue
@@ -687,8 +687,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     badgeGradientToggle.checked = gradientSedia !== false;
     badgeAnimatedToggle.checked = animasiSedia !== false;
     badgeRainbowToggle.checked = rainbowSedia === true;
-    customCheckEnabledToggle.checked = checkSedia === true;
-    customCheckColorInput.value = warnaHexSah(checkColorSedia, '#0284c7');
+    if (customCheckEnabledToggle) customCheckEnabledToggle.checked = checkSedia === true;
+    if (customCheckColorInput) customCheckColorInput.value = warnaHexSah(checkColorSedia, '#0284c7');
     kemaskiniBadgePreview();
     badgeOverlayBg.classList.add('show');
     badgePanelModal.classList.add('show');
@@ -711,11 +711,11 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       badgeGradient: badgeGradientToggle.checked,
       badgeRainbow: badgeRainbowToggle.checked
     });
-    customCheckLivePreview.style.setProperty('--check-color', customCheckColorInput.value);
-    customCheckLivePreview.classList.toggle('is-disabled', !customCheckEnabledToggle.checked);
+    customCheckLivePreview?.style.setProperty('--check-color', customCheckColorInput?.value || '#0284c7');
+    customCheckLivePreview?.classList.toggle('is-disabled', !customCheckEnabledToggle?.checked);
   }
   [badgeTextInput, badgeColorInput2, badgeColorInput, badgeTextColorInput, badgeGlowColorInput, badgeGradientToggle, badgeAnimatedToggle, badgeRainbowToggle, customCheckEnabledToggle, customCheckColorInput]
-    .forEach(el => el.addEventListener('input', kemaskiniBadgePreview));
+    .filter(Boolean).forEach(el => el.addEventListener('input', kemaskiniBadgePreview));
   badgeOverlayBg.addEventListener('click', tutupBadgeModal);
   btnCancelBadge.addEventListener('click', tutupBadgeModal);
 
@@ -895,8 +895,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       badgeGradient: teks ? badgeGradientToggle.checked : null,
       badgeAnimated: teks ? badgeAnimatedToggle.checked : null,
       badgeRainbow: teks ? badgeRainbowToggle.checked : null,
-      customCheckEnabled: customCheckEnabledToggle.checked,
-      customCheckColor: customCheckEnabledToggle.checked ? customCheckColorInput.value : null
+      customCheckEnabled: customCheckEnabledToggle?.checked === true,
+      customCheckColor: customCheckEnabledToggle?.checked === true ? customCheckColorInput?.value || '#0284c7' : null
     };
   }
 
@@ -910,7 +910,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       tutupBadgeModal();
     } catch(err) {
       console.error(err);
-      showToast("Gagal kemaskini badge.", "error");
+      showToast(`Firebase gagal simpan: ${err?.code || err?.message || "ralat tidak diketahui"}`, "error");
     }
   }
   btnSaveBadge.addEventListener('click', () => {
@@ -922,7 +922,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const payload = getBadgePayloadFromInputs();
     applyPayloadPilihan(payload, "Role & Centang", tutupBadgeModal);
   });
-  btnRemoveCustomCheck.addEventListener('click', () => {
+  btnRemoveCustomCheck?.addEventListener('click', () => {
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
     simpanBadgePayload({ customCheckEnabled:false, customCheckColor:null }, "Centang custom dibuang.", dataDoc);
   });
@@ -3283,10 +3283,36 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     document.querySelectorAll("[data-admin-center-tab]").forEach(btn=>btn.classList.toggle("active",btn.dataset.adminCenterTab===name));
     document.querySelectorAll("[data-admin-center-panel]").forEach(panel=>panel.classList.toggle("active",panel.dataset.adminCenterPanel===name));
   }
+  let adminReviewReloading = false;
+  async function reloadAdminReviews(showSuccess = false) {
+    if (!adminOk() || adminReviewReloading) return;
+    adminReviewReloading = true;
+    const refreshButton = document.getElementById("btnAdminRefreshDashboard");
+    if (refreshButton) {
+      refreshButton.disabled = true;
+      refreshButton.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Loading';
+    }
+    try {
+      const snapshot = await getDocs(q);
+      allDocs = uniqueReviewRecords(snapshot.docs.map(item => ({ id:item.id, ...item.data() })));
+      renderReviews();
+      refreshAdminCenter();
+      if (showSuccess) showToast(`${allDocs.length} rekod Firebase dimuatkan.`, "success");
+    } catch (err) {
+      console.error("Admin ratings load gagal:", err);
+      showToast(`Firebase ratings error: ${err?.code || err?.message || "ralat tidak diketahui"}`, "error");
+    } finally {
+      adminReviewReloading = false;
+      if (refreshButton) {
+        refreshButton.disabled = false;
+        refreshButton.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh';
+      }
+    }
+  }
   function openAdminReviewCenter(tab="dashboard"){
     if(!mintaAdmin())return;
     document.getElementById("adminPanelModal")?.classList.remove("show");document.getElementById("adminOverlayBg")?.classList.remove("show");
-    adminCenterOverlay?.classList.add("show");document.body.style.overflow="hidden";switchAdminCenterTab(tab);startAdminCenterStreams();refreshAdminCenter();
+    adminCenterOverlay?.classList.add("show");document.body.style.overflow="hidden";switchAdminCenterTab(tab);startAdminCenterStreams();refreshAdminCenter();reloadAdminReviews();
   }
   function closeAdminReviewCenter(){adminCenterOverlay?.classList.remove("show");document.body.style.removeProperty("overflow");}
   document.getElementById("btnOpenReviewCenter")?.addEventListener("click",()=>openAdminReviewCenter());
@@ -3390,7 +3416,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   document.getElementById("btnExportReviewsJson")?.addEventListener("click",()=>downloadAdminData(allDocs,`h4sx-reviews-${Date.now()}.json`));
   document.getElementById("btnExportReviewsCsv")?.addEventListener("click",()=>{const esc=v=>`"${String(v??"").replaceAll('"','""')}"`,csv=[["id","nama","bintang","ulasan","status","tarikh"].join(","),...allDocs.map(r=>[r.id,r.nama,clampBintang(r.bintang),r.ulasan,adminReviewStatus(r),reviewDateText(r)].map(esc).join(","))].join("\r\n");downloadAdminData(csv,`h4sx-reviews-${Date.now()}.csv`,`text/csv;charset=utf-8`);});
   document.getElementById("btnPrintAdminReport")?.addEventListener("click",()=>{const win=window.open("","_blank","width=900,height=700");if(!win)return;win.document.write(`<title>H4SX Review Report</title><style>body{font-family:Arial;padding:32px;color:#123}h1{color:#079bd4}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left}</style><h1>H4SX Review Report</h1><p>Dijana ${new Date().toLocaleString("ms-MY")}</p><table><tr><th>Nama</th><th>Rating</th><th>Status</th><th>Tarikh</th></tr>${allDocs.map(r=>`<tr><td>${escapeHtml(r.nama)}</td><td>${clampBintang(r.bintang)}/5</td><td>${adminReviewStatus(r)}</td><td>${reviewDateText(r)}</td></tr>`).join("")}</table>`);win.document.close();win.focus();win.print();});
-  document.getElementById("btnAdminRefreshDashboard")?.addEventListener("click",()=>{refreshAdminCenter();showToast("Dashboard dikemas kini.","success");});
+  document.getElementById("btnAdminRefreshDashboard")?.addEventListener("click",()=>reloadAdminReviews(true));
   function handleLowRatingAlerts(list){const lows=list.filter(r=>clampBintang(r.bintang)<=2);if(!lowAlertReady){lows.forEach(r=>knownLowReviews.add(r.id));lowAlertReady=true;return;}if(reviewAdminSettings.lowRatingAlert!==false&&adminOk())lows.filter(r=>!knownLowReviews.has(r.id)).forEach(r=>showToast(`Rating rendah baharu daripada ${r.nama||"pelanggan"}.`,"error"));lows.forEach(r=>knownLowReviews.add(r.id));}
   applyReviewAdminSettings();
 
