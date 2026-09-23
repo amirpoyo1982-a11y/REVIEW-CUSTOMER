@@ -1547,8 +1547,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const btnAdminLogin = document.getElementById('btnAdminLogin');
   const btnCancelAdminLogin = document.getElementById('btnCancelAdminLogin');
   const AUTO_ZIXU_CONFIG_ID = "auto_post_zixu";
-  const DEFAULT_ZIXU_MESSAGE = `📞 Link admin : https://wa.me/60193263016
-☎️ Support Service : https://wa.me/60193263016
+  const DEFAULT_ZIXU_MESSAGE = `📞 Link admin : https://wa.me/H4SXMY
+☎️ Support Service : https://wa.me/H4SXMY
 🛒 Website Market : https://www.h4sxmy.xyz/
 
 ⚠️ PERHATIAN ⚠️
@@ -3274,19 +3274,19 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       return "Sama-sama boss. Kalau nak hantar review, pastikan ada kod pengesahan dan pilih rating yang betul.";
     }
     if (wantsCode) {
-      return "Kod pengesahan review ialah kod unik daripada admin selepas pembelian. Satu kod hanya boleh digunakan untuk satu ulasan supaya review kekal sah.\n\nKalau belum ada kod, chat admin: https://wa.me/60193263016";
+      return "Kod pengesahan review ialah kod unik daripada admin selepas pembelian. Satu kod hanya boleh digunakan untuk satu ulasan supaya review kekal sah.\n\nKalau belum ada kod, chat admin: https://wa.me/H4SXMY";
     }
     if (wantsReview) {
       return "Cara hantar review:\n1. Masukkan kod pengesahan.\n2. Isi nama atau username.\n3. Pilih rating bintang.\n4. Tulis ulasan jika mahu, atau kosongkan untuk rating sahaja.\n5. Tekan Hantar Ulasan.";
     }
     if (wantsSafe) {
-      return "Betul boss, pembeli memang patut semak dulu. Page ni kumpul review pembeli sah dengan kod pengesahan. Kalau ragu, boleh baca ulasan pelanggan dan tanya admin sebelum beli.\n\nWhatsApp admin: https://wa.me/60193263016";
+      return "Betul boss, pembeli memang patut semak dulu. Page ni kumpul review pembeli sah dengan kod pengesahan. Kalau ragu, boleh baca ulasan pelanggan dan tanya admin sebelum beli.\n\nWhatsApp admin: https://wa.me/H4SXMY";
     }
     if (wantsMain) {
       return "Alamat rasmi H4SX:\nWebsite utama untuk tengok item dan produk:\nhttps://www.h4sxmy.xyz/\n\nPage review untuk tengok pengalaman customer:\nhttps://review.h4sxmy.xyz/";
     }
     if (wantsAdmin) {
-      return "Boleh boss. Untuk tanya lanjut atau minta kod review, terus WhatsApp admin H4SX:\nhttps://wa.me/60193263016";
+      return "Boleh boss. Untuk tanya lanjut atau minta kod review, terus WhatsApp admin H4SX:\nhttps://wa.me/H4SXMY";
     }
     return "Boleh boss, saya cuba bantu. Untuk page review ni, soalan paling sesuai ialah pasal kod pengesahan, cara hantar ulasan, rating, website utama, atau WhatsApp admin.";
   }
