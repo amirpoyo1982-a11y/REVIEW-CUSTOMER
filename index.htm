@@ -381,7 +381,11 @@
         <input type="text" id="customerEmojiInput" maxlength="4" placeholder="H">
       </div>
     </div>
+    <label for="customerImageUrl">Link Gambar Profil</label>
+    <input type="url" id="customerImageUrl" placeholder="https://i.imgur.com/gambar.png" maxlength="2048">
+    <small>Letak link terus ke gambar, kemudian tekan Preview. Simpan untuk kemaskini ulasan ini.</small>
     <div class="customer-tool-row">
+      <button type="button" class="admin-btn customer-tool-btn" id="btnPreviewCustomerImage">Preview Gambar</button>
       <button type="button" class="admin-btn customer-tool-btn" id="btnSuggestCustomerProfile">Suggest Profil</button>
       <button type="button" class="admin-btn customer-tool-btn danger" id="btnRemoveCustomerImage">Buang Gambar Profil</button>
     </div>
@@ -882,7 +886,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=verified-control-20260923"></script>
+<script type="module" src="review-app.js?v=profile-image-link-20260923"></script>
 </body>
 </html>
 

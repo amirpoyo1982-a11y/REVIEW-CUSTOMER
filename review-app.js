@@ -1017,6 +1017,51 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   };
   let editingCustomerId = null;
   let removeCustomerImage = false;
+  const customerImageUrl = document.getElementById('customerImageUrl');
+  const btnPreviewCustomerImage = document.getElementById('btnPreviewCustomerImage');
+  let originalCustomerImage = null;
+  let customerImageChanged = false;
+
+  function customerImageLink() {
+    const value = customerImageUrl.value.trim();
+    if (!value) return null;
+    try {
+      const url = new URL(value);
+      if (url.protocol === 'https:' && !url.username && !url.password) return url.href;
+    } catch (_) {}
+    throw new Error('Letak link gambar HTTPS yang sah.');
+  }
+
+  function previewCustomerImage(src) {
+    customerAvatarPreview.querySelector('img')?.remove();
+    customerAvatarText.style.display = '';
+    if (!src) return;
+    const img = new Image();
+    img.alt = 'Gambar profil pelanggan';
+    img.className = 'av-img';
+    img.referrerPolicy = 'no-referrer';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:inherit';
+    img.onload = () => { if (img.parentNode) customerAvatarText.style.display = 'none'; };
+    img.onerror = () => {
+      if (!img.parentNode) return;
+      img.remove();
+      customerAvatarText.style.display = '';
+      showToast('Gambar tidak dapat dimuatkan. Semak link terus ke gambar.', 'error');
+    };
+    customerAvatarPreview.appendChild(img);
+    img.src = src;
+  }
+  customerImageUrl.addEventListener('input', () => {
+    customerImageChanged = true;
+    removeCustomerImage = !customerImageUrl.value.trim();
+    btnRemoveCustomerImage.disabled = false;
+    btnRemoveCustomerImage.textContent = 'Buang Gambar Profil';
+    previewCustomerImage(null);
+  });
+  btnPreviewCustomerImage.addEventListener('click', () => {
+    try { previewCustomerImage(customerImageLink()); }
+    catch (err) { showToast(err.message, 'error'); }
+  });
 
   function kemaskiniCustomerPreview() {
     const nama = customerNameInput.value.trim() || 'Pelanggan';
@@ -1067,6 +1112,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     editingCustomerId = id;
     removeCustomerImage = false;
     customerNameInput.value = nama;
+    originalCustomerImage = data.profileImg || null;
+    customerImageChanged = false;
+    customerImageUrl.value = /^https:\/\//i.test(originalCustomerImage || '') ? originalCustomerImage : '';
+    previewCustomerImage(originalCustomerImage);
     customerColorInput.value = warnaHexSah(data.warnaProfil, warnaAuto(nama));
     customerEmojiInput.value = data.emojiProfil || nama.charAt(0).toUpperCase();
     nameColorEnabledToggle.checked = data.nameColorEnabled === true;
@@ -1152,12 +1201,18 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     customerColorInput.value = pilihan.warna;
     customerEmojiInput.value = nama.charAt(0).toUpperCase() || pilihan.emoji;
     removeCustomerImage = true;
+    customerImageUrl.value = '';
+    customerImageChanged = true;
+    previewCustomerImage(null);
     btnRemoveCustomerImage.disabled = false;
     btnRemoveCustomerImage.textContent = 'Gambar akan dibuang';
     kemaskiniCustomerPreview();
   });
   btnRemoveCustomerImage.addEventListener('click', () => {
     removeCustomerImage = true;
+    customerImageUrl.value = '';
+    customerImageChanged = true;
+    previewCustomerImage(null);
     btnRemoveCustomerImage.disabled = false;
     btnRemoveCustomerImage.textContent = 'Gambar akan dibuang';
     kemaskiniCustomerPreview();
@@ -1202,6 +1257,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       reviewCollapseLabel: reviewCollapseLabelInput.value.trim() || 'Tutup ↑'
     };
     if (removeCustomerImage) payload.profileImg = null;
+    else if (customerImageChanged) {
+      try { payload.profileImg = customerImageLink(); }
+      catch (err) { showToast(err.message, 'error'); customerImageUrl.focus(); return; }
+    }
     simpanCustomerPayload(payload, "Profil pelanggan berjaya dikemaskini.", dataDoc);
   });
   function getNamePayloadFromInputs() {
