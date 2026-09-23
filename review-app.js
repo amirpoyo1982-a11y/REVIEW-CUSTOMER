@@ -7,6 +7,9 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     query, where, orderBy, serverTimestamp,
     doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, Timestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import {
+    getDatabase, ref as realtimeRef, onValue
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
   // ── Firebase ──────────────────────────────────────────────────
   const app = initializeApp({
@@ -19,6 +22,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     measurementId:"G-J9QWB39V87"
   });
   const db = getFirestore(app);
+  const realtimeDb = getDatabase(app, "https://h4sx-6712c-default-rtdb.asia-southeast1.firebasedatabase.app");
   const auth = getAuth(app);
   const TURNSTILE_SITE_KEY = '0x4AAAAAAECCSulruVRqWTEI';
   let reviewTurnstileWidgetId = null;
@@ -439,7 +443,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
 
   let reviewClosureCopy = {};
 
-  function paparKedaiTutup(icon, tajuk, mesej, jamTeks) {
+  function paparKedaiTutup(icon, tajuk, mesej, jamTeks, typeOverride = '') {
     const fallbackTitle = tajuk;
     if (fallbackTitle === 'Dalam Penyelenggaraan') {
       tajuk = reviewClosureCopy.maintenanceTitle || tajuk;
@@ -453,7 +457,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     document.querySelector('.shop-closed-title').textContent = tajuk;
     document.getElementById('shopClosedMsg').textContent = mesej;
     const overlayEl = document.getElementById('shopClosedOverlay');
-    const type = /luar waktu/i.test(fallbackTitle) ? 'hours' : (/(penyelenggaraan|selenggara|maintenance|maintain|update)/i.test(fallbackTitle) ? 'maintenance' : 'closed');
+    const type = typeOverride || (/luar waktu/i.test(fallbackTitle) ? 'hours' : (/(penyelenggaraan|selenggara|maintenance|maintain|update)/i.test(fallbackTitle) ? 'maintenance' : 'closed'));
     overlayEl?.setAttribute('data-closed-type', type);
     const timeEl = document.getElementById('shopClosedTime');
     if (jamTeks) {
@@ -465,14 +469,18 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     overlayEl?.classList.add('active');
   }
 
-  async function semakStatusKedai() {
+  async function semakStatusKedai(realtimeConfig = null) {
     if (isPreviewBypass()) {
       document.getElementById('shopClosedOverlay').classList.remove('active');
       return;
     }
     try {
-      const res = await fetch(KEDAI_GIST_URL + '?t=' + Date.now(), { cache: "no-store" });
-      const data = await res.json();
+      let data = realtimeConfig;
+      if (!data) {
+        const res = await fetch(KEDAI_GIST_URL + '?t=' + Date.now(), { cache: "no-store" });
+        if (!res.ok) throw new Error('Gagal baca fallback config (' + res.status + ')');
+        data = await res.json();
+      }
       reviewClosureCopy = {
         closedTitle: String(data?.tajuk_tutup || data?.closed_title || '').trim(),
         closedMessage: String(data?.mesej_tutup || data?.closed_message || '').trim(),
@@ -492,14 +500,15 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
           '🔧',
           data.review_maintenance_title || 'Ulasan Dalam Penyelenggaraan',
           data.review_maintenance_message || data.review_maintenance_msg || 'Sistem ulasan sedang diproses dan dikemas semula. Kemungkinan besar feature ulasan akan berfungsi kembali dalam sekitar 2 hari lagi.',
-          data.business_hours_text
+          data.business_hours_text,
+          'maintenance'
         );
         return;
       }
 
       // 2. Mod penyelenggaraan global — untuk tutup semua website kalau perlu.
       if (data && flagOn(data.maintenance)) {
-        paparKedaiTutup('🛠️', 'Dalam Penyelenggaraan', 'Kedai sedang dalam penyelenggaraan buat masa ini. Sila cuba lagi sebentar lagi.', data.business_hours_text);
+        paparKedaiTutup('🛠️', 'Dalam Penyelenggaraan', 'Kedai sedang dalam penyelenggaraan buat masa ini. Sila cuba lagi sebentar lagi.', data.business_hours_text, 'maintenance');
         return;
       }
 
@@ -528,8 +537,21 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       console.log('Gagal semak status kedai', e);
     }
   }
-  semakStatusKedai();
-  setInterval(semakStatusKedai, 60000); // Semak setiap 1 minit
+  let realtimeStoreConfigConnected = false;
+  onValue(realtimeRef(realtimeDb, 'store/config'), snapshot => {
+    realtimeStoreConfigConnected = true;
+    semakStatusKedai(snapshot.exists() ? snapshot.val() : null);
+  }, error => {
+    realtimeStoreConfigConnected = false;
+    console.warn('Realtime config review gagal, guna fallback:', error);
+    semakStatusKedai();
+  });
+  setTimeout(() => {
+    if (!realtimeStoreConfigConnected) semakStatusKedai();
+  }, 3500);
+  setInterval(() => {
+    if (!realtimeStoreConfigConnected) semakStatusKedai();
+  }, 60000);
 
   // ── Announcement Bar (Firebase) ───────────────────────────────
   const topAnnounceEl = document.getElementById('topAnnouncement');
@@ -1622,6 +1644,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       return;
     }
     updateAdminUi();
+    syncReviewCodesListener();
     syncVisitStatsListener();
     syncReviewVoteAdmin();
     if (latestCodeSnapshot) renderCodeListFromSnapshot(latestCodeSnapshot);
@@ -1781,14 +1804,25 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       btn.addEventListener("click", () => copyText(btn.dataset.code));
     });
   }
-  onSnapshot(collection(db, "review_codes"), snapshot => {
-    latestCodeSnapshot = snapshot;
-    renderCodeListFromSnapshot(snapshot);
-    renderAdminCodes();
-  }, err => {
-    console.error(err);
-    if (adminCodeList) adminCodeList.textContent = "Gagal load kod. Semak rules Firebase.";
-  });
+  let stopReviewCodesListener = null;
+  function syncReviewCodesListener() {
+    if (!adminOk()) {
+      if (stopReviewCodesListener) stopReviewCodesListener();
+      stopReviewCodesListener = null;
+      latestCodeSnapshot = null;
+      if (adminCodeList) adminCodeList.textContent = "Login admin untuk lihat kod.";
+      return;
+    }
+    if (stopReviewCodesListener) return;
+    stopReviewCodesListener = onSnapshot(collection(db, "review_codes"), snapshot => {
+      latestCodeSnapshot = snapshot;
+      renderCodeListFromSnapshot(snapshot);
+      renderAdminCodes();
+    }, err => {
+      console.warn("Gagal load kod review admin:", err);
+      if (adminCodeList) adminCodeList.textContent = "Gagal load kod. Semak rules Firebase.";
+    });
+  }
   btnGenerateCodes.addEventListener("click", generateReviewCodes);
   btnRefreshCodes.addEventListener("click", () => showToast("Senarai kod auto update dari Firebase.", "success"));
 
@@ -1940,6 +1974,9 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   const emojiRow        = document.getElementById("emojiRow");
   const charCounter     = document.getElementById("charCounter");
   const sortSelect      = document.getElementById("sortSelect");
+  const reviewSearchInput = document.getElementById("reviewSearchInput");
+  const btnClearReviewSearch = document.getElementById("btnClearReviewSearch");
+  const reviewResultCount = document.getElementById("reviewResultCount");
   const btnReviewScreenshot = document.getElementById("btnReviewScreenshot");
   const fileInput       = document.getElementById("fileInput");
   const dropZone        = document.getElementById("dropZone");
@@ -2524,7 +2561,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   }
 
   // ── Filter & sort ─────────────────────────────────────────────
-  let filterStar="all", sortMode="newest", allDocs=[];
+  let filterStar="all", sortMode="newest", reviewSearchTerm="", allDocs=[];
   let directReviewFocusHandled = false;
   function reviewRecordTime(value) {
     if (typeof value?.toMillis === "function") return value.toMillis();
@@ -2623,6 +2660,18 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     });
   });
   sortSelect.addEventListener("change",()=>{ sortMode=sortSelect.value; renderReviews(); });
+  reviewSearchInput?.addEventListener("input", () => {
+    reviewSearchTerm = reviewSearchInput.value.trim().toLocaleLowerCase("ms");
+    if (btnClearReviewSearch) btnClearReviewSearch.hidden = !reviewSearchTerm;
+    renderReviews();
+  });
+  btnClearReviewSearch?.addEventListener("click", () => {
+    reviewSearchInput.value = "";
+    reviewSearchTerm = "";
+    btnClearReviewSearch.hidden = true;
+    reviewSearchInput.focus();
+    renderReviews();
+  });
 
   // Selamatkan diri drpd data rosak/prank (cth: bintang disave sbg 999 terus
   // dari Firebase console) — sentiasa clamp ke julat sah 0–5 sebelum digunakan.
@@ -2671,6 +2720,15 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     if (filterStar!=="all") {
       list = filterStar==="12" ? list.filter(d=>clampBintang(d.bintang)<=2) : list.filter(d=>clampBintang(d.bintang)===parseInt(filterStar));
     }
+    if (reviewSearchTerm) {
+      list = list.filter(data => [
+        data.nama,
+        data.ulasan,
+        data.balasanAdmin,
+        data.badgeText,
+        data.medalText
+      ].some(value => String(value || "").toLocaleLowerCase("ms").includes(reviewSearchTerm)));
+    }
     if (sortMode==="highest") list.sort((a,b)=>clampBintang(b.bintang)-clampBintang(a.bintang));
     else if (sortMode==="lowest") list.sort((a,b)=>clampBintang(a.bintang)-clampBintang(b.bintang));
 
@@ -2688,9 +2746,16 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   function renderReviews() {
     const list = getCurrentReviewList();
 
+    if (reviewResultCount) {
+      const totalPublished = allDocs.filter(data => !["hidden", "rejected"].includes(String(data.moderationStatus || "published"))).length;
+      reviewResultCount.textContent = reviewSearchTerm || filterStar !== "all"
+        ? `${list.length} daripada ${totalPublished} ulasan`
+        : `${list.length} ulasan`;
+    }
+
     kotakPaparan.innerHTML="";
     if (!list.length) {
-      kotakPaparan.innerHTML=`<div class="no-reviews"><span class="no-icon">🔍</span><span>Tiada ulasan untuk penapis ini.</span></div>`;
+      kotakPaparan.innerHTML=`<div class="no-reviews"><span class="no-icon">🔍</span><span>${reviewSearchTerm ? "Tiada ulasan sepadan dengan carian anda." : "Tiada ulasan untuk penapis ini."}</span></div>`;
       return;
     }
 

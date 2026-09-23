@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, minimum-scale=0.9, maximum-scale=0.9, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ulasan Pelanggan — H4SX STORE (Official Review Hub)</title>
   <meta name="description" content="Semak rating pembeli disahkan, ulasan kedai digital Roblox &amp; Free Fire dipercayai, serta bukti transaksi telus di H4SX STORE.">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -52,11 +52,11 @@
       } catch(e) {}
     })();
   </script>
-<link rel="stylesheet" href="review-style.css?v=review-report-fix-20260802">
+<link rel="stylesheet" href="review-style.css?v=review-rewrite-v3-20260923">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 </head>
-<body>
+<body class="review-rewrite-v3">
 
 <noscript>
   <main>
@@ -587,8 +587,8 @@
   <div class="hero-band-inner">
     <div class="hero-copy-block">
       <div class="hero-eyebrow"><i class="fa-solid fa-shield-heart"></i> Review hub rasmi H4SX</div>
-      <h1>Bukti pembeli.<br><span>Cerita sebenar.</span></h1>
-      <p class="hero-sub">Satu ruang khas untuk pengalaman pelanggan, rating yang disahkan dan balasan terus daripada admin H4SX.</p>
+      <h1>Suara pelanggan.<br><span>Bukti nyata.</span></h1>
+      <p class="hero-sub">Semak pengalaman pembeli sebenar, rating yang disahkan dan balasan terus daripada pasukan H4SX—semuanya dalam satu pusat review.</p>
       <div class="hero-actions">
         <button class="btn-scroll-reviews" id="btnScrollUlasan">Teroka Ulasan <span class="arrow">↓</span></button>
         <button class="hero-share-link" type="button" onclick="shareH4sxReview()"><i class="fa-solid fa-share-nodes"></i> Ajak Kawan</button>
@@ -604,6 +604,13 @@
 </div>
 
 <div class="page-body">
+
+  <section class="review-journey" aria-label="Cara sistem review H4SX berfungsi">
+    <div class="review-journey-intro"><span>ALIRAN REVIEW</span><strong>Mudah, sah dan telus.</strong></div>
+    <article><i class="fa-solid fa-receipt"></i><div><b>01</b><strong>Dapatkan kod</strong><small>Kod unik diberi selepas pembelian.</small></div></article>
+    <article><i class="fa-solid fa-star"></i><div><b>02</b><strong>Kongsi pengalaman</strong><small>Pilih rating dan tulis jika mahu.</small></div></article>
+    <article><i class="fa-solid fa-shield-check"></i><div><b>03</b><strong>Review disahkan</strong><small>Terus muncul dalam komuniti H4SX.</small></div></article>
+  </section>
 
   <!-- ══ PROMO BANNER FROM GIST ══ -->
   <section class="review-promo-shell" id="reviewPromoShell" hidden aria-label="Promosi H4SX Store">
@@ -790,6 +797,15 @@
           <button class="btn-review-ss" id="btnReviewScreenshot" type="button">Copy SS</button>
         </div>
 
+        <div class="review-search-row" role="search">
+          <label class="review-search-box" for="reviewSearchInput">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="reviewSearchInput" type="search" placeholder="Cari nama atau isi ulasan..." autocomplete="off" maxlength="80">
+            <button id="btnClearReviewSearch" type="button" aria-label="Kosongkan carian" hidden><i class="fa-solid fa-xmark"></i></button>
+          </label>
+          <span class="review-result-count" id="reviewResultCount" aria-live="polite">Memuatkan ulasan...</span>
+        </div>
+
         <div class="filter-bar">
           <button class="filter-btn active" data-filter="all">Semua</button>
           <button class="filter-btn" data-filter="5">⭐⭐⭐⭐⭐</button>
@@ -848,7 +864,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=review-report-fix-20260802"></script>
+<script type="module" src="review-app.js?v=review-rewrite-v3-20260923"></script>
 </body>
 </html>
 
