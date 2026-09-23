@@ -334,10 +334,18 @@
       <label class="badge-color-field custom-check-color-field">Warna <input type="color" id="customCheckColorInput" value="#0284c7"></label>
       <span class="custom-check" id="customCheckLivePreview" aria-label="Preview centang"><i class="fa-solid fa-circle-check"></i></span>
     </div>
+    <div class="custom-check-designer">
+      <div>
+        <strong>Verified Buyer</strong>
+        <small>Boleh disembunyikan untuk review ini sahaja.</small>
+      </div>
+      <label class="badge-switch"><input type="checkbox" id="verifiedBuyerEnabledToggle" checked> Tunjukkan</label>
+    </div>
   </div>
   <div class="admin-btn-row">
-    <button class="admin-btn admin-btn-save" id="btnSaveBadge">Simpan Role &amp; Centang</button>
+    <button class="admin-btn admin-btn-save" id="btnSaveBadge">Simpan Tetapan</button>
     <button class="admin-btn bulk-apply-btn" id="btnApplyBadgeAll">Pilih Apply</button>
+    <button class="admin-btn" id="btnRemoveVerifiedBuyer" style="background:#fff7e6;color:#9a5b00;">Buang Verified Buyer</button>
     <button class="admin-btn" id="btnRemoveCustomCheck" style="background:#eaf7ff;color:#0369a1;">Buang Centang</button>
     <button class="admin-btn" id="btnRemoveBadge" style="background:#fef0f0;color:#b83232;">Buang Badge</button>
     <button class="admin-btn admin-btn-close" id="btnCancelBadge">Batal</button>
@@ -874,7 +882,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=firebase-admin-fix-20260923"></script>
+<script type="module" src="review-app.js?v=verified-control-20260923"></script>
 </body>
 </html>
 

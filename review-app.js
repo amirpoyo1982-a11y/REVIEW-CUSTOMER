@@ -607,6 +607,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const customCheckEnabledToggle = document.getElementById('customCheckEnabledToggle');
   const customCheckColorInput = document.getElementById('customCheckColorInput');
   const customCheckLivePreview = document.getElementById('customCheckLivePreview');
+  const verifiedBuyerEnabledToggle = document.getElementById('verifiedBuyerEnabledToggle');
+  const btnRemoveVerifiedBuyer = document.getElementById('btnRemoveVerifiedBuyer');
   const btnSaveBadge         = document.getElementById('btnSaveBadge');
   const btnApplyBadgeAll     = document.getElementById('btnApplyBadgeAll');
   const btnRemoveCustomCheck = document.getElementById('btnRemoveCustomCheck');
@@ -677,7 +679,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const color = warnaHexSah(data.customCheckColor, '#0284c7');
     return `<span class="custom-check" style="--check-color:${color}" title="Disahkan H4SX" aria-label="Disahkan H4SX"><i class="fa-solid fa-circle-check"></i></span>`;
   }
-  function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia, rainbowSedia, checkSedia, checkColorSedia) {
+  function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia, rainbowSedia, checkSedia, checkColorSedia, verifiedDisorok) {
     editingBadgeId = id;
     badgeTextInput.value = teksSedia || '';
     badgeColorInput.value = warnaHexSah(warnaSedia, '#2fa8e0');
@@ -689,6 +691,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     badgeRainbowToggle.checked = rainbowSedia === true;
     if (customCheckEnabledToggle) customCheckEnabledToggle.checked = checkSedia === true;
     if (customCheckColorInput) customCheckColorInput.value = warnaHexSah(checkColorSedia, '#0284c7');
+    if (verifiedBuyerEnabledToggle) verifiedBuyerEnabledToggle.checked = verifiedDisorok !== true;
     kemaskiniBadgePreview();
     badgeOverlayBg.classList.add('show');
     badgePanelModal.classList.add('show');
@@ -896,7 +899,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       badgeAnimated: teks ? badgeAnimatedToggle.checked : null,
       badgeRainbow: teks ? badgeRainbowToggle.checked : null,
       customCheckEnabled: customCheckEnabledToggle?.checked === true,
-      customCheckColor: customCheckEnabledToggle?.checked === true ? customCheckColorInput?.value || '#0284c7' : null
+      customCheckColor: customCheckEnabledToggle?.checked === true ? customCheckColorInput?.value || '#0284c7' : null,
+      hideVerifiedBadge: verifiedBuyerEnabledToggle?.checked === false
     };
   }
 
@@ -921,6 +925,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   btnApplyBadgeAll.addEventListener('click', () => {
     const payload = getBadgePayloadFromInputs();
     applyPayloadPilihan(payload, "Role & Centang", tutupBadgeModal);
+  });
+  btnRemoveVerifiedBuyer?.addEventListener('click', () => {
+    const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
+    simpanBadgePayload({ hideVerifiedBadge:true }, "Verified Buyer dibuang untuk review ini.", dataDoc);
   });
   btnRemoveCustomCheck?.addEventListener('click', () => {
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
@@ -2819,7 +2827,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
         ? `<span class="${customBadgeClass}" style="${customBadgeStyle}">${escapeHtml(data.badgeText)}</span>`
         : isReviewAdmin 
           ? `<span class="verified-badge custom-badge is-animated" style="${badgeStyle({ badgeColor:'#2fa8e0', badgeColor2:'#0f2a45', badgeTextColor:'#ffffff', badgeGlowColor:'#2fa8e0', badgeGradient:true })}">ADMIN RASMI</span>` 
-          : `<span class="verified-badge">Verified</span>`;
+          : data.hideVerifiedBadge === true ? "" : `<span class="verified-badge">Verified</span>`;
 
       const card=document.createElement("div");
       card.className="review-card"+(data.pinned===true?" is-pinned":"")+(data.featured===true?" is-featured":"");
@@ -2963,7 +2971,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       btnSaveEditTime.addEventListener("click",()=>simpanEditMasa(id, editTimeInput.value, btnSaveEditTime, data));
       btnBadge.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
-        bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor, data.badgeRainbow, data.customCheckEnabled, data.customCheckColor);
+        bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor, data.badgeRainbow, data.customCheckEnabled, data.customCheckColor, data.hideVerifiedBadge);
       });
       btnProfile.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
