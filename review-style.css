@@ -4245,6 +4245,48 @@ body {
   #btnUseRatingSuggestion { width: 100%; }
 }
 
+/* Admin-controlled verification check. */
+.custom-check {
+  --check-color: #0284c7;
+  flex: 0 0 auto;
+  width: 19px;
+  height: 19px;
+  display: inline-grid;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--check-color);
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--check-color) 38%, transparent), 0 0 0 1px color-mix(in srgb, var(--check-color) 30%, transparent);
+  font-size: 9px;
+  vertical-align: middle;
+}
+.custom-check i { line-height: 1; }
+.custom-check-designer {
+  display: grid;
+  grid-template-columns: minmax(160px,1fr) auto auto 36px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line-mid);
+  border-radius: 10px;
+  background: rgba(47,168,224,.06);
+}
+.custom-check-designer > div { min-width: 0; display: grid; gap: 2px; }
+.custom-check-designer strong { color: var(--navy); font-size: 12px; }
+.custom-check-designer small { color: var(--text-dim); font-size: 9px; line-height: 1.35; }
+.custom-check-color-field { display: flex !important; align-items: center; gap: 7px; margin: 0 !important; }
+.custom-check-color-field input { width: 34px !important; height: 30px !important; }
+.custom-check-designer .custom-check { width: 26px; height: 26px; font-size: 12px; }
+.custom-check.is-disabled { opacity: .28; filter: grayscale(1); }
+:root[data-theme="dark"] .custom-check-designer { border-color: #29445a; background: rgba(14,165,233,.08); }
+:root[data-theme="dark"] .custom-check-designer strong { color: #eaf8ff; }
+@media (max-width: 620px) {
+  .custom-check-designer { grid-template-columns: 1fr auto; }
+  .custom-check-designer > div { grid-column: 1 / -1; }
+}
+
 /* ================================================================
    H4SX REVIEW REWRITE V3
    Full layout rewrite. Existing Firebase/admin behaviour is retained.
@@ -5172,7 +5214,7 @@ html[data-admin-auth="true"] [data-admin-ctrl-row] .admin-action-btn {
 .featured-review-badge { padding:3px 7px; border:1px solid #f1c85b; border-radius:10px; color:#8a6300; background:#fff5c8; font-size:8px; font-weight:900; text-transform:uppercase; }
 .review-card.is-featured { border-color:#efca65; box-shadow:0 8px 24px rgba(212,164,37,.12); }
 html.hide-review-images .btn-see-feedback { display:none !important; }
-html.hide-review-badges .verified-badge, html.hide-review-badges .custom-badge, html.hide-review-badges .medal-badge, html.hide-review-badges .featured-review-badge { display:none !important; }
+html.hide-review-badges .verified-badge, html.hide-review-badges .custom-badge, html.hide-review-badges .custom-check, html.hide-review-badges .medal-badge, html.hide-review-badges .featured-review-badge { display:none !important; }
 html.hide-review-replies .admin-reply-view-toggle, html.hide-review-replies .admin-reply-box { display:none !important; }
 
 /* Review discovery upgrade: scoped styles only, so admin controls keep their own design. */

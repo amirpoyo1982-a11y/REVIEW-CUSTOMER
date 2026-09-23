@@ -604,8 +604,12 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const badgeAnimatedToggle  = document.getElementById('badgeAnimatedToggle');
   const badgeRainbowToggle   = document.getElementById('badgeRainbowToggle');
   const badgeLivePreview     = document.getElementById('badgeLivePreview');
+  const customCheckEnabledToggle = document.getElementById('customCheckEnabledToggle');
+  const customCheckColorInput = document.getElementById('customCheckColorInput');
+  const customCheckLivePreview = document.getElementById('customCheckLivePreview');
   const btnSaveBadge         = document.getElementById('btnSaveBadge');
   const btnApplyBadgeAll     = document.getElementById('btnApplyBadgeAll');
+  const btnRemoveCustomCheck = document.getElementById('btnRemoveCustomCheck');
   const btnRemoveBadge       = document.getElementById('btnRemoveBadge');
   const btnCancelBadge       = document.getElementById('btnCancelBadge');
   let editingBadgeId = null;
@@ -668,7 +672,12 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const rainbow = data.medalRainbow === true ? ' is-rainbow' : '';
     return `<span class="medal-badge medal-${shape} medal-${size}${animated}${rainbow}" style="${medalStyle(data)}">${escapeHtml(teks)}</span>`;
   }
-  function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia, rainbowSedia) {
+  function customCheckMarkup(data = {}) {
+    if (data.customCheckEnabled !== true) return '';
+    const color = warnaHexSah(data.customCheckColor, '#0284c7');
+    return `<span class="custom-check" style="--check-color:${color}" title="Pelanggan disahkan H4SX" aria-label="Pelanggan disahkan H4SX"><i class="fa-solid fa-check"></i></span>`;
+  }
+  function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia, rainbowSedia, checkSedia, checkColorSedia) {
     editingBadgeId = id;
     badgeTextInput.value = teksSedia || '';
     badgeColorInput.value = warnaHexSah(warnaSedia, '#2fa8e0');
@@ -678,6 +687,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     badgeGradientToggle.checked = gradientSedia !== false;
     badgeAnimatedToggle.checked = animasiSedia !== false;
     badgeRainbowToggle.checked = rainbowSedia === true;
+    customCheckEnabledToggle.checked = checkSedia === true;
+    customCheckColorInput.value = warnaHexSah(checkColorSedia, '#0284c7');
     kemaskiniBadgePreview();
     badgeOverlayBg.classList.add('show');
     badgePanelModal.classList.add('show');
@@ -700,8 +711,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       badgeGradient: badgeGradientToggle.checked,
       badgeRainbow: badgeRainbowToggle.checked
     });
+    customCheckLivePreview.style.setProperty('--check-color', customCheckColorInput.value);
+    customCheckLivePreview.classList.toggle('is-disabled', !customCheckEnabledToggle.checked);
   }
-  [badgeTextInput, badgeColorInput2, badgeColorInput, badgeTextColorInput, badgeGlowColorInput, badgeGradientToggle, badgeAnimatedToggle, badgeRainbowToggle]
+  [badgeTextInput, badgeColorInput2, badgeColorInput, badgeTextColorInput, badgeGlowColorInput, badgeGradientToggle, badgeAnimatedToggle, badgeRainbowToggle, customCheckEnabledToggle, customCheckColorInput]
     .forEach(el => el.addEventListener('input', kemaskiniBadgePreview));
   badgeOverlayBg.addEventListener('click', tutupBadgeModal);
   btnCancelBadge.addEventListener('click', tutupBadgeModal);
@@ -873,16 +886,17 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
 
   function getBadgePayloadFromInputs() {
     const teks = badgeTextInput.value.trim();
-    if (!teks) return null;
     return {
-      badgeText: teks,
-      badgeColor: badgeColorInput.value,
-      badgeColor2: badgeColorInput2.value,
-      badgeTextColor: badgeTextColorInput.value,
-      badgeGlowColor: badgeGlowColorInput.value,
-      badgeGradient: badgeGradientToggle.checked,
-      badgeAnimated: badgeAnimatedToggle.checked,
-      badgeRainbow: badgeRainbowToggle.checked
+      badgeText: teks || null,
+      badgeColor: teks ? badgeColorInput.value : null,
+      badgeColor2: teks ? badgeColorInput2.value : null,
+      badgeTextColor: teks ? badgeTextColorInput.value : null,
+      badgeGlowColor: teks ? badgeGlowColorInput.value : null,
+      badgeGradient: teks ? badgeGradientToggle.checked : null,
+      badgeAnimated: teks ? badgeAnimatedToggle.checked : null,
+      badgeRainbow: teks ? badgeRainbowToggle.checked : null,
+      customCheckEnabled: customCheckEnabledToggle.checked,
+      customCheckColor: customCheckEnabledToggle.checked ? customCheckColorInput.value : null
     };
   }
 
@@ -901,14 +915,16 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   }
   btnSaveBadge.addEventListener('click', () => {
     const payload = getBadgePayloadFromInputs();
-    if (!payload) { showToast("Taip teks badge dulu, atau guna 'Buang Badge'.", "error"); return; }
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
-    simpanBadgePayload(payload, "Badge berjaya disimpan!", dataDoc);
+    simpanBadgePayload(payload, "Role dan centang berjaya disimpan!", dataDoc);
   });
   btnApplyBadgeAll.addEventListener('click', () => {
     const payload = getBadgePayloadFromInputs();
-    if (!payload) { showToast("Taip teks role dulu sebelum apply semua.", "error"); return; }
-    applyPayloadPilihan(payload, "Role", tutupBadgeModal);
+    applyPayloadPilihan(payload, "Role & Centang", tutupBadgeModal);
+  });
+  btnRemoveCustomCheck.addEventListener('click', () => {
+    const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
+    simpanBadgePayload({ customCheckEnabled:false, customCheckColor:null }, "Centang custom dibuang.", dataDoc);
   });
   btnRemoveBadge.addEventListener('click', () => {
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
@@ -2817,6 +2833,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
               ${data.featured===true?`<span class="featured-review-badge">Pilihan H4SX</span>`:""}
               ${data.pinned===true?`<span class="pin-badge">📌 Disematkan</span>`:""}
               <span class="${nameClass(data)}" style="${nameStyle(data, isReviewAdmin)}">${escapeHtml(namaDisorok)}</span>
+              ${customCheckMarkup(data)}
               ${medalMarkup(data)}
               ${(rawBintang<0||rawBintang>5)?`<span style="background:linear-gradient(90deg,#f0a500,#e05252);color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.3px;">${rawBintang} Bintang</span>`:""}
               ${verifiedTag}
@@ -2862,7 +2879,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
             <button class="btn-edit-masa admin-action-btn admin-action-time" title="Edit tarikh masa">Masa</button>
             <button class="btn-profile-ulasan admin-action-btn admin-action-profile" title="Edit nama, profil dan pingat">Profile</button>
             <button class="btn-pin-ulasan admin-action-btn admin-action-pin${data.pinned===true?" is-active":""}" title="Semat ulasan">${data.pinned===true?"Unpin":"Pin"}</button>
-            <button class="btn-badge-ulasan admin-action-btn admin-action-badge" title="Edit role badge">Role</button>
+            <button class="btn-badge-ulasan admin-action-btn admin-action-badge" title="Edit role dan custom centang">Role ✓</button>
             <button class="btn-padam-ulasan admin-action-btn admin-action-delete" type="button" title="Padam ulasan secara kekal" aria-label="Padam ulasan">Padam</button>
           </div>
           <div class="admin-reply-form" data-nosnippet>
@@ -2946,7 +2963,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       btnSaveEditTime.addEventListener("click",()=>simpanEditMasa(id, editTimeInput.value, btnSaveEditTime, data));
       btnBadge.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
-        bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor, data.badgeRainbow);
+        bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor, data.badgeRainbow, data.customCheckEnabled, data.customCheckColor);
       });
       btnProfile.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
