@@ -4249,16 +4249,16 @@ body {
 .custom-check {
   --check-color: #0284c7;
   flex: 0 0 auto;
-  width: 19px;
-  height: 19px;
+  width: auto;
+  height: auto;
   display: inline-grid;
   place-items: center;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  color: #fff;
-  background: var(--check-color);
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--check-color) 38%, transparent), 0 0 0 1px color-mix(in srgb, var(--check-color) 30%, transparent);
-  font-size: 9px;
+  margin-left: -2px;
+  border: 0;
+  color: var(--check-color);
+  background: transparent;
+  filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--check-color) 28%, transparent));
+  font-size: 15px;
   vertical-align: middle;
 }
 .custom-check i { line-height: 1; }
@@ -4278,7 +4278,7 @@ body {
 .custom-check-designer small { color: var(--text-dim); font-size: 9px; line-height: 1.35; }
 .custom-check-color-field { display: flex !important; align-items: center; gap: 7px; margin: 0 !important; }
 .custom-check-color-field input { width: 34px !important; height: 30px !important; }
-.custom-check-designer .custom-check { width: 26px; height: 26px; font-size: 12px; }
+.custom-check-designer .custom-check { width: 26px; height: 26px; margin-left: 0; font-size: 22px; }
 .custom-check.is-disabled { opacity: .28; filter: grayscale(1); }
 :root[data-theme="dark"] .custom-check-designer { border-color: #29445a; background: rgba(14,165,233,.08); }
 :root[data-theme="dark"] .custom-check-designer strong { color: #eaf8ff; }

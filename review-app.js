@@ -675,7 +675,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   function customCheckMarkup(data = {}) {
     if (data.customCheckEnabled !== true) return '';
     const color = warnaHexSah(data.customCheckColor, '#0284c7');
-    return `<span class="custom-check" style="--check-color:${color}" title="Pelanggan disahkan H4SX" aria-label="Pelanggan disahkan H4SX"><i class="fa-solid fa-check"></i></span>`;
+    return `<span class="custom-check" style="--check-color:${color}" title="Disahkan H4SX" aria-label="Disahkan H4SX"><i class="fa-solid fa-circle-check"></i></span>`;
   }
   function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia, rainbowSedia, checkSedia, checkColorSedia) {
     editingBadgeId = id;
@@ -2833,10 +2833,10 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
               ${data.featured===true?`<span class="featured-review-badge">Pilihan H4SX</span>`:""}
               ${data.pinned===true?`<span class="pin-badge">📌 Disematkan</span>`:""}
               <span class="${nameClass(data)}" style="${nameStyle(data, isReviewAdmin)}">${escapeHtml(namaDisorok)}</span>
-              ${customCheckMarkup(data)}
               ${medalMarkup(data)}
               ${(rawBintang<0||rawBintang>5)?`<span style="background:linear-gradient(90deg,#f0a500,#e05252);color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.3px;">${rawBintang} Bintang</span>`:""}
               ${verifiedTag}
+              ${customCheckMarkup(data)}
               ${gunaCadangan?`<span class="suggestion-badge">cdg</span>`:""}
             </div>
             <div class="star-display">${starHtml}</div>
