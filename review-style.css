@@ -4245,6 +4245,26 @@ body {
   #btnUseRatingSuggestion { width: 100%; }
 }
 
+/* Uploaded profile photos replace the generated avatar completely. */
+.avatar.has-profile-image,
+.avatar-preview.has-profile-image,
+.ss-avatar.has-profile-image,
+.admin-moderation-avatar.has-profile-image {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+.avatar.has-profile-image img,
+.avatar-preview.has-profile-image img,
+.ss-avatar.has-profile-image img,
+.admin-moderation-avatar.has-profile-image img {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit !important;
+  background: transparent !important;
+  object-fit: cover;
+}
+
 /* Admin-controlled verification check. */
 .custom-check {
   --check-color: #0284c7;

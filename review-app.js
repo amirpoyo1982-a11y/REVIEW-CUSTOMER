@@ -1036,6 +1036,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
 
   function previewCustomerImage(src) {
     customerAvatarPreview.querySelector('img')?.remove();
+    customerAvatarPreview.classList.toggle('has-profile-image', Boolean(src));
     customerAvatarText.style.display = '';
     if (!src) return;
     const img = new Image();
@@ -1047,6 +1048,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     img.onerror = () => {
       if (!img.parentNode) return;
       img.remove();
+      customerAvatarPreview.classList.remove('has-profile-image');
       customerAvatarText.style.display = '';
       showToast('Gambar tidak dapat dimuatkan. Semak link terus ke gambar.', 'error');
     };
@@ -2178,6 +2180,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     const warna = pilihanWarna || warnaAuto(nama);
     const letter = avatarPreview.querySelector(".av-letter");
     avatarPreview.style.backgroundColor = warna;
+    avatarPreview.classList.toggle("has-profile-image", Boolean(profileImgB64));
     const oldImg = avatarPreview.querySelector("img.av-img");
     if (oldImg) oldImg.remove();
     if (profileImgB64) {
@@ -2946,7 +2949,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       card.dataset.reviewId = id;
       card.style.animationDelay=`${i*36}ms`;
       card.innerHTML=`
-        <div class="avatar" style="background:${warna}">${avatarInner}</div>
+        <div class="avatar${hasImg ? " has-profile-image" : ""}" style="background:${warna}">${avatarInner}</div>
         <div class="review-content">
           <div class="review-header">
             <div class="buyer-name-container">
@@ -3149,7 +3152,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     return `
       <div class="ss-review-card">
         <div class="ss-review-top">
-          <div class="ss-avatar" style="background:${warna}">${avatar}</div>
+          <div class="ss-avatar${data.profileImg ? " has-profile-image" : ""}" style="background:${warna}">${avatar}</div>
           <div class="ss-review-meta">
             <div class="ss-review-name">${escapeHtml(rawNama)}</div>
             <div class="ss-review-date">${reviewDateText(data)}</div>
@@ -3471,7 +3474,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   }
   function renderAdminModeration(){
     const box=document.getElementById("adminModerationList");if(!box)return;const list=getAdminModerationList();document.getElementById("adminModerationResult").textContent=`${list.length} rekod`;
-    box.innerHTML=list.length?list.map(r=>{const status=adminReviewStatus(r),score=clampBintang(r.bintang),avatar=r.profileImg?`<img src="${escapeHtml(r.profileImg)}" alt="">`:escapeHtml(r.emojiProfil||String(r.nama||"P")[0]);return `<article class="admin-moderation-item${score<=2?" is-low":""}${status!=="published"?" is-hidden":""}" data-admin-review-id="${r.id}"><input class="admin-review-checkbox" type="checkbox" ${selectedAdminReviews.has(r.id)?"checked":""}><div class="admin-moderation-avatar" style="background:${r.warnaProfil||warnaAuto(r.nama||"P")}">${avatar}</div><div class="admin-moderation-copy"><header><strong>${escapeHtml(r.nama||"Pelanggan")}</strong><span class="admin-status-chip ${status}">${status}</span>${r.featured?'<span class="admin-status-chip featured">pilihan</span>':''}</header><p>${escapeHtml(r.ulasan||"Rating sahaja")}</p><small>${score} bintang · ${reviewDateText(r)}${r.balasanAdmin?.trim()?" · sudah dibalas":" · belum dibalas"}</small></div><div class="admin-moderation-actions"><button data-admin-row-action="publish" title="Terbit"><i class="fa-solid fa-eye"></i></button><button data-admin-row-action="hide" title="Sorok"><i class="fa-solid fa-eye-slash"></i></button><button data-admin-row-action="feature" title="Pilihan"><i class="fa-solid fa-star"></i></button><button data-admin-row-action="reply" title="Balas"><i class="fa-solid fa-reply"></i></button><button data-admin-row-action="open" title="Buka"><i class="fa-solid fa-arrow-up-right-from-square"></i></button><button class="danger" data-admin-row-action="delete" title="Padam"><i class="fa-solid fa-trash"></i></button></div></article>`;}).join(""):adminEmpty("Tiada ulasan sepadan dengan penapis.");updateAdminSelectionCount();
+    box.innerHTML=list.length?list.map(r=>{const status=adminReviewStatus(r),score=clampBintang(r.bintang),hasImg=!!r.profileImg,avatar=hasImg?`<img src="${escapeHtml(r.profileImg)}" alt="">`:escapeHtml(r.emojiProfil||String(r.nama||"P")[0]);return `<article class="admin-moderation-item${score<=2?" is-low":""}${status!=="published"?" is-hidden":""}" data-admin-review-id="${r.id}"><input class="admin-review-checkbox" type="checkbox" ${selectedAdminReviews.has(r.id)?"checked":""}><div class="admin-moderation-avatar${hasImg?" has-profile-image":""}" style="background:${r.warnaProfil||warnaAuto(r.nama||"P")}">${avatar}</div><div class="admin-moderation-copy"><header><strong>${escapeHtml(r.nama||"Pelanggan")}</strong><span class="admin-status-chip ${status}">${status}</span>${r.featured?'<span class="admin-status-chip featured">pilihan</span>':''}</header><p>${escapeHtml(r.ulasan||"Rating sahaja")}</p><small>${score} bintang · ${reviewDateText(r)}${r.balasanAdmin?.trim()?" · sudah dibalas":" · belum dibalas"}</small></div><div class="admin-moderation-actions"><button data-admin-row-action="publish" title="Terbit"><i class="fa-solid fa-eye"></i></button><button data-admin-row-action="hide" title="Sorok"><i class="fa-solid fa-eye-slash"></i></button><button data-admin-row-action="feature" title="Pilihan"><i class="fa-solid fa-star"></i></button><button data-admin-row-action="reply" title="Balas"><i class="fa-solid fa-reply"></i></button><button data-admin-row-action="open" title="Buka"><i class="fa-solid fa-arrow-up-right-from-square"></i></button><button class="danger" data-admin-row-action="delete" title="Padam"><i class="fa-solid fa-trash"></i></button></div></article>`;}).join(""):adminEmpty("Tiada ulasan sepadan dengan penapis.");updateAdminSelectionCount();
   }
   function updateAdminSelectionCount(){const el=document.getElementById("adminSelectedReviewsCount");if(el)el.textContent=`${selectedAdminReviews.size} dipilih`;}
   ["adminReviewSearch","adminReviewRatingFilter","adminReviewStatusFilter","adminReviewSort"].forEach(id=>document.getElementById(id)?.addEventListener(id==="adminReviewSearch"?"input":"change",renderAdminModeration));
