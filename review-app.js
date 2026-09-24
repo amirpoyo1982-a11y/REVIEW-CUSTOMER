@@ -229,6 +229,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const ADMIN_UIDS = ["LWRN6IDv4OV1PZd7Vldgp6F9pdH3"];
   let currentUser = null;
   let latestCodeSnapshot = null;
+  let usedReviewCodeIds = new Set();
+  let reviewCodeCleanupRunning = false;
   const adminOk = () => !!(currentUser && ADMIN_UIDS.includes(currentUser.uid));
   function mintaAdmin() {
     if (adminOk()) return true;
@@ -1833,6 +1835,51 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   function cleanCodePrefix(value) {
     return (value || "H4SX").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12) || "H4SX";
   }
+  function reviewIdForCode(code) {
+    return "review_" + String(code || "").trim().toUpperCase();
+  }
+  function syncUsedReviewCodeIds(records = []) {
+    usedReviewCodeIds = new Set(records
+      .map(item => String(item?.id || ""))
+      .filter(id => id.startsWith("review_") && id.length > 7)
+      .map(id => id.slice(7).toUpperCase()));
+  }
+  function isReviewCodeUsed(code) {
+    return usedReviewCodeIds.has(String(code || "").trim().toUpperCase());
+  }
+  function availableReviewCodeDocs(snapshot = latestCodeSnapshot) {
+    const list = [];
+    snapshot?.forEach(item => {
+      if (!isReviewCodeUsed(item.id)) list.push(item);
+    });
+    return list;
+  }
+  async function createUnusedReviewCode(prefix, made = []) {
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const code = `${prefix}-${randomCodePart(6)}`;
+      if (made.includes(code)) continue;
+      const [codeSnap, reviewSnap] = await Promise.all([
+        getDoc(doc(db, "review_codes", code)),
+        getDoc(doc(db, "ratings", reviewIdForCode(code)))
+      ]);
+      if (!codeSnap.exists() && !reviewSnap.exists()) return code;
+    }
+    throw new Error("Tak dapat jana kod unik. Cuba lagi.");
+  }
+  async function cleanupUsedReviewCodes(snapshot = latestCodeSnapshot) {
+    if (!adminOk() || !snapshot || reviewCodeCleanupRunning) return;
+    const stale = [];
+    snapshot.forEach(item => { if (isReviewCodeUsed(item.id)) stale.push(item.id); });
+    if (!stale.length) return;
+    reviewCodeCleanupRunning = true;
+    try {
+      const results = await Promise.allSettled(stale.map(code => deleteDoc(doc(db, "review_codes", code))));
+      const removed = results.filter(result => result.status === "fulfilled").length;
+      if (removed) console.info(`${removed} kod review terpakai dibersihkan daripada senarai tersedia.`);
+    } finally {
+      reviewCodeCleanupRunning = false;
+    }
+  }
   async function copyText(text) {
     try {
       await navigator.clipboard.writeText(text);
@@ -1852,8 +1899,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     try {
       const made = [];
       for (let i = 0; i < count; i++) {
-        let code = `${prefix}-${randomCodePart(6)}`;
-        while (made.includes(code)) code = `${prefix}-${randomCodePart(6)}`;
+        const code = await createUnusedReviewCode(prefix, made);
         made.push(code);
         await setDoc(doc(db, "review_codes", code), {
           kod: code,
@@ -1876,7 +1922,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       return;
     }
     const codes = [];
-    snapshot.forEach(item => codes.push(item.id));
+    availableReviewCodeDocs(snapshot).forEach(item => codes.push(item.id));
     codes.sort();
     if (!codes.length) {
       adminCodeList.textContent = "Tiada kod tersedia.";
@@ -1901,6 +1947,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       latestCodeSnapshot = snapshot;
       renderCodeListFromSnapshot(snapshot);
       renderAdminCodes();
+      cleanupUsedReviewCodes(snapshot);
     }, err => {
       console.warn("Gagal load kod review admin:", err);
       if (adminCodeList) adminCodeList.textContent = "Gagal load kod. Semak rules Firebase.";
@@ -2777,7 +2824,13 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       total+=b; count++;
       if (b===5) lima++;
     });
+    syncUsedReviewCodeIds(allDocs);
     allDocs = uniqueReviewRecords(allDocs);
+    if (latestCodeSnapshot) {
+      renderCodeListFromSnapshot(latestCodeSnapshot);
+      renderAdminCodes();
+      cleanupUsedReviewCodes(latestCodeSnapshot);
+    }
     total = allDocs.reduce((sum, item) => sum + clampBintang(item.bintang), 0);
     count = allDocs.length;
     lima = allDocs.filter(item => clampBintang(item.bintang) === 5).length;
@@ -3361,7 +3414,13 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     }
     try {
       const snapshot = await getDocs(q);
-      allDocs = uniqueReviewRecords(snapshot.docs.map(item => ({ id:item.id, ...item.data() })));
+      const rawReviewRecords = snapshot.docs.map(item => ({ id:item.id, ...item.data() }));
+      syncUsedReviewCodeIds(rawReviewRecords);
+      allDocs = uniqueReviewRecords(rawReviewRecords);
+      if (latestCodeSnapshot) {
+        renderCodeListFromSnapshot(latestCodeSnapshot);
+        cleanupUsedReviewCodes(latestCodeSnapshot);
+      }
       renderReviews();
       refreshAdminCenter();
       if (showSuccess) showToast(`${allDocs.length} rekod Firebase dimuatkan.`, "success");
@@ -3464,12 +3523,28 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   document.getElementById("adminReportStatusFilter")?.addEventListener("change",renderAdminReports);
   document.getElementById("adminReportList")?.addEventListener("click",async e=>{const btn=e.target.closest("[data-report-action]"),row=e.target.closest("[data-report-id]");if(!btn||!row)return;try{if(btn.dataset.reportAction==="open"){switchAdminCenterTab("moderation");document.getElementById("adminReviewSearch").value=btn.dataset.reviewId;renderAdminModeration();return;}if(btn.dataset.reportAction==="resolve")await updateDoc(doc(db,"review_reports",row.dataset.reportId),{status:"resolved",resolvedAt:serverTimestamp()});if(btn.dataset.reportAction==="delete")await deleteDoc(doc(db,"review_reports",row.dataset.reportId));await logAdminAction(`report_${btn.dataset.reportAction}`,row.dataset.reportId,"Laporan pengunjung");}catch(err){console.error(err);showToast("Gagal kemaskini laporan.","error");}});
 
-  function getAdminCodes(){const list=[];latestCodeSnapshot?.forEach(d=>list.push({id:d.id,...d.data()}));return list.sort((a,b)=>a.id.localeCompare(b.id));}
-  function renderAdminCodes(){const box=document.getElementById("adminCenterCodeList");if(!box)return;const codes=getAdminCodes(),search=(document.getElementById("adminCenterCodeSearch")?.value||"").toLowerCase(),filtered=codes.filter(c=>c.id.toLowerCase().includes(search));document.getElementById("adminCenterAvailableCodes").textContent=codes.length;document.getElementById("adminCenterUsedCodes").textContent=allDocs.length;document.getElementById("adminCenterTotalCodes").textContent=codes.length+allDocs.length;box.innerHTML=filtered.length?filtered.map(c=>`<div class="admin-center-code-item"><div><strong>${escapeHtml(c.id)}</strong><small>${c.expiresAt?`Luput ${reviewDateAndAge(c.expiresAt,false)}`:"Tiada luput"}</small></div><button data-admin-copy-code="${escapeHtml(c.id)}"><i class="fa-solid fa-copy"></i></button></div>`).join(""):adminEmpty("Tiada kod ditemui.");}
+  function getAdminCodes(){return availableReviewCodeDocs().map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.id.localeCompare(b.id));}
+  function renderAdminCodes(){const box=document.getElementById("adminCenterCodeList");if(!box)return;const codes=getAdminCodes(),usedCount=usedReviewCodeIds.size,search=(document.getElementById("adminCenterCodeSearch")?.value||"").toLowerCase(),filtered=codes.filter(c=>c.id.toLowerCase().includes(search));document.getElementById("adminCenterAvailableCodes").textContent=codes.length;document.getElementById("adminCenterUsedCodes").textContent=usedCount;document.getElementById("adminCenterTotalCodes").textContent=codes.length+usedCount;box.innerHTML=filtered.length?filtered.map(c=>`<div class="admin-center-code-item"><div><strong>${escapeHtml(c.id)}</strong><small>${c.expiresAt?`Luput ${reviewDateAndAge(c.expiresAt,false)}`:"Tiada luput"}</small></div><button data-admin-copy-code="${escapeHtml(c.id)}"><i class="fa-solid fa-copy"></i></button></div>`).join(""):adminEmpty("Tiada kod tersedia.");}
   document.getElementById("adminCenterCodeSearch")?.addEventListener("input",renderAdminCodes);
   document.getElementById("adminCenterCodeList")?.addEventListener("click",e=>{const btn=e.target.closest("[data-admin-copy-code]");if(btn)copyText(btn.dataset.adminCopyCode);});
   document.getElementById("btnAdminCopyAllCodes")?.addEventListener("click",()=>navigator.clipboard.writeText(getAdminCodes().map(c=>c.id).join("\n")).then(()=>showToast("Semua kod dicopy.","success")));
-  document.getElementById("btnAdminCenterGenerateCodes")?.addEventListener("click",async()=>{if(!mintaAdmin())return;const prefix=cleanCodePrefix(document.getElementById("adminCenterCodePrefix").value),count=Math.max(1,Math.min(200,Number(document.getElementById("adminCenterCodeCount").value)||1)),days=Math.max(0,Number(document.getElementById("adminCenterCodeExpiry").value)||0),made=[];try{for(let i=0;i<count;i++){let code=`${prefix}-${randomCodePart(6)}`;while(made.includes(code))code=`${prefix}-${randomCodePart(6)}`;made.push(code);const payload={kod:code,diciptaPada:serverTimestamp(),diciptaOleh:currentUser.uid};if(days)payload.expiresAt=Timestamp.fromDate(new Date(Date.now()+days*86400000));await setDoc(doc(db,"review_codes",code),payload);}await logAdminAction("generate_codes",prefix,`${count} kod`);showToast(`${count} kod berjaya dijana.`,"success");}catch(err){console.error(err);showToast("Gagal jana kod.","error");}});
+  document.getElementById("btnAdminCenterGenerateCodes")?.addEventListener("click",async()=>{
+    if(!mintaAdmin())return;
+    const prefix=cleanCodePrefix(document.getElementById("adminCenterCodePrefix").value);
+    const count=Math.max(1,Math.min(200,Number(document.getElementById("adminCenterCodeCount").value)||1));
+    const days=Math.max(0,Number(document.getElementById("adminCenterCodeExpiry").value)||0),made=[];
+    try{
+      for(let i=0;i<count;i++){
+        const code=await createUnusedReviewCode(prefix,made);
+        made.push(code);
+        const payload={kod:code,diciptaPada:serverTimestamp(),diciptaOleh:currentUser.uid};
+        if(days)payload.expiresAt=Timestamp.fromDate(new Date(Date.now()+days*86400000));
+        await setDoc(doc(db,"review_codes",code),payload);
+      }
+      await logAdminAction("generate_codes",prefix,`${count} kod`);
+      showToast(`${count} kod berjaya dijana.`,"success");
+    }catch(err){console.error(err);showToast(err?.message||"Gagal jana kod.","error");}
+  });
 
   function adminAuditMarkup(list){return list.length?list.map(a=>`<div class="admin-audit-item"><div><strong>${escapeHtml(a.action||"Tindakan admin")}</strong><span>${escapeHtml(a.details||a.targetId||"")}</span></div><span>${reviewDateAndAge(a.createdAt||a.time)}</span></div>`).join(""):adminEmpty("Belum ada sejarah admin.","fa-clock");}
   function renderAdminAudit(){const box=document.getElementById("adminAuditList");if(box)box.innerHTML=adminAuditMarkup(adminAudit.slice(0,50));}
