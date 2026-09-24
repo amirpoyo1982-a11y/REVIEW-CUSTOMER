@@ -679,7 +679,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   function customCheckMarkup(data = {}) {
     if (data.customCheckEnabled !== true) return '';
     const color = warnaHexSah(data.customCheckColor, '#0284c7');
-    return `<span class="custom-check" style="--check-color:${color}" title="Disahkan H4SX" aria-label="Disahkan H4SX"><i class="fa-solid fa-circle-check"></i></span>`;
+    return `<span class="custom-check" style="--check-color:${color}" title="Disahkan H4SX" aria-label="Disahkan H4SX"><i class="fa-solid fa-check"></i></span>`;
   }
   function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia, rainbowSedia, checkSedia, checkColorSedia, verifiedDisorok) {
     editingBadgeId = id;
