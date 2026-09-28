@@ -3,7 +3,8 @@
 // Fungsi isAdmin() sedia ada mesti dikekalkan.
 
 match /review_reports/{reportId} {
-  allow create: if request.resource.data.keys().hasOnly([
+  allow create: if reportId.matches('^r-[a-f0-9]{48}$')
+    && request.resource.data.keys().hasOnly([
       'reviewId',
       'reviewName',
       'reason',
@@ -14,14 +15,20 @@ match /review_reports/{reportId} {
     && request.resource.data.reviewId is string
     && request.resource.data.reviewId.size() >= 1
     && request.resource.data.reviewId.size() <= 160
+    && request.resource.data.reviewId.matches('^[A-Za-z0-9_-]+$')
     && request.resource.data.reviewName is string
+    && request.resource.data.reviewName.size() >= 1
     && request.resource.data.reviewName.size() <= 80
     && request.resource.data.reason is string
     && request.resource.data.reason.size() >= 3
     && request.resource.data.reason.size() <= 300
     && request.resource.data.status == 'open'
     && request.resource.data.deviceId is string
-    && request.resource.data.deviceId.size() <= 100;
+    && request.resource.data.deviceId.size() >= 12
+    && request.resource.data.deviceId.size() <= 100
+    && request.resource.data.deviceId.matches('^v-[A-Za-z0-9-]+$')
+    && request.resource.data.createdAt == request.time
+    && exists(/databases/$(database)/documents/ratings/$(request.resource.data.reviewId));
 
   allow read, update, delete: if isAdmin();
 }
