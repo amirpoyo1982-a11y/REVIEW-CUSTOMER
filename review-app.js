@@ -29,6 +29,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   let reviewTurnstileResolver = null;
   let reviewTurnstileRejecter = null;
   let reviewTurnstileTimeout = null;
+  let reportTurnstileWidgetId = null;
+  let reportTurnstileResolver = null;
+  let reportTurnstileRejecter = null;
+  let reportTurnstileTimeout = null;
 
   function resetReviewTurnstile() {
     if (reviewTurnstileTimeout) { clearTimeout(reviewTurnstileTimeout); reviewTurnstileTimeout = null; }
@@ -92,6 +96,71 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       if (!response.ok) throw new Error('turnstile-rejected');
     } finally {
       resetReviewTurnstile();
+    }
+  }
+
+  function resetReportTurnstile() {
+    if (reportTurnstileTimeout) { clearTimeout(reportTurnstileTimeout); reportTurnstileTimeout = null; }
+    reportTurnstileResolver = null;
+    reportTurnstileRejecter = null;
+    if (reportTurnstileWidgetId !== null && window.turnstile?.reset) {
+      try { window.turnstile.reset(reportTurnstileWidgetId); } catch (_) {}
+    }
+  }
+  function ensureReportTurnstile() {
+    let container = document.getElementById('report-turnstile');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'report-turnstile';
+      container.setAttribute('aria-hidden', 'true');
+      container.style.cssText = 'position:fixed;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
+      document.body.appendChild(container);
+    }
+    if (!window.turnstile) throw new Error('report-turnstile-not-ready');
+    if (reportTurnstileWidgetId !== null) return reportTurnstileWidgetId;
+    reportTurnstileWidgetId = window.turnstile.render(container, {
+      sitekey: TURNSTILE_SITE_KEY,
+      size: 'invisible',
+      execution: 'execute',
+      action: 'report_review',
+      callback(token) {
+        if (reportTurnstileTimeout) clearTimeout(reportTurnstileTimeout);
+        reportTurnstileTimeout = null;
+        const resolve = reportTurnstileResolver;
+        reportTurnstileResolver = null;
+        reportTurnstileRejecter = null;
+        resolve?.(token);
+      },
+      'expired-callback'() { reportTurnstileRejecter?.(new Error('report-turnstile-expired')); },
+      'error-callback'() { reportTurnstileRejecter?.(new Error('report-turnstile-error')); }
+    });
+    return reportTurnstileWidgetId;
+  }
+  async function verifyReportTurnstile(reviewId) {
+    const widgetId = ensureReportTurnstile();
+    resetReportTurnstile();
+    try {
+      const token = await new Promise((resolve, reject) => {
+        reportTurnstileResolver = resolve;
+        reportTurnstileRejecter = reject;
+        reportTurnstileTimeout = setTimeout(() => reject(new Error('report-turnstile-timeout')), 18000);
+        try { window.turnstile.execute(widgetId); }
+        catch (_) { reject(new Error('report-turnstile-execute')); }
+      });
+      const response = await fetch('/api/verify-turnstile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, action: 'report_review', reviewId })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (response.status === 429) {
+        const error = new Error('report-rate-limit');
+        error.retryAfter = Number(result.retryAfter || response.headers.get('Retry-After') || 0);
+        throw error;
+      }
+      if (!response.ok) throw new Error('report-turnstile-rejected');
+    } finally {
+      resetReportTurnstile();
     }
   }
 
@@ -3058,7 +3127,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           btnReplyView.textContent = open ? "Tutup balasan ↑" : "Balasan admin ↓";
         });
       }
-      btnReport?.addEventListener("click",()=>openReviewReport(id, rawNama));
+      btnReport?.addEventListener("click",()=>openReviewReport(id, rawNama, btnReport));
       toggleB.addEventListener("click",()=>{
         if(!mintaAdmin())return;
         form.classList.toggle("show");
@@ -3490,25 +3559,43 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     try{await Promise.all(records.map(r=>action==="delete"?deleteDoc(doc(db,"ratings",r.id)):action==="publish"?updateDoc(doc(db,"ratings",r.id),{moderationStatus:"published",moderatedAt:serverTimestamp()}):action==="hide"?updateDoc(doc(db,"ratings",r.id),{moderationStatus:"hidden",moderatedAt:serverTimestamp()}):action==="feature"?updateDoc(doc(db,"ratings",r.id),{featured:!r.featured,featuredAt:serverTimestamp()}):updateDoc(doc(db,"ratings",r.id),{balasanAdmin:reply.trim(),balasanPada:serverTimestamp(),balasanDibuang:false})));await logAdminAction(action,ids.join(","),`${ids.length} ulasan`);selectedAdminReviews.clear();showToast("Tindakan admin berjaya disimpan.","success");}catch(err){console.error(err);showToast("Tindakan gagal. Semak Firestore Rules admin.","error");}
   }
 
-  async function openReviewReport(reviewId,reviewName){
-    const reason=prompt(`Kenapa anda mahu laporkan ulasan ${reviewName}?\n\nJangan masukkan maklumat peribadi.`);
-    if(!reason?.trim())return;
-    if(reason.trim().length<3){showToast("Sebab laporan mestilah sekurang-kurangnya 3 aksara.","error");return;}
+  const REPORT_HISTORY_KEY="h4sx_review_report_history_v2";
+  const REPORT_GLOBAL_COOLDOWN_MS=60*1000;
+  const REPORT_SAME_REVIEW_COOLDOWN_MS=24*60*60*1000;
+  const REPORT_BURST_WINDOW_MS=60*60*1000;
+  const REPORT_BURST_LIMIT=3;
+  let reportSubmitBusy=false;
+  function readReportHistory(){try{const list=JSON.parse(localStorage.getItem(REPORT_HISTORY_KEY)||"[]");return Array.isArray(list)?list.filter(item=>Date.now()-Number(item?.time||0)<REPORT_SAME_REVIEW_COOLDOWN_MS):[];}catch(_){return[];}}
+  function saveReportHistory(list){try{localStorage.setItem(REPORT_HISTORY_KEY,JSON.stringify(list.slice(-20)));}catch(_){}}
+  function reportWaitMessage(reviewId){const now=Date.now(),history=readReportHistory(),latest=history.at(-1),same=history.find(item=>item.reviewId===reviewId),recent=history.filter(item=>now-item.time<REPORT_BURST_WINDOW_MS);if(same&&now-same.time<REPORT_SAME_REVIEW_COOLDOWN_MS)return"Ulasan ini sudah anda laporkan. Admin akan menyemaknya.";if(latest&&now-latest.time<REPORT_GLOBAL_COOLDOWN_MS)return`Tunggu ${Math.ceil((REPORT_GLOBAL_COOLDOWN_MS-(now-latest.time))/1000)} saat sebelum membuat laporan lain.`;if(recent.length>=REPORT_BURST_LIMIT)return"Had 3 laporan sejam telah dicapai. Cuba semula kemudian.";return"";}
+  function cleanReportReason(value){return String(value||"").normalize("NFKC").replace(/[\u0000-\u001F\u007F]/g," ").replace(/\s+/g," ").trim().slice(0,300);}
+  async function reportDocumentId(reviewId){const source=getVisitorId()+"|"+reviewId;try{const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(source));return"r-"+[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,"0")).join("").slice(0,48);}catch(_){const hex=[...source].map(char=>char.charCodeAt(0).toString(16).padStart(2,"0")).join("");return"r-"+(hex+"0".repeat(48)).slice(0,48);}}
+  async function openReviewReport(reviewId,reviewName,button){
+    reviewId=String(reviewId||"").trim().slice(0,160);
+    if(reportSubmitBusy)return showToast("Laporan sedang diproses. Tunggu sebentar.","error");
+    if(!reviewId||!allDocs.some(item=>item.id===reviewId))return showToast("Ulasan ini tidak sah atau sudah tiada.","error");
+    const waitMessage=reportWaitMessage(reviewId);if(waitMessage)return showToast(waitMessage,"error");
+    const input=prompt(`Kenapa anda mahu laporkan ulasan ${reviewName}?\n\nTerangkan dengan ringkas (8–300 aksara). Jangan masukkan nombor telefon, link atau maklumat peribadi.`);
+    if(input===null)return;
+    const reason=cleanReportReason(input);
+    if(reason.length<8)return showToast("Sebab laporan mestilah sekurang-kurangnya 8 aksara.","error");
+    if(/https?:\/\/|www\.|wa\.me|t\.me/i.test(reason))return showToast("Link tidak dibenarkan dalam laporan.","error");
+    if(/(?:\d[\s-]?){8,}/.test(reason))return showToast("Nombor telefon atau nombor peribadi tidak dibenarkan.","error");
+    if(/(.)\1{7,}/i.test(reason))return showToast("Sebab laporan kelihatan seperti spam.","error");
+    reportSubmitBusy=true;if(button){button.disabled=true;button.innerHTML='<i class="fa-solid fa-shield-halved"></i> Semak...';}
     try{
-      await addDoc(collection(db,"review_reports"),{
-        reviewId:String(reviewId||"").slice(0,160),
-        reviewName:String(reviewName||"Ulasan").slice(0,80),
-        reason:reason.trim().slice(0,300),
-        status:"open",
-        deviceId:getVisitorId().slice(0,100),
-        createdAt:serverTimestamp()
-      });
-      showToast("Laporan berjaya dihantar kepada admin.","success");
+      await verifyReportTurnstile(reviewId);
+      const deviceId=getVisitorId().slice(0,100),documentId=await reportDocumentId(reviewId);
+      await setDoc(doc(db,"review_reports",documentId),{reviewId,reviewName:String(reviewName||"Ulasan").trim().slice(0,80),reason,status:"open",deviceId,createdAt:serverTimestamp()});
+      const history=readReportHistory();history.push({reviewId,time:Date.now()});saveReportHistory(history);
+      showToast("Laporan berjaya dihantar sekali kepada admin.","success");
     }catch(err){
       console.error("Review report gagal:",err);
-      const denied=err?.code==="permission-denied";
-      showToast(denied?"Laporan ditolak oleh Firestore Rules. Publish rules review_reports dahulu.":"Laporan gagal dihantar. Semak sambungan dan cuba semula.","error");
-    }
+      if(err?.message==="report-rate-limit"){const mins=Math.max(1,Math.ceil(Number(err.retryAfter||60)/60));showToast(`Terlalu banyak cubaan. Cuba lagi dalam ${mins} minit.`,"error");}
+      else if(String(err?.message||"").startsWith("report-turnstile-"))showToast("Pengesahan keselamatan gagal. Cuba semula sebentar lagi.","error");
+      else if(err?.code==="permission-denied")showToast("Laporan ini sudah dihantar atau ditolak oleh sistem keselamatan.","error");
+      else showToast("Laporan gagal dihantar. Semak sambungan dan cuba semula.","error");
+    }finally{reportSubmitBusy=false;if(button){button.disabled=false;button.innerHTML='<i class="fa-regular fa-flag"></i> Lapor';}}
   }
   function startAdminCenterStreams(){
     if(!adminOk())return;
