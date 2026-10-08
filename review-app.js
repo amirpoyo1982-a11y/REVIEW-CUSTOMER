@@ -422,10 +422,9 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   let reviewPromoIndex = 0;
   let reviewPromoTimer = null;
   let reviewPromoInterval = 5500;
-  let reviewPromoDragStart = 0;
-  let reviewPromoDragDelta = 0;
-  let reviewPromoDragging = false;
-  let reviewPromoDidDrag = false;
+  let reviewPromoDrag = null;
+  let reviewPromoSuppressClickUntil = 0;
+  let reviewPromoFrame = 0;
 
   function normalizePromoFit(value) {
     const fit = String(value || "").toLowerCase();
@@ -457,10 +456,39 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     reviewPromoTimer = setInterval(() => showReviewPromo(reviewPromoIndex + 1), reviewPromoInterval);
   }
 
+  function reviewPromoOffset(slideIndex) {
+    const total = reviewPromoItems.length;
+    if (total <= 1) return 0;
+    let offset = slideIndex - reviewPromoIndex;
+    if (offset > total / 2) offset -= total;
+    if (offset < -total / 2) offset += total;
+    return offset;
+  }
+
+  function updateReviewPromoVisuals(dragProgress = 0) {
+    if (!reviewPromoTrack) return;
+    reviewPromoTrack.querySelectorAll(".review-promo-slide").forEach((slide, index) => {
+      const position = reviewPromoOffset(index) + dragProgress;
+      const distance = Math.abs(position);
+      const visible = distance < 1.65;
+      if (visible) {
+        slide.style.setProperty("--review-promo-shift", (position * 82).toFixed(2) + "%");
+        slide.style.setProperty("--review-promo-scale", Math.max(.74, 1 - Math.min(distance, 2) * .13).toFixed(3));
+        slide.style.setProperty("--review-promo-opacity", Math.max(.25, 1 - distance * .28).toFixed(3));
+        slide.style.zIndex = String(Math.max(1, 20 - Math.round(distance * 10)));
+      }
+      const active = distance < .5;
+      slide.classList.toggle("is-visible", visible);
+      slide.classList.toggle("active", active);
+      slide.setAttribute("aria-hidden", String(!active));
+      slide.tabIndex = active && slide.classList.contains("has-link") ? 0 : -1;
+    });
+  }
+
   function showReviewPromo(nextIndex) {
     if (!reviewPromoTrack || !reviewPromoItems.length) return;
     reviewPromoIndex = (nextIndex + reviewPromoItems.length) % reviewPromoItems.length;
-    reviewPromoTrack.style.transform = `translateX(-${reviewPromoIndex * 100}%)`;
+    updateReviewPromoVisuals();
     reviewPromoDots?.querySelectorAll("button").forEach((dot, index) => {
       dot.classList.toggle("active", index === reviewPromoIndex);
       dot.setAttribute("aria-current", index === reviewPromoIndex ? "true" : "false");
@@ -484,6 +512,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     }
 
     reviewPromoShell.hidden = false;
+    reviewPromoShell.classList.toggle("has-multiple", reviewPromoItems.length > 1);
+    reviewPromoPrev.hidden = reviewPromoItems.length <= 1;
+    reviewPromoNext.hidden = reviewPromoItems.length <= 1;
+    reviewPromoDots.hidden = reviewPromoItems.length <= 1;
     reviewPromoTrack.innerHTML = reviewPromoItems.map((item, index) => {
       const img = getReviewPromoImage(item);
       const alt = escapePromoAttr(item.alt || item.title || "Promo H4SX Store");
@@ -505,9 +537,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     reviewPromoTrack.querySelectorAll(".review-promo-slide").forEach(slide => {
       slide.addEventListener("click", (event) => {
         const item = reviewPromoItems[Number(slide.dataset.promoIndex) || 0];
-        if (reviewPromoDidDrag || !String(item?.link || "").trim()) {
-          event.preventDefault();
-        }
+        if (!String(item?.link || "").trim()) event.preventDefault();
       });
     });
     reviewPromoDots.querySelectorAll("button").forEach(dot => {
@@ -528,33 +558,73 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   reviewPromoPrev?.addEventListener("click", () => moveReviewPromoBy(-1));
   reviewPromoNext?.addEventListener("click", () => moveReviewPromoBy(1));
   reviewPromoViewport?.addEventListener("pointerdown", (event) => {
-    if (reviewPromoItems.length <= 1) return;
-    reviewPromoDragging = true;
-    reviewPromoDidDrag = false;
-    reviewPromoDragStart = event.clientX;
-    reviewPromoDragDelta = 0;
+    if (reviewPromoItems.length <= 1 || (event.pointerType === "mouse" && event.button !== 0)) return;
+    if (event.pointerType === "mouse") event.preventDefault();
+    reviewPromoDrag = {
+      pointerId: event.pointerId, startX: event.clientX, startY: event.clientY,
+      currentX: event.clientX, width: reviewPromoViewport.getBoundingClientRect().width || 1,
+      axis: "", moved: false
+    };
+    reviewPromoShell?.classList.add("is-dragging");
     stopReviewPromoAuto();
   });
-  reviewPromoViewport?.addEventListener("pointermove", (event) => {
-    if (!reviewPromoDragging) return;
-    reviewPromoDragDelta = event.clientX - reviewPromoDragStart;
-    if (Math.abs(reviewPromoDragDelta) > 10) reviewPromoDidDrag = true;
+  window.addEventListener("pointermove", (event) => {
+    const drag = reviewPromoDrag;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+    if (!drag.axis && Math.abs(deltaX) + Math.abs(deltaY) > 8) {
+      drag.axis = Math.abs(deltaX) > Math.abs(deltaY) ? "horizontal" : "vertical";
+      if (drag.axis === "vertical") {
+        reviewPromoDrag = null;
+        reviewPromoShell?.classList.remove("is-dragging");
+        startReviewPromoAuto();
+        return;
+      }
+    }
+    if (drag.axis !== "horizontal") return;
+    drag.currentX = event.clientX;
+    if (Math.abs(deltaX) > 4) drag.moved = true;
+    if (reviewPromoFrame) return;
+    reviewPromoFrame = requestAnimationFrame(() => {
+      reviewPromoFrame = 0;
+      if (!reviewPromoDrag) return;
+      const progress = Math.max(-1, Math.min(1, (reviewPromoDrag.currentX - reviewPromoDrag.startX) / reviewPromoDrag.width));
+      updateReviewPromoVisuals(progress);
+    });
   });
-  reviewPromoViewport?.addEventListener("pointerup", () => {
-    if (!reviewPromoDragging) return;
-    reviewPromoDragging = false;
-    if (Math.abs(reviewPromoDragDelta) > 42) showReviewPromo(reviewPromoIndex + (reviewPromoDragDelta < 0 ? 1 : -1));
+  function endReviewPromoDrag(event) {
+    const drag = reviewPromoDrag;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (reviewPromoFrame) cancelAnimationFrame(reviewPromoFrame);
+    reviewPromoFrame = 0;
+    const delta = drag.currentX - drag.startX;
+    if (drag.moved) reviewPromoSuppressClickUntil = Date.now() + 650;
+    reviewPromoDrag = null;
+    reviewPromoShell?.classList.remove("is-dragging");
+    if (Math.abs(delta) > Math.max(45, drag.width * .12)) {
+      showReviewPromo(reviewPromoIndex + (delta < 0 ? 1 : -1));
+    } else {
+      showReviewPromo(reviewPromoIndex);
+    }
     startReviewPromoAuto();
-    setTimeout(() => {
-      reviewPromoDragDelta = 0;
-      reviewPromoDidDrag = false;
-    }, 120);
-  });
-  reviewPromoViewport?.addEventListener("pointercancel", () => {
-    reviewPromoDragging = false;
-    reviewPromoDragDelta = 0;
-    reviewPromoDidDrag = false;
-    startReviewPromoAuto();
+  }
+  window.addEventListener("pointerup", endReviewPromoDrag);
+  window.addEventListener("pointercancel", endReviewPromoDrag);
+  function blockReviewPromoDragClick(event) {
+    if (event.target.closest(".review-promo-slide") &&
+        (reviewPromoDrag?.moved || Date.now() < reviewPromoSuppressClickUntil)) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+    }
+  }
+  reviewPromoShell?.addEventListener("click", blockReviewPromoDragClick, true);
+  reviewPromoShell?.addEventListener("auxclick", blockReviewPromoDragClick, true);
+  reviewPromoShell?.addEventListener("dragstart", event => event.preventDefault());
+  reviewPromoShell?.addEventListener("mouseenter", stopReviewPromoAuto);
+  reviewPromoShell?.addEventListener("mouseleave", () => {
+    if (!reviewPromoDrag) startReviewPromoAuto();
   });
   window.addEventListener("resize", () => {
     if (reviewPromoItems.length) renderReviewPromoBanners({ promo_banner_active: true, promo_banner_interval: reviewPromoInterval, promo_banners: reviewPromoItems });

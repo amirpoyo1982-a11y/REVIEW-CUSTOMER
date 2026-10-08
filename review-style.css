@@ -5347,30 +5347,118 @@ html.hide-review-replies .admin-reply-view-toggle, html.hide-review-replies .adm
   }
 }
 
-/* Promo copy now matches the flat navy information strips on the main store. */
+/* Review promo carousel matches the main H4SX Store cover-flow. */
 .review-rewrite-v3 .review-promo-shell {
-  margin: 16px auto 22px !important; border: 0 !important; border-radius: 0 !important;
-  background: transparent !important; box-shadow: none !important;
+  width: min(1260px, calc(100vw - 32px)) !important;
+  max-width: none !important;
+  margin: 16px auto 22px !important;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
 }
-.review-rewrite-v3 .review-promo-copy {
-  display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important;
-  gap: 0 !important; min-height: 38px; margin: 0 !important; padding: 0 12px !important;
-  border: 0 !important; border-radius: 0 !important; background: #0d2945 !important;
-  color: #e7f1fb !important; box-shadow: none !important; overflow-x: auto; scrollbar-width: none;
+.review-rewrite-v3 .review-promo-shell.is-dragging { cursor: grabbing; }
+.review-rewrite-v3 .review-promo-slider {
+  height: clamp(270px, 32vw, 420px) !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 22px !important;
+  background: radial-gradient(circle at 50% 112%, rgba(14,165,233,.22), transparent 45%), linear-gradient(145deg, #eef9ff, #f8fcff 52%, #e8f5fb) !important;
+  box-shadow: inset 0 0 0 1px rgba(11,113,159,.09), 0 16px 38px rgba(20,82,112,.12) !important;
 }
-.review-promo-copy::-webkit-scrollbar { display: none; }
-.review-rewrite-v3 .review-promo-copy > span {
-  display: inline-flex; align-items: center; flex: 0 0 auto; min-height: 18px;
-  padding: 0 18px; border-right: 1px solid rgba(255,255,255,.15);
-  color: #e7f1fb; font-size: 11px; font-weight: 750; white-space: nowrap;
+.review-rewrite-v3 .review-promo-viewport,
+.review-rewrite-v3 .review-promo-track {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
 }
-.review-rewrite-v3 .review-promo-copy > span:first-child { padding-left: 4px; color: #71d7ff; }
-.review-rewrite-v3 .review-promo-copy > span:last-child { border-right: 0; }
-.review-rewrite-v3 .review-promo-slider { border-radius: 0 0 12px 12px !important; box-shadow: none !important; }
-@media (max-width: 600px) {
-  .review-rewrite-v3 .review-promo-copy { min-height: 36px; }
-  .review-rewrite-v3 .review-promo-copy > span { padding-inline: 12px; font-size: 10px; }
+.review-rewrite-v3 .review-promo-track {
+  display: block !important;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
 }
+.review-rewrite-v3 .review-promo-slide {
+  --review-promo-shift: 0%;
+  --review-promo-scale: 1;
+  --review-promo-opacity: 1;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 90% !important;
+  height: calc(100% - 22px) !important;
+  min-width: 0 !important;
+  aspect-ratio: auto !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.82) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, #070b18, #11172a) !important;
+  opacity: var(--review-promo-opacity);
+  visibility: hidden;
+  transform: translate3d(-50%, -50%, 0) translateX(var(--review-promo-shift)) scale(var(--review-promo-scale)) !important;
+  transform-origin: center center;
+  pointer-events: none;
+  box-shadow: 0 12px 27px rgba(3,35,57,.16);
+  transition: transform .46s cubic-bezier(.2,.82,.22,1), opacity .38s ease !important;
+}
+.review-rewrite-v3 .review-promo-slide.is-visible { visibility: visible; }
+.review-rewrite-v3 .review-promo-slide.active {
+  pointer-events: auto;
+  box-shadow: 0 22px 48px rgba(3,47,73,.25), 0 0 0 1px rgba(14,165,233,.13);
+}
+.review-rewrite-v3 .review-promo-shell:not(.has-multiple) .review-promo-slide { width: calc(100% - 28px) !important; }
+.review-rewrite-v3 .review-promo-shell.is-dragging .review-promo-slide { transition: none !important; }
+.review-rewrite-v3 .review-promo-slide img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  object-position: var(--promo-pos, center center);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.review-rewrite-v3 .review-promo-slide[data-fit="contain"] img {
+  object-fit: contain !important;
+  background: #070b18;
+}
+.review-rewrite-v3 .review-promo-slide:not(.active) img { transform: scale(1.035); }
+.review-rewrite-v3 .review-promo-nav {
+  z-index: 30 !important;
+  width: 42px !important;
+  height: 42px !important;
+  border-color: rgba(255,255,255,.82) !important;
+  background: rgba(5,33,51,.48) !important;
+}
+.review-rewrite-v3 .review-promo-prev { left: 3.2% !important; }
+.review-rewrite-v3 .review-promo-next { right: 3.2% !important; }
+.review-rewrite-v3 .review-promo-dots {
+  z-index: 31 !important;
+  bottom: 5px !important;
+  padding: 4px 7px;
+  border: 1px solid rgba(255,255,255,.65);
+}
+.review-rewrite-v3 .review-promo-nav[hidden],
+.review-rewrite-v3 .review-promo-dots[hidden] { display: none !important; }
+@media (max-width: 640px) {
+  .review-rewrite-v3 .review-promo-shell { width: calc(100vw - 16px) !important; margin: 7px auto 16px !important; }
+  .review-rewrite-v3 .review-promo-slider { height: clamp(180px, 55vw, 245px) !important; border-radius: 16px !important; }
+  .review-rewrite-v3 .review-promo-slide { width: 91% !important; height: calc(100% - 14px) !important; border-radius: 13px !important; }
+  .review-rewrite-v3 .review-promo-shell:not(.has-multiple) .review-promo-slide { width: calc(100% - 18px) !important; }
+  .review-rewrite-v3 .review-promo-nav { width: 31px !important; height: 31px !important; font-size: 22px !important; }
+  .review-rewrite-v3 .review-promo-prev { left: 3px !important; }
+  .review-rewrite-v3 .review-promo-next { right: 3px !important; }
+  .review-rewrite-v3 .review-promo-dots { bottom: 3px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .review-rewrite-v3 .review-promo-slide { transition-duration: .01ms !important; }
+}
+
 
 /* Visible only when a newer deployment is detected. */
 .review-update-notice[hidden] { display: none !important; }
