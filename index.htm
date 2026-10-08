@@ -52,7 +52,7 @@
       } catch(e) {}
     })();
   </script>
-<link rel="stylesheet" href="review-style.css?v=custom-check-gif-20261009">
+<link rel="stylesheet" href="review-style.css?v=promo-strip-update-20261009">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 </head>
@@ -601,10 +601,6 @@
 
 <!-- ══ TOP NAVBAR ══ -->
 <nav class="topbar">
-  <!-- Ticker -->
-  <div class="ticker-wrap">
-    <div class="ticker-track" id="tickerTrack"></div>
-  </div>
   <div class="topbar-inner">
     <a href="#" class="topbar-logo">
       <img src="https://i.imgur.com/cLPulXQ.png" alt="H4SX Logo" id="logoImg" onerror="this.hidden=true">
@@ -623,6 +619,13 @@
     <div class="topbar-badge">Kedai Dipercayai</div>
   </div>
 </nav>
+
+  <div class="review-update-notice" id="reviewUpdateNotice" role="status" aria-live="polite" hidden>
+    <span class="review-update-icon" aria-hidden="true">↻</span>
+    <div class="review-update-copy"><strong>Versi baru tersedia</strong><small id="reviewUpdateTime">Muat semula untuk lihat perubahan terkini.</small></div>
+    <button type="button" id="reviewUpdateNow">Muat versi baru</button>
+    <button type="button" class="review-update-close" id="reviewUpdateDismiss" aria-label="Tutup notis kemas kini">×</button>
+  </div>
 
 <!-- ══ HERO ══ -->
 <div class="hero-band">
@@ -656,12 +659,10 @@
 
   <!-- ══ PROMO BANNER FROM GIST ══ -->
   <section class="review-promo-shell" id="reviewPromoShell" hidden aria-label="Promosi H4SX Store">
-    <div class="review-promo-copy">
-      <div>
-        <span class="review-promo-kicker">Banner Ads</span>
-        <h2>Hai Guys!</h2>
-      </div>
-      <p>Banner iklan telah ditambah untuk memaparkan produk yang sedang promo dan hot item. Klik pada banner untuk terus ke Website H4SX STORE, atau tekan butang "Website Utama" di bahagian bawah.</p>
+    <div class="review-promo-copy" aria-label="Maklumat promosi">
+      <span class="review-promo-strip-title">✦ Pilihan H4SX</span>
+      <span>Promo &amp; item baharu</span>
+      <span>Tekan gambar untuk lihat produk</span>
     </div>
     <div class="review-promo-slider" id="reviewPromoSlider">
       <button class="review-promo-nav review-promo-prev" id="reviewPromoPrev" type="button" aria-label="Banner sebelum">‹</button>
@@ -878,8 +879,8 @@
 <!-- H4SX REVIEW HELPER -->
 <div class="review-helper" id="reviewHelper" aria-live="polite">
   <button class="review-helper-bubble" id="reviewHelperBubble" type="button" aria-label="Buka H4SX Helper">
-    <span class="review-helper-label">H4SX Helper</span>
     <img src="assets/h4sx-helper-logo.png" alt="H4SX Helper" class="review-helper-logo-img" decoding="async">
+    <span></span>
   </button>
   <aside class="review-helper-panel" id="reviewHelperPanel" role="dialog" aria-modal="false" aria-labelledby="reviewHelperTitle">
     <div class="review-helper-head">
@@ -902,7 +903,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=custom-check-gif-20261009"></script>
+<script type="module" src="review-app.js?v=promo-strip-update-20261009"></script>
 </body>
 </html>
 

@@ -5323,31 +5323,6 @@ html.hide-review-replies .admin-reply-view-toggle, html.hide-review-replies .adm
   #btnUseRatingSuggestion { width: 100%; }
 }
 
-/* Flat 2D Helper banner, visually separate from the website button. */
-.review-helper::before { display: none !important; }
-.review-helper .review-helper-bubble {
-  display: flex !important; align-items: center !important; justify-content: flex-start !important;
-  gap: 10px; width: 190px !important; height: 58px !important; padding: 7px 11px !important;
-  border: 1px solid #56b7d8 !important; border-radius: 12px !important;
-  background: #eaf9ff !important; color: #075b79 !important;
-  box-shadow: none !important; overflow: hidden;
-}
-.review-helper .review-helper-bubble:hover { transform: none !important; background: #d9f3fd !important; }
-.review-helper .review-helper-bubble .review-helper-label {
-  position: static !important; width: auto !important; height: auto !important;
-  border: 0 !important; border-radius: 0 !important; background: transparent !important;
-  box-shadow: none !important; color: inherit !important; font-size: 13px !important;
-  font-weight: 900; white-space: nowrap; line-height: 1;
-}
-.review-helper .review-helper-bubble .review-helper-logo-img {
-  order: -1; width: 42px !important; height: 42px !important; flex: none; border-radius: 8px !important;
-  object-fit: cover; transform: none !important; filter: none !important;
-}
-@media (max-width: 600px) {
-  .review-helper .review-helper-bubble { width: 174px !important; height: 54px !important; padding: 6px 9px !important; }
-  .review-helper .review-helper-bubble .review-helper-logo-img { width: 40px !important; height: 40px !important; }
-}
-
 /* Original check remains the default; a GIF can replace it per review. */
 .custom-check.is-gif { width: 21px; height: 21px; margin-left: 0; filter: none; }
 .custom-check.is-gif::before, .custom-check.is-gif i { display: none; }
@@ -5371,3 +5346,42 @@ html.hide-review-replies .admin-reply-view-toggle, html.hide-review-replies .adm
     box-shadow: none !important;
   }
 }
+
+/* Promo copy now matches the flat navy information strips on the main store. */
+.review-rewrite-v3 .review-promo-shell {
+  margin: 16px auto 22px !important; border: 0 !important; border-radius: 0 !important;
+  background: transparent !important; box-shadow: none !important;
+}
+.review-rewrite-v3 .review-promo-copy {
+  display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important;
+  gap: 0 !important; min-height: 38px; margin: 0 !important; padding: 0 12px !important;
+  border: 0 !important; border-radius: 0 !important; background: #0d2945 !important;
+  color: #e7f1fb !important; box-shadow: none !important; overflow-x: auto; scrollbar-width: none;
+}
+.review-promo-copy::-webkit-scrollbar { display: none; }
+.review-rewrite-v3 .review-promo-copy > span {
+  display: inline-flex; align-items: center; flex: 0 0 auto; min-height: 18px;
+  padding: 0 18px; border-right: 1px solid rgba(255,255,255,.15);
+  color: #e7f1fb; font-size: 11px; font-weight: 750; white-space: nowrap;
+}
+.review-rewrite-v3 .review-promo-copy > span:first-child { padding-left: 4px; color: #71d7ff; }
+.review-rewrite-v3 .review-promo-copy > span:last-child { border-right: 0; }
+.review-rewrite-v3 .review-promo-slider { border-radius: 0 0 12px 12px !important; box-shadow: none !important; }
+@media (max-width: 600px) {
+  .review-rewrite-v3 .review-promo-copy { min-height: 36px; }
+  .review-rewrite-v3 .review-promo-copy > span { padding-inline: 12px; font-size: 10px; }
+}
+
+/* Visible only when a newer deployment is detected. */
+.review-update-notice[hidden] { display: none !important; }
+.review-update-notice {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px max(16px, calc((100vw - 1180px)/2));
+  border-bottom: 1px solid #8ed5f3; background: #e7f7ff; color: #0f4261; font-family: inherit;
+}
+.review-update-icon { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 7px; background: #0d2945; color: #fff; font-size: 20px; }
+.review-update-copy { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.review-update-copy strong { font-size: 12px; line-height: 1.2; }
+.review-update-copy small { font-size: 10px; color: #4e7189; }
+.review-update-notice button { border: 0; border-radius: 7px; background: #0d2945; color: #fff; padding: 8px 12px; font-family: inherit; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.review-update-notice .review-update-close { padding: 3px 7px; background: transparent; color: #426a82; font-size: 20px; }
+@media (max-width: 500px) { .review-update-notice { gap: 8px; padding: 8px 10px; }.review-update-notice button { padding: 7px 9px; font-size: 10px; }.review-update-icon { display: none; } }

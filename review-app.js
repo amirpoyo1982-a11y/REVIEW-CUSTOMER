@@ -229,6 +229,54 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   cleanHardRefreshParam();
   btnHardRefreshReview?.addEventListener("click", hardRefreshReviewSite);
   window.hardRefreshReviewSite = hardRefreshReviewSite;
+  // Detect new Vercel HTML while this tab is open. Never interrupt an in-progress review.
+  const reviewUpdateNotice = document.getElementById('reviewUpdateNotice');
+  const reviewUpdateTime = document.getElementById('reviewUpdateTime');
+  const reviewUpdateNow = document.getElementById('reviewUpdateNow');
+  const reviewUpdateDismiss = document.getElementById('reviewUpdateDismiss');
+  const loadedReviewModified = Date.parse(document.lastModified) || 0;
+  const loadedReviewAsset = document.querySelector('script[src*="review-app.js"]')?.getAttribute('src')?.match(/[?&]v=([^&#]+)/)?.[1] || '';
+  let latestReviewUpdateKey = '';
+  let reviewUpdateChecking = false;
+  let reviewUpdateCheckedAt = 0;
+  async function checkReviewVersion() {
+    if (document.visibilityState === 'hidden' || reviewUpdateChecking || !reviewUpdateNotice.hidden) return;
+    if (Date.now() - reviewUpdateCheckedAt < 15000) return;
+    reviewUpdateChecking = true;
+    reviewUpdateCheckedAt = Date.now();
+    try {
+      const response = await fetch(window.location.pathname + '?review_version_probe=' + Date.now(), { cache:'no-store' });
+      if (!response.ok) return;
+      const latestHtml = await response.text();
+      const latestAsset = latestHtml.match(/review-app\.js\?v=([^"'\s<]+)/i)?.[1] || '';
+      const latestModified = Date.parse(response.headers.get('last-modified') || '') || 0;
+      const newAsset = latestAsset && loadedReviewAsset && latestAsset !== loadedReviewAsset;
+      const newerHtml = latestModified && loadedReviewModified && latestModified > loadedReviewModified + 1000;
+      if (!newAsset && !newerHtml) return;
+      latestReviewUpdateKey = latestAsset + ':' + latestModified;
+      try { if (sessionStorage.getItem('h4sx_review_update_dismissed') === latestReviewUpdateKey) return; } catch (_) {}
+      reviewUpdateTime.textContent = latestModified
+        ? 'Diterbitkan ' + new Intl.DateTimeFormat('ms-MY', { dateStyle:'medium', timeStyle:'short', timeZone:'Asia/Kuala_Lumpur' }).format(latestModified)
+        : 'Muat semula untuk lihat perubahan terkini.';
+      reviewUpdateNotice.hidden = false;
+    } catch (error) {
+      console.debug('Semakan versi review akan dicuba semula.', error);
+    } finally {
+      reviewUpdateChecking = false;
+    }
+  }
+  reviewUpdateNow?.addEventListener('click', hardRefreshReviewSite);
+  reviewUpdateDismiss?.addEventListener('click', () => {
+    reviewUpdateNotice.hidden = true;
+    try { sessionStorage.setItem('h4sx_review_update_dismissed', latestReviewUpdateKey); } catch (_) {}
+  });
+  setTimeout(checkReviewVersion, 2500);
+  setInterval(checkReviewVersion, 120000);
+  window.addEventListener('focus', checkReviewVersion);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkReviewVersion();
+  });
+
 
   // ── Butang scroll terus ke bahagian ulasan ──────────────────────
 
@@ -2200,24 +2248,6 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   document.addEventListener("visibilitychange", () => updateVisitPresence(document.visibilityState !== "hidden"));
   window.addEventListener("pagehide", () => updateVisitPresence(false));
 
-  // ── Ticker ────────────────────────────────────────────────────
-  const tickerItems = [
-    { icon:"⚡", text:"Penghantaran Pantas 5–25 Minit" },
-    { icon:"⭐", text:"300+ Pelanggan Berpuas Hati" },
-    { icon:"💬", text:"Bantuan Terus Melalui WhatsApp" },
-    { icon:"🔒", text:"Semak Detail Sebelum Bayar" },
-    { icon:"🎮", text:"Item Roblox Terpilih" },
-    { icon:"🛡️", text:"Pembelian Lebih Selamat" },
-    { icon:"🌟", text:"Kedai Dipercayai Sejak 2024" },
-    { icon:"📦", text:"Stock Sentiasa Ada" },
-  ];
-  const track = document.getElementById("tickerTrack");
-  const buildTicker = (items) => items.map(i =>
-    `<span class="ticker-item"><span class="ti">${i.icon}</span>${i.text}</span>`
-  ).join("");
-  // Duplicate for seamless loop
-  track.innerHTML = buildTicker(tickerItems) + buildTicker(tickerItems);
-
   // ── Toast ─────────────────────────────────────────────────────
   const toastStack = document.getElementById("toastStack");
   function showToast(msg, type="info") {
@@ -3485,7 +3515,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   const REVIEW_HELPER_PRESETS = {
     code: {
       label: "Kod review",
-      answer: "Kod pengesahan review ialah kod unik daripada admin selepas pembelian. Satu kod hanya boleh digunakan untuk satu ulasan.\n\nJika belum ada kod, hubungi admin: https://wa.me/H4SXMY"
+      answer: "Kod pengesahan review ialah kod unik daripada admin selepas pembelian. Satu kod hanya boleh digunakan untuk satu ulasan.\n\nJika belum ada kod, hubungi admin: https://wa.me/60193263016"
     },
     review: {
       label: "Cara review",
