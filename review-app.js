@@ -679,6 +679,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const badgeLivePreview     = document.getElementById('badgeLivePreview');
   const customCheckEnabledToggle = document.getElementById('customCheckEnabledToggle');
   const customCheckColorInput = document.getElementById('customCheckColorInput');
+  const customCheckTypeSelect = document.getElementById('customCheckTypeSelect');
+  const customCheckGifInput = document.getElementById('customCheckGifInput');
+  const customCheckGifOptions = document.getElementById('customCheckGifOptions');
+  const customCheckGifStatus = document.getElementById('customCheckGifStatus');
   const customCheckLivePreview = document.getElementById('customCheckLivePreview');
   const verifiedBuyerEnabledToggle = document.getElementById('verifiedBuyerEnabledToggle');
   const btnRemoveVerifiedBuyer = document.getElementById('btnRemoveVerifiedBuyer');
@@ -756,7 +760,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const urls = reviewEmojiCandidates(value);
     if (!urls.length) return '';
     const attributes = urls.slice(1).map((url, index) => `data-fallback${index + 1}="${escapeHtml(url)}"`).join(' ');
-    return `<span class="review-animated-emoji"><img src="${escapeHtml(urls[0])}" ${attributes} ${statusId ? `data-preview-status="${statusId}"` : ''} alt="" loading="lazy" decoding="async"></span>`;
+    return `<span class="review-animated-emoji"><img src="${escapeHtml(urls[0])}" ${attributes} ${statusId ? `data-preview-status="${statusId}"` : ''} alt="" loading="${statusId ? 'eager' : 'lazy'}" decoding="async"></span>`;
   }
   function reviewEmojiValue(input, label) {
     const value = input.value.trim();
@@ -781,7 +785,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const next = img.dataset.fallback1 || img.dataset.fallback2;
     if (img.dataset.fallback1) { img.dataset.fallback1 = ''; img.src = next; return; }
     if (img.dataset.fallback2) { img.dataset.fallback2 = ''; img.src = next; return; }
-    img.closest('.review-animated-emoji').remove();
+    const container = img.closest('.review-animated-emoji');
+    const check = container.closest('.custom-check.is-gif');
+    container.remove();
+    check?.classList.remove('is-gif');
     const status = document.getElementById(img.dataset.previewStatus || '');
     if (status) status.textContent = 'Gambar gagal dimuatkan. Cuba pautan imej terus.';
   }, true);
@@ -798,9 +805,11 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   function customCheckMarkup(data = {}) {
     if (data.customCheckEnabled !== true) return '';
     const color = warnaHexSah(data.customCheckColor, '#0284c7');
-    return `<span class="custom-check" style="--check-color:${color}" title="Disahkan H4SX" aria-label="Disahkan H4SX"><i class="fa-solid fa-check"></i></span>`;
+    const gif = data.customCheckType === 'gif' && reviewEmojiCandidates(data.customCheckGif).length
+      ? reviewEmojiMarkup(data.customCheckGif) : '';
+    return `<span class="custom-check${gif ? ' is-gif' : ''}" style="--check-color:${color}" title="Disahkan H4SX" aria-label="Disahkan H4SX"><i class="fa-solid fa-check"></i>${gif}</span>`;
   }
-  function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia, rainbowSedia, checkSedia, checkColorSedia, verifiedDisorok, emojiSedia) {
+  function bukaBadgeModal(id, teksSedia, warnaSedia, warnaTextSedia, warnaKeduaSedia, gradientSedia, animasiSedia, glowSedia, rainbowSedia, checkSedia, checkColorSedia, verifiedDisorok, emojiSedia, checkTypeSedia, checkGifSedia) {
     editingBadgeId = id;
     badgeEmojiInput.value = emojiSedia || '';
     badgeTextInput.value = teksSedia || '';
@@ -813,6 +822,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     badgeRainbowToggle.checked = rainbowSedia === true;
     if (customCheckEnabledToggle) customCheckEnabledToggle.checked = checkSedia === true;
     if (customCheckColorInput) customCheckColorInput.value = warnaHexSah(checkColorSedia, '#0284c7');
+    customCheckTypeSelect.value = checkTypeSedia === 'gif' ? 'gif' : 'default';
+    customCheckGifInput.value = checkGifSedia || '';
     if (verifiedBuyerEnabledToggle) verifiedBuyerEnabledToggle.checked = verifiedDisorok !== true;
     kemaskiniBadgePreview();
     badgeOverlayBg.classList.add('show');
@@ -837,11 +848,22 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       badgeGradient: badgeGradientToggle.checked,
       badgeRainbow: badgeRainbowToggle.checked
     });
-    customCheckLivePreview?.style.setProperty('--check-color', customCheckColorInput?.value || '#0284c7');
-    customCheckLivePreview?.classList.toggle('is-disabled', !customCheckEnabledToggle?.checked);
+    const gifSelected = customCheckTypeSelect.value === 'gif';
+    customCheckGifOptions.hidden = !gifSelected;
+    customCheckColorInput.closest('.custom-check-color-field').hidden = gifSelected;
+    const gifReady = gifSelected && reviewEmojiCandidates(customCheckGifInput.value).length > 0;
+    customCheckLivePreview.innerHTML = '<i class="fa-solid fa-check"></i>' + (gifReady ? reviewEmojiMarkup(customCheckGifInput.value, 'customCheckGifStatus') : '');
+    customCheckLivePreview.style.setProperty('--check-color', customCheckColorInput.value || '#0284c7');
+    customCheckLivePreview.classList.toggle('is-gif', gifReady);
+    customCheckLivePreview.classList.toggle('is-disabled', !customCheckEnabledToggle.checked);
+    if (gifSelected) reviewEmojiStatus(customCheckGifInput, customCheckGifStatus);
   }
-  [badgeEmojiInput, badgeTextInput, badgeColorInput2, badgeColorInput, badgeTextColorInput, badgeGlowColorInput, badgeGradientToggle, badgeAnimatedToggle, badgeRainbowToggle, customCheckEnabledToggle, customCheckColorInput]
+  [badgeEmojiInput, badgeTextInput, badgeColorInput2, badgeColorInput, badgeTextColorInput, badgeGlowColorInput, badgeGradientToggle, badgeAnimatedToggle, badgeRainbowToggle, customCheckEnabledToggle, customCheckColorInput, customCheckTypeSelect, customCheckGifInput]
     .filter(Boolean).forEach(el => el.addEventListener('input', kemaskiniBadgePreview));
+  customCheckTypeSelect.addEventListener('change', () => {
+    if (customCheckTypeSelect.value === 'gif') customCheckEnabledToggle.checked = true;
+    kemaskiniBadgePreview();
+  });
   badgeOverlayBg.addEventListener('click', tutupBadgeModal);
   btnCancelBadge.addEventListener('click', tutupBadgeModal);
 
@@ -1012,6 +1034,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
 
   function getBadgePayloadFromInputs() {
     const teks = badgeTextInput.value.trim();
+    const checkEnabled = customCheckEnabledToggle.checked;
+    const checkGifMode = checkEnabled && customCheckTypeSelect.value === 'gif';
+    const checkGif = checkGifMode ? reviewEmojiValue(customCheckGifInput, 'GIF centang') : null;
+    if (checkGifMode && !checkGif) throw new Error('Isi URL GIF centang dahulu.');
     return {
       badgeText: teks || null,
       badgeEmoji: teks ? reviewEmojiValue(badgeEmojiInput, 'Emoji role') : null,
@@ -1022,8 +1048,10 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       badgeGradient: teks ? badgeGradientToggle.checked : null,
       badgeAnimated: teks ? badgeAnimatedToggle.checked : null,
       badgeRainbow: teks ? badgeRainbowToggle.checked : null,
-      customCheckEnabled: customCheckEnabledToggle?.checked === true,
-      customCheckColor: customCheckEnabledToggle?.checked === true ? customCheckColorInput?.value || '#0284c7' : null,
+      customCheckEnabled: checkEnabled,
+      customCheckType: checkEnabled ? (checkGifMode ? 'gif' : 'default') : null,
+      customCheckGif: checkGif,
+      customCheckColor: checkEnabled && !checkGifMode ? customCheckColorInput.value || '#0284c7' : null,
       hideVerifiedBadge: verifiedBuyerEnabledToggle?.checked === false
     };
   }
@@ -1058,7 +1086,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   });
   btnRemoveCustomCheck?.addEventListener('click', () => {
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
-    simpanBadgePayload({ customCheckEnabled:false, customCheckColor:null }, "Centang custom dibuang.", dataDoc);
+    simpanBadgePayload({ customCheckEnabled:false, customCheckType:null, customCheckGif:null, customCheckColor:null }, "Centang custom dibuang.", dataDoc);
   });
   btnRemoveBadge.addEventListener('click', () => {
     const dataDoc = allDocs.find(d=>d.id===editingBadgeId) || {};
@@ -3230,7 +3258,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       btnSaveEditTime.addEventListener("click",()=>simpanEditMasa(id, editTimeInput.value, btnSaveEditTime, data));
       btnBadge.addEventListener("click", ()=>{
         if(!mintaAdmin())return;
-        bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor, data.badgeRainbow, data.customCheckEnabled, data.customCheckColor, data.hideVerifiedBadge, data.badgeEmoji);
+        bukaBadgeModal(id, data.badgeText, data.badgeColor, data.badgeTextColor, data.badgeColor2, data.badgeGradient, data.badgeAnimated, data.badgeGlowColor, data.badgeRainbow, data.customCheckEnabled, data.customCheckColor, data.hideVerifiedBadge, data.badgeEmoji, data.customCheckType, data.customCheckGif);
       });
       btnProfile.addEventListener("click", ()=>{
         if(!mintaAdmin())return;

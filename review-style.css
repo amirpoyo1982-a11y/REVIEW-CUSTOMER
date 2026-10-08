@@ -5323,36 +5323,51 @@ html.hide-review-replies .admin-reply-view-toggle, html.hide-review-replies .adm
   #btnUseRatingSuggestion { width: 100%; }
 }
 
-/* Compact 2D helper banner: one clickable surface, no overlapping label. */
+/* Flat 2D Helper banner, visually separate from the website button. */
 .review-helper::before { display: none !important; }
 .review-helper .review-helper-bubble {
-  display: flex !important; align-items: center !important; justify-content: space-between !important;
-  gap: 7px; width: 168px !important; height: 54px !important; padding: 4px 4px 4px 14px !important;
-  border: 1px solid #61c9ef !important; border-radius: 999px !important;
+  display: flex !important; align-items: center !important; justify-content: flex-start !important;
+  gap: 10px; width: 190px !important; height: 58px !important; padding: 7px 11px !important;
+  border: 1px solid #56b7d8 !important; border-radius: 12px !important;
   background: #eaf9ff !important; color: #075b79 !important;
-  box-shadow: 0 3px 10px rgba(6,69,104,.18) !important; overflow: hidden;
+  box-shadow: none !important; overflow: hidden;
 }
-.review-helper .review-helper-bubble:hover { transform: translateY(-2px); }
+.review-helper .review-helper-bubble:hover { transform: none !important; background: #d9f3fd !important; }
 .review-helper .review-helper-bubble .review-helper-label {
   position: static !important; width: auto !important; height: auto !important;
   border: 0 !important; border-radius: 0 !important; background: transparent !important;
-  box-shadow: none !important; color: inherit !important; font-size: 12px !important;
+  box-shadow: none !important; color: inherit !important; font-size: 13px !important;
   font-weight: 900; white-space: nowrap; line-height: 1;
 }
 .review-helper .review-helper-bubble .review-helper-logo-img {
-  width: 44px !important; height: 44px !important; flex: none; border-radius: 50%;
+  order: -1; width: 42px !important; height: 42px !important; flex: none; border-radius: 8px !important;
   object-fit: cover; transform: none !important; filter: none !important;
 }
 @media (max-width: 600px) {
-  .review-helper .review-helper-bubble { width: 153px !important; height: 50px !important; padding-left: 10px !important; }
+  .review-helper .review-helper-bubble { width: 174px !important; height: 54px !important; padding: 6px 9px !important; }
   .review-helper .review-helper-bubble .review-helper-logo-img { width: 40px !important; height: 40px !important; }
 }
+
+/* Original check remains the default; a GIF can replace it per review. */
+.custom-check.is-gif { width: 21px; height: 21px; margin-left: 0; filter: none; }
+.custom-check.is-gif::before, .custom-check.is-gif i { display: none; }
+.custom-check.is-gif .review-animated-emoji { margin: 0; }
+.custom-check.is-gif .review-animated-emoji img { width: 21px; height: 21px; object-fit: contain; }
+.custom-check-designer .custom-check.is-gif { width: 30px; height: 30px; }
+.custom-check-designer .custom-check.is-gif img { width: 30px; height: 30px; }
+.custom-check-picker { display: flex; flex-wrap: wrap; align-items: center; }
+.custom-check-picker > div:first-child { flex: 1 1 160px; }
+.custom-check-picker .custom-check-mode-field { display: grid; gap: 4px; color: var(--text-mid); font-size: 11px; font-weight: 800; }
+.custom-check-picker select { min-height: 34px; padding: 5px 8px; border: 1px solid var(--line-mid); border-radius: 7px; color: var(--text); background: #fff; font: inherit; }
+.custom-check-picker .custom-check-gif-options { flex: 1 1 100%; display: grid; gap: 5px; }
+.custom-check-picker .custom-check-gif-options[hidden], .custom-check-picker .custom-check-color-field[hidden] { display: none !important; }
+.custom-check-gif-options input { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid var(--line-mid); border-radius: 7px; font: inherit; }
 
 /* Keep the blue website link separate from the Helper banner. */
 @media (min-width: 601px) {
   .btn-main-site {
-    right: 18px !important; bottom: 82px !important;
-    padding: 10px 16px !important; border-radius: 999px !important;
-    box-shadow: 0 3px 10px rgba(6,69,104,.18) !important;
+    right: 18px !important; bottom: 84px !important;
+    padding: 10px 16px !important; border-radius: 10px !important;
+    box-shadow: none !important;
   }
 }
