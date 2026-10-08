@@ -3336,11 +3336,17 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           <button class="admin-reply-view-toggle" type="button" aria-expanded="false">Balasan admin ↓</button>
           <div class="admin-reply-box">
             <div class="admin-reply-header">
-              <img src="https://i.imgur.com/cLPulXQ.png" class="admin-reply-avatar" alt="Admin">
-              <p class="admin-reply-label">H4SX STORE</p>
+              <img src="https://i.imgur.com/cLPulXQ.png" class="admin-reply-avatar" alt="Logo H4SX STORE">
+              <div class="admin-reply-heading">
+                <span class="admin-reply-kicker">JAWAPAN RASMI</span>
+                <p class="admin-reply-label">H4SX STORE</p>
+              </div>
             </div>
             <p class="admin-reply-text">${formatMessageText(data.balasanAdmin)}</p>
-            <p class="admin-reply-time">${masaBalasan}</p>
+            <div class="admin-reply-footer">
+              <p class="admin-reply-time"><i class="fa-regular fa-clock" aria-hidden="true"></i> ${masaBalasan || "Balasan H4SX"}</p>
+              <button class="admin-reply-copy" type="button" aria-label="Salin balasan H4SX"><i class="fa-regular fa-copy" aria-hidden="true"></i> Salin</button>
+            </div>
           </div>`:""}
           <div class="admin-reply-form-actions" style="margin-top:6px;${adminOk()?"":"display:none;"}" data-admin-ctrl-row data-nosnippet>
             <button class="reply-toggle-btn admin-action-btn admin-action-edit" title="Edit balasan">${adaBalasan?"Edit":"Balas"}</button>
@@ -3384,6 +3390,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const btnBadge=card.querySelector(".btn-badge-ulasan");
       const btnSeeFeedback=card.querySelector(".btn-see-feedback");
       const btnReplyView=card.querySelector(".admin-reply-view-toggle");
+      const btnCopyReply=card.querySelector(".admin-reply-copy");
       const btnTextToggle=card.querySelector(".review-text-toggle");
       const btnReport=card.querySelector(".review-report-btn");
       if (btnTextToggle) {
@@ -3405,6 +3412,14 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           btnReplyView.textContent = open ? "Tutup balasan ↑" : "Balasan admin ↓";
         });
       }
+      btnCopyReply?.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(String(data.balasanAdmin || ""));
+          showToast("Balasan H4SX disalin.", "success");
+        } catch (error) {
+          showToast("Tak dapat salin balasan. Cuba lagi.", "error");
+        }
+      });
       btnReport?.addEventListener("click",()=>openReviewReport(id, rawNama, btnReport));
       toggleB.addEventListener("click",()=>{
         if(!mintaAdmin())return;

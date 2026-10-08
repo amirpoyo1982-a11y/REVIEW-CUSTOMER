@@ -5473,3 +5473,152 @@ html.hide-review-replies .admin-reply-view-toggle, html.hide-review-replies .adm
 .review-update-notice button { border: 0; border-radius: 7px; background: #0d2945; color: #fff; padding: 8px 12px; font-family: inherit; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
 .review-update-notice .review-update-close { padding: 3px 7px; background: transparent; color: #426a82; font-size: 20px; }
 @media (max-width: 500px) { .review-update-notice { gap: 8px; padding: 8px 10px; }.review-update-notice button { padding: 7px 9px; font-size: 10px; }.review-update-icon { display: none; } }
+
+/* Official H4SX reply card */
+.review-rewrite-v3 .admin-reply-box {
+  position: relative;
+  overflow: hidden;
+  margin-top: 12px;
+  padding: 0 !important;
+  border: 1px solid #bfe3e7 !important;
+  border-radius: 15px !important;
+  background: linear-gradient(120deg, #f3fbff 0%, #f1fcf8 100%) !important;
+  box-shadow: 0 8px 20px rgba(6, 57, 83, .07) !important;
+}
+.review-rewrite-v3 .admin-reply-box::before {
+  content: "";
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, #159be0, #12b8bc 58%, #24be8d);
+}
+.review-rewrite-v3 .admin-reply-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 !important;
+  padding: 13px 15px 0;
+}
+.review-rewrite-v3 .admin-reply-avatar {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  padding: 2px;
+  border: 1px solid #c6e6f1;
+  border-radius: 11px;
+  background: #fff;
+  object-fit: contain;
+}
+.review-rewrite-v3 .admin-reply-heading {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-width: 0;
+}
+.review-rewrite-v3 .admin-reply-kicker {
+  color: #1282a5;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .11em;
+}
+.review-rewrite-v3 .admin-reply-label {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  gap: 5px;
+  margin: 0;
+  color: #103957;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .025em;
+}
+.review-rewrite-v3 .admin-reply-label::after {
+  width: 15px;
+  height: 15px;
+  margin-left: 1px;
+  border-radius: 50%;
+  background: #168fd1;
+  color: #fff;
+  font-size: 10px;
+  line-height: 15px;
+}
+.review-rewrite-v3 .admin-reply-text {
+  margin: 12px 15px 13px;
+  color: #203c52;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+.review-rewrite-v3 .admin-reply-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 38px;
+  padding: 6px 13px 6px 15px;
+  border-top: 1px solid rgba(49, 147, 160, .15);
+  background: rgba(255, 255, 255, .42);
+}
+.review-rewrite-v3 .admin-reply-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin: 0;
+  color: #65839a;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.review-rewrite-v3 .admin-reply-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  min-height: 27px;
+  padding: 4px 8px;
+  border: 1px solid #b8ddea;
+  border-radius: 7px;
+  background: #fff;
+  color: #087aa9;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.review-rewrite-v3 .admin-reply-copy:hover {
+  border-color: #62b9dc;
+  background: #e9f8ff;
+}
+.review-rewrite-v3 .admin-reply-copy:focus-visible {
+  outline: 2px solid #098fc8;
+  outline-offset: 2px;
+}
+:root[data-theme="dark"] .review-rewrite-v3 .admin-reply-box {
+  border-color: #28566a !important;
+  background: linear-gradient(120deg, #102d3d, #102e35) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .15) !important;
+}
+:root[data-theme="dark"] .review-rewrite-v3 .admin-reply-avatar {
+  border-color: #416579;
+}
+:root[data-theme="dark"] .review-rewrite-v3 .admin-reply-kicker { color: #78d6ed; }
+:root[data-theme="dark"] .review-rewrite-v3 .admin-reply-label { color: #f1faff; }
+:root[data-theme="dark"] .review-rewrite-v3 .admin-reply-text { color: #d6e8ef; }
+:root[data-theme="dark"] .review-rewrite-v3 .admin-reply-footer {
+  border-top-color: rgba(139, 209, 220, .14);
+  background: rgba(4, 19, 29, .22);
+}
+:root[data-theme="dark"] .review-rewrite-v3 .admin-reply-time { color: #a3c2d0; }
+:root[data-theme="dark"] .review-rewrite-v3 .admin-reply-copy {
+  border-color: #356579;
+  background: #173a4a;
+  color: #b1edff;
+}
+:root[data-theme="dark"] .review-rewrite-v3 .admin-reply-copy:hover { background: #20506a; }
+@media (max-width: 600px) {
+  .review-rewrite-v3 .admin-reply-header { padding: 11px 12px 0; }
+  .review-rewrite-v3 .admin-reply-text { margin: 11px 12px 12px; font-size: 13px; }
+  .review-rewrite-v3 .admin-reply-footer { padding: 6px 10px 6px 12px; }
+}
