@@ -1022,9 +1022,19 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     return `Terima kasih, ${replyName}! Kami hargai masa anda memberi ulasan kepada H4SX STORE. Sokongan anda membantu pelanggan lain lebih yakin, dan kami akan terus perbaiki servis supaya pengalaman anda lebih kemas, laju dan selamat. 🙏💙`;
   }
 
+  async function autoReplyEnabledForNewReview() {
+    try {
+      const settings = await getDoc(doc(db, "config", "review_admin"));
+      return !settings.exists() || settings.data().autoReply !== false;
+    } catch (error) {
+      console.warn("Tetapan auto balas tidak dapat disemak; review tetap disimpan tanpa auto balas.", error);
+      return false;
+    }
+  }
+
   function withAutoReply(payload, dataDoc = {}) {
     const next = { ...payload };
-    if (!dataDoc.balasanAdmin?.trim() && dataDoc.balasanDibuang !== true) {
+    if (reviewAdminSettings.autoReply !== false && !dataDoc.balasanAdmin?.trim() && dataDoc.balasanDibuang !== true) {
       next.balasanAdmin = buildAutoReply(dataDoc.nama || payload.nama);
       next.balasanPada = serverTimestamp();
     }
@@ -2849,10 +2859,12 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       // jadi auto-reply ni kena dihantar sebagai 'update' selepas create berjaya —
       // sah ikut rules 'update' sebab nama/bintang/ulasan/diciptaPada tak diubah.
       try {
-        await updateDoc(reviewRef, {
-          balasanAdmin: buildAutoReply(nama),
-          balasanPada: serverTimestamp()
-        });
+        if (await autoReplyEnabledForNewReview()) {
+          await updateDoc(reviewRef, {
+            balasanAdmin: buildAutoReply(nama),
+            balasanPada: serverTimestamp()
+          });
+        }
       } catch(errBalasan) {
         console.error("Auto-reply gagal (ulasan tetap tersimpan):", errBalasan);
       }
@@ -2917,7 +2929,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     btn.textContent = "Menyimpan...";
     try {
       const payload = { ulasan: ulasanBaru, ulasanDieditPada: serverTimestamp() };
-      if (!dataDoc.balasanAdmin?.trim()) {
+      if (reviewAdminSettings.autoReply !== false && !dataDoc.balasanAdmin?.trim()) {
         payload.balasanAdmin = buildAutoReply(dataDoc.nama);
         payload.balasanPada = serverTimestamp();
       }
@@ -2950,7 +2962,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     btn.textContent = "Menyimpan...";
     try {
       const payload = { diciptaPada: Timestamp.fromDate(date), masaDieditPada: serverTimestamp() };
-      if (!dataDoc.balasanAdmin?.trim()) {
+      if (reviewAdminSettings.autoReply !== false && !dataDoc.balasanAdmin?.trim()) {
         payload.balasanAdmin = buildAutoReply(dataDoc.nama);
         payload.balasanPada = serverTimestamp();
       }
@@ -3375,7 +3387,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           // Rules 'update' anda wajibkan balasanAdmin sentiasa string sah (1-400 aksara).
           // Kalau ulasan lama ni tak pernah dapat balasan lagi, isi dulu auto-reply
           // supaya update pin ni tak ditolak oleh Firestore rules.
-          if (!data.balasanAdmin?.trim()) {
+          if (reviewAdminSettings.autoReply !== false && !data.balasanAdmin?.trim()) {
             payload.balasanAdmin = buildAutoReply(data.nama);
             payload.balasanPada = serverTimestamp();
           }
@@ -3613,7 +3625,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   // ── Block Inspect Element & DevTools ──────────────────────────
   // Admin Review Center
   const DEFAULT_REVIEW_ADMIN_SETTINGS = {
-    showImages:true, showBadges:true, showReplies:true, showRelativeTime:true, lowRatingAlert:true,
+    showImages:true, showBadges:true, showReplies:true, autoReply:true, showRelativeTime:true, lowRatingAlert:true,
     replyTemplates:{
       5:"Terima kasih {nama}! Kami sangat hargai sokongan dan ulasan anda.",
       4:"Terima kasih {nama}! Kami gembira urusan berjalan lancar dan akan terus tingkatkan servis.",
@@ -3632,7 +3644,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     root.classList.toggle("hide-review-images",!reviewAdminSettings.showImages);
     root.classList.toggle("hide-review-badges",!reviewAdminSettings.showBadges);
     root.classList.toggle("hide-review-replies",!reviewAdminSettings.showReplies);
-    const map={Images:"showImages",Badges:"showBadges",Replies:"showReplies",RelativeTime:"showRelativeTime",LowAlert:"lowRatingAlert"};
+    const map={Images:"showImages",Badges:"showBadges",Replies:"showReplies",AutoReply:"autoReply",RelativeTime:"showRelativeTime",LowAlert:"lowRatingAlert"};
     Object.entries(map).forEach(([suffix,key])=>{const el=document.getElementById(`adminSetting${suffix}`);if(el)el.checked=reviewAdminSettings[key]!==false;});
     const rating=document.getElementById("adminTemplateRating")?.value||"5", template=document.getElementById("adminTemplateText");
     if(template)template.value=reviewAdminSettings.replyTemplates?.[rating]||"";
@@ -3814,7 +3826,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   async function logAdminAction(action,targetId,details){try{await addDoc(collection(db,"admin_audit"),{action,targetId,details,adminUid:currentUser?.uid||"",adminEmail:currentUser?.email||"",createdAt:serverTimestamp()});}catch(_){const local={action,targetId,details,time:new Date().toISOString()};adminAudit=[local,...adminAudit].slice(0,50);localStorage.setItem("h4sx_admin_audit",JSON.stringify(adminAudit));renderAdminAudit();}}
   document.getElementById("adminTemplateRating")?.addEventListener("change",e=>{document.getElementById("adminTemplateText").value=reviewAdminSettings.replyTemplates?.[e.target.value]||"";});
   document.getElementById("btnSaveAdminTemplate")?.addEventListener("click",async()=>{if(!mintaAdmin())return;const rating=document.getElementById("adminTemplateRating").value,text=document.getElementById("adminTemplateText").value.trim();if(!text){showToast("Template tidak boleh kosong.","error");return;}reviewAdminSettings.replyTemplates[rating]=text;try{await setDoc(doc(db,"config","review_admin"),{replyTemplates:reviewAdminSettings.replyTemplates},{merge:true});await logAdminAction("save_template",rating,`${rating} bintang`);showToast("Template balasan disimpan.","success");}catch(err){console.error(err);showToast("Gagal simpan template.","error");}});
-  document.getElementById("btnSaveAdminDisplay")?.addEventListener("click",async()=>{if(!mintaAdmin())return;const next={showImages:document.getElementById("adminSettingImages").checked,showBadges:document.getElementById("adminSettingBadges").checked,showReplies:document.getElementById("adminSettingReplies").checked,showRelativeTime:document.getElementById("adminSettingRelativeTime").checked,lowRatingAlert:document.getElementById("adminSettingLowAlert").checked};try{await setDoc(doc(db,"config","review_admin"),next,{merge:true});showToast("Tetapan paparan disimpan.","success");}catch(err){console.error(err);showToast("Gagal simpan tetapan.","error");}});
+  document.getElementById("btnSaveAdminDisplay")?.addEventListener("click",async()=>{if(!mintaAdmin())return;const next={showImages:document.getElementById("adminSettingImages").checked,showBadges:document.getElementById("adminSettingBadges").checked,showReplies:document.getElementById("adminSettingReplies").checked,autoReply:document.getElementById("adminSettingAutoReply").checked,showRelativeTime:document.getElementById("adminSettingRelativeTime").checked,lowRatingAlert:document.getElementById("adminSettingLowAlert").checked};try{await setDoc(doc(db,"config","review_admin"),next,{merge:true});showToast("Tetapan review disimpan.","success");}catch(err){console.error(err);showToast("Gagal simpan tetapan.","error");}});
 
   function serialiseReview(r){const out={...r};["diciptaPada","balasanPada","pinnedAt","featuredAt","moderatedAt"].forEach(k=>{if(out[k])out[k]=new Date(reviewRecordTime(out[k])).toISOString();});return out;}
   function downloadAdminData(data,name,type="application/json"){const text=type.includes("json")?JSON.stringify(Array.isArray(data)?data.map(serialiseReview):data,null,2):data,url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}

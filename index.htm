@@ -265,13 +265,15 @@
             <button id="btnSaveAdminTemplate" type="button"><i class="fa-solid fa-floppy-disk"></i> Simpan Template</button>
           </section>
           <section class="admin-tool-section">
-            <div class="admin-tool-title"><i class="fa-solid fa-display"></i><div><h3>Tetapan paparan</h3><p>Kawal maklumat yang pelanggan nampak.</p></div></div>
+            <div class="admin-tool-title"><i class="fa-solid fa-display"></i><div><h3>Tetapan review</h3><p>Kawal paparan dan auto balas.</p></div></div>
             <label class="admin-setting-toggle"><span>Gambar feedback</span><input id="adminSettingImages" type="checkbox" checked></label>
             <label class="admin-setting-toggle"><span>Role & badge</span><input id="adminSettingBadges" type="checkbox" checked></label>
-            <label class="admin-setting-toggle"><span>Balasan admin</span><input id="adminSettingReplies" type="checkbox" checked></label>
+            <label class="admin-setting-toggle"><span>Paparkan balasan admin</span><input id="adminSettingReplies" type="checkbox" checked></label>
+            <label class="admin-setting-toggle"><span>Auto balas review baharu</span><input id="adminSettingAutoReply" type="checkbox" checked></label>
+            <small class="admin-field-help">Matikan auto balas bawaan laman untuk uji bot. Biarkan paparan balasan aktif supaya jawapan bot kelihatan. Balasan lama tidak terpadam.</small>
             <label class="admin-setting-toggle"><span>Masa relatif</span><input id="adminSettingRelativeTime" type="checkbox" checked></label>
             <label class="admin-setting-toggle"><span>Amaran rating rendah</span><input id="adminSettingLowAlert" type="checkbox" checked></label>
-            <button id="btnSaveAdminDisplay" type="button"><i class="fa-solid fa-check"></i> Simpan Paparan</button>
+            <button id="btnSaveAdminDisplay" type="button"><i class="fa-solid fa-check"></i> Simpan Tetapan</button>
           </section>
           <section class="admin-tool-section">
             <div class="admin-tool-title"><i class="fa-solid fa-box-archive"></i><div><h3>Backup & export</h3><p>Simpan salinan data sebelum perubahan besar.</p></div></div>
@@ -898,7 +900,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=promo-carousel-20261009"></script>
+<script type="module" src="review-app.js?v=admin-auto-reply-toggle-20261009"></script>
 </body>
 </html>
 
