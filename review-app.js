@@ -380,9 +380,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   }
   window.logoutAdmin = logoutAdmin;
 
-  // ── Shop Closed Status (Gist) ─────────────────────────────────
+  // ── Shop Closed Status (Firebase, Gist fallback) ─────────────────────────────────
   const KEDAI_GIST_URL = 'https://gist.githubusercontent.com/amirpoyo1982-a11y/5ed3872290715d7833e788c7b0014f79/raw/kedai.json';
-  const HARI_MS = ["ahad","isnin","selasa","rabu","khamis","jumaat","sabtu"];
   function flagOn(value) {
     return value === true || String(value).toLowerCase() === "true" || String(value).toLowerCase() === "on";
   }
@@ -391,24 +390,70 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   }
   function isPreviewBypass() {
     const params = new URLSearchParams(window.location.search);
-    return params.get("preview") === "1" || params.get("preview") === "true";
+    return flagOn(params.get("preview")) || params.get("preview") === "1";
   }
 
-  function semakDalamWaktu(bukaJam, tutupJam) {
-    if (!bukaJam || !tutupJam) return true; // takde had waktu = anggap buka
-    const now = new Date();
-    const myTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
-    const mins = myTime.getHours()*60 + myTime.getMinutes();
-    const [bh,bm] = bukaJam.split(":").map(Number);
-    const [th,tm] = tutupJam.split(":").map(Number);
-    const bukaMins = bh*60 + (bm||0), tutupMins = th*60 + (tm||0);
-    if (bukaMins === tutupMins) return true; // 24 jam
-    if (bukaMins < tutupMins) {
-      return mins >= bukaMins && mins < tutupMins;
-    } else {
-      // merentas tengah malam (cth: buka 09:00, tutup 04:00 esok)
-      return mins >= bukaMins || mins < tutupMins;
+  // Use the same Malaysian clock and overnight-day rules as H4SX Store.
+  function parseReviewBusinessTime(value) {
+    const match = String(value ?? "").trim().toLowerCase()
+      .match(/^(\d{1,2})[:.](\d{2})(?::\d{2})?\s*(am|pm|pagi|petang|malam)?$/);
+    if (!match) return null;
+    let hour = Number(match[1]);
+    const minute = Number(match[2]);
+    const period = match[3];
+    if (minute > 59 || hour > (period ? 12 : 23) || (period && hour === 0)) return null;
+    if (period === "am" || period === "pagi") hour %= 12;
+    if (period === "pm" || period === "petang" || period === "malam") hour = (hour % 12) + 12;
+    return hour * 60 + minute;
+  }
+
+  function malaysiaReviewBusinessClock(now = new Date()) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Kuala_Lumpur", weekday: "long",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    }).formatToParts(now);
+    const part = type => parts.find(item => item.type === type)?.value;
+    const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return {
+      minuteOfDay: Number(part("hour")) * 60 + Number(part("minute")),
+      dayIndex: weekdays.indexOf(part("weekday"))
+    };
+  }
+
+  function reviewAutomaticClosure(config, now = new Date()) {
+    const clock = malaysiaReviewBusinessClock(now);
+    const start = parseReviewBusinessTime(config?.buka_jam);
+    const end = parseReviewBusinessTime(config?.tutup_jam);
+    if ((config?.buka_jam || config?.tutup_jam) && (start === null || end === null)) {
+      console.warn("Format waktu operasi tidak sah:", config.buka_jam, config.tutup_jam);
     }
+    const fromYesterday = start !== null && end !== null && start > end && clock.minuteOfDay < end;
+    const scheduleDay = (clock.dayIndex + (fromYesterday ? 6 : 0)) % 7;
+    const malayDays = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
+    if (Array.isArray(config?.tutup_hari) &&
+        config.tutup_hari.some(day => String(day).toLowerCase() === malayDays[scheduleDay].toLowerCase())) {
+      return { closed: true, reason: "Hari Tutup" };
+    }
+    if (start !== null && end !== null &&
+        start !== end &&
+        (start < end
+          ? clock.minuteOfDay < start || clock.minuteOfDay >= end
+          : clock.minuteOfDay >= end && clock.minuteOfDay < start)) {
+      return { closed: true, reason: "Luar Waktu Operasi" };
+    }
+    return { closed: false, reason: "" };
+  }
+
+  function reviewBusinessHoursLabel(config = {}) {
+    const start = parseReviewBusinessTime(config.buka_jam);
+    const end = parseReviewBusinessTime(config.tutup_jam);
+    if (start === null || end === null) return config.business_hours_text || "";
+    const format = minutes => {
+      const hour = Math.floor(minutes / 60);
+      return (hour % 12 || 12) + ":" + String(minutes % 60).padStart(2, "0") + (hour < 12 ? " PG" : " PTG");
+    };
+    return (Array.isArray(config.tutup_hari) && config.tutup_hari.length ? "Waktu operasi" : "Setiap hari")
+      + ": " + format(start) + " – " + format(end);
   }
 
   // ── Promo Banner From Kedai Gist ───────────────────────────────
@@ -658,7 +703,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     overlayEl?.classList.add('active');
   }
 
-  async function semakStatusKedai(realtimeConfig = null) {
+  let latestReviewStoreConfig = null;
+  async function semakStatusKedai(realtimeConfig = null, refreshPromo = true) {
     if (isPreviewBypass()) {
       document.getElementById('shopClosedOverlay').classList.remove('active');
       return;
@@ -670,13 +716,18 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
         if (!res.ok) throw new Error('Gagal baca fallback config (' + res.status + ')');
         data = await res.json();
       }
+      if (data?.storeConfig && typeof data.storeConfig === "object") {
+        data = { ...data.storeConfig, ...data };
+      }
+      if (data) latestReviewStoreConfig = data;
+      const hoursText = reviewBusinessHoursLabel(data || {});
       reviewClosureCopy = {
         closedTitle: String(data?.tajuk_tutup || data?.closed_title || '').trim(),
         closedMessage: String(data?.mesej_tutup || data?.closed_message || '').trim(),
         maintenanceTitle: String(data?.tajuk_maintenance || data?.maintenance_title || '').trim(),
         maintenanceMessage: String(data?.mesej_maintenance || data?.maintenance_message || '').trim()
       };
-      renderReviewPromoBanners(data);
+      if (refreshPromo) renderReviewPromoBanners(data);
 
       // 1. Maintenance khas untuk page ulasan sahaja.
       if (data && (
@@ -689,7 +740,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
           '🔧',
           data.review_maintenance_title || 'Ulasan Dalam Penyelenggaraan',
           data.review_maintenance_message || data.review_maintenance_msg || 'Sistem ulasan sedang diproses dan dikemas semula. Kemungkinan besar feature ulasan akan berfungsi kembali dalam sekitar 2 hari lagi.',
-          data.business_hours_text,
+          hoursText,
           'maintenance'
         );
         return;
@@ -697,26 +748,24 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
 
       // 2. Mod penyelenggaraan global — untuk tutup semua website kalau perlu.
       if (data && flagOn(data.maintenance)) {
-        paparKedaiTutup('🛠️', 'Dalam Penyelenggaraan', 'Kedai sedang dalam penyelenggaraan buat masa ini. Sila cuba lagi sebentar lagi.', data.business_hours_text, 'maintenance');
+        paparKedaiTutup('🛠️', 'Dalam Penyelenggaraan', 'Kedai sedang dalam penyelenggaraan buat masa ini. Sila cuba lagi sebentar lagi.', hoursText, 'maintenance');
         return;
       }
 
       // 3. Suis manual admin — bukakedai:false = tutup terus, tak kira jam
       if (data && flagOff(data.bukakedai)) {
-        paparKedaiTutup('🚫', 'Kedai Ditutup Sementara', 'Kami sedang berehat. Sila kembali kemudian.', data.business_hours_text);
+        paparKedaiTutup('🚫', 'Kedai Ditutup Sementara', 'Kami sedang berehat. Sila kembali kemudian.', hoursText);
         return;
       }
 
-      // 4. Hari cuti (tutup_hari)
-      const hariIni = HARI_MS[new Date().getDay()];
-      if (data && Array.isArray(data.tutup_hari) && data.tutup_hari.some(h => (h||"").toLowerCase() === hariIni)) {
-        paparKedaiTutup('📅', 'Kedai Tutup Hari Ini', 'Kami tidak beroperasi pada hari ini.', data.business_hours_text);
+      // 4–5. Hari cuti dan jadual waktu, termasuk operasi lintas tengah malam.
+      const automaticClosure = reviewAutomaticClosure(data || {});
+      if (automaticClosure.reason === "Hari Tutup") {
+        paparKedaiTutup('📅', 'Kedai Tutup Hari Ini', 'Kami tidak beroperasi pada hari ini.', hoursText);
         return;
       }
-
-      // 5. Di luar waktu operasi (buka_jam / tutup_jam)
-      if (data && !semakDalamWaktu(data.buka_jam, data.tutup_jam)) {
-        paparKedaiTutup('🕐', 'Di Luar Waktu Operasi', 'Kami sedang tutup buat masa ini. Sila kembali semasa waktu operasi kami.', data.business_hours_text);
+      if (automaticClosure.closed) {
+        paparKedaiTutup('🕐', 'Di Luar Waktu Operasi', 'Kami sedang tutup buat masa ini. Sila kembali semasa waktu operasi kami.', hoursText);
         return;
       }
 
@@ -729,18 +778,32 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   let realtimeStoreConfigConnected = false;
   onValue(realtimeRef(realtimeDb, 'store/config'), snapshot => {
     realtimeStoreConfigConnected = true;
-    semakStatusKedai(snapshot.exists() ? snapshot.val() : null);
+    latestReviewStoreConfig = snapshot.exists() ? snapshot.val() : null;
+    semakStatusKedai(latestReviewStoreConfig);
   }, error => {
     realtimeStoreConfigConnected = false;
-    console.warn('Realtime config review gagal, guna fallback:', error);
-    semakStatusKedai();
+    console.warn('Realtime config review gagal, guna config terakhir:', error);
+    if (latestReviewStoreConfig) semakStatusKedai(latestReviewStoreConfig, false);
+    else semakStatusKedai();
   });
   setTimeout(() => {
-    if (!realtimeStoreConfigConnected) semakStatusKedai();
+    if (!realtimeStoreConfigConnected && !latestReviewStoreConfig) semakStatusKedai();
   }, 3500);
-  setInterval(() => {
-    if (!realtimeStoreConfigConnected) semakStatusKedai();
-  }, 60000);
+
+  // Firebase sends changes to the schedule; the clock must also recheck at
+  // each Malaysian minute boundary while the page stays open.
+  function scheduleReviewHoursCheck() {
+    const delay = 60000 - (Date.now() % 60000) + 250;
+    setTimeout(() => {
+      if (latestReviewStoreConfig) semakStatusKedai(latestReviewStoreConfig, false);
+      else semakStatusKedai();
+      scheduleReviewHoursCheck();
+    }, delay);
+  }
+  scheduleReviewHoursCheck();
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && latestReviewStoreConfig) semakStatusKedai(latestReviewStoreConfig, false);
+  });
 
   // ── Announcement Bar (Firebase) ───────────────────────────────
   const topAnnounceEl = document.getElementById('topAnnouncement');
