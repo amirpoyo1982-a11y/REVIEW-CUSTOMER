@@ -718,6 +718,11 @@
       font-weight: 700; color: var(--text); font-size: 14px;
       display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
+    .review-animated-emoji { display:inline-flex; align-items:center; justify-content:center; flex:none; vertical-align:-3px; margin-right:4px; }
+    .review-animated-emoji img { display:block; width:17px; height:17px; object-fit:contain; }
+    .verified-badge .review-animated-emoji img, .medal-badge .review-animated-emoji img { width:15px; height:15px; }
+    .review-emoji-label { display:block; margin:10px 0 5px; font-weight:700; }
+    .review-emoji-status { display:block; margin-top:5px; color:var(--text-dim); }
     .buyer-name.custom-name { position: relative; background-size: 230% 230% !important; }
     .buyer-name.custom-name.is-animated { animation: nameGradientMove 3.4s linear infinite; }
     .buyer-name.custom-name.is-rainbow,
@@ -812,6 +817,7 @@
     .customer-preview-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .customer-avatar-preview { width: 58px; height: 58px; cursor: default; }
     .customer-preview-copy { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
+    .customer-preview-copy strong .review-animated-emoji { -webkit-text-fill-color: initial; }
     .customer-preview-copy strong { color: var(--text); font-size: 14px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .customer-preview-copy small { width: 100%; color: var(--text-dim); font-size: 11px; }
     .customer-tool-row { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -5315,4 +5321,38 @@ html.hide-review-replies .admin-reply-view-toggle, html.hide-review-replies .adm
   .filter-btn, .sort-select { flex: 0 0 auto; }
   .rating-suggestion { grid-template-columns: 1fr !important; }
   #btnUseRatingSuggestion { width: 100%; }
+}
+
+/* Compact 2D helper banner: one clickable surface, no overlapping label. */
+.review-helper::before { display: none !important; }
+.review-helper .review-helper-bubble {
+  display: flex !important; align-items: center !important; justify-content: space-between !important;
+  gap: 7px; width: 168px !important; height: 54px !important; padding: 4px 4px 4px 14px !important;
+  border: 1px solid #61c9ef !important; border-radius: 999px !important;
+  background: #eaf9ff !important; color: #075b79 !important;
+  box-shadow: 0 3px 10px rgba(6,69,104,.18) !important; overflow: hidden;
+}
+.review-helper .review-helper-bubble:hover { transform: translateY(-2px); }
+.review-helper .review-helper-bubble .review-helper-label {
+  position: static !important; width: auto !important; height: auto !important;
+  border: 0 !important; border-radius: 0 !important; background: transparent !important;
+  box-shadow: none !important; color: inherit !important; font-size: 12px !important;
+  font-weight: 900; white-space: nowrap; line-height: 1;
+}
+.review-helper .review-helper-bubble .review-helper-logo-img {
+  width: 44px !important; height: 44px !important; flex: none; border-radius: 50%;
+  object-fit: cover; transform: none !important; filter: none !important;
+}
+@media (max-width: 600px) {
+  .review-helper .review-helper-bubble { width: 153px !important; height: 50px !important; padding-left: 10px !important; }
+  .review-helper .review-helper-bubble .review-helper-logo-img { width: 40px !important; height: 40px !important; }
+}
+
+/* Keep the blue website link separate from the Helper banner. */
+@media (min-width: 601px) {
+  .btn-main-site {
+    right: 18px !important; bottom: 82px !important;
+    padding: 10px 16px !important; border-radius: 999px !important;
+    box-shadow: 0 3px 10px rgba(6,69,104,.18) !important;
+  }
 }
