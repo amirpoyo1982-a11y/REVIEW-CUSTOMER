@@ -234,6 +234,26 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   const reviewUpdateTime = document.getElementById('reviewUpdateTime');
   const reviewUpdateNow = document.getElementById('reviewUpdateNow');
   const reviewUpdateDismiss = document.getElementById('reviewUpdateDismiss');
+  async function loadReviewPublishedAt() {
+    const stamp = document.getElementById('reviewPublishStamp');
+    const time = document.getElementById('reviewPublishTime');
+    if (!stamp || !time || location.protocol === 'file:') return;
+    try {
+      const response = await fetch(new URL('./index.htm', location.href), { method:'HEAD', cache:'no-store' });
+      if (!response.ok) return;
+      const published = new Date(response.headers.get('Last-Modified') || '');
+      if (Number.isNaN(published.getTime()) || published.getTime() > Date.now() + 300000) return;
+      time.dateTime = published.toISOString();
+      time.textContent = new Intl.DateTimeFormat('ms-MY', {
+        day:'numeric', month:'short', year:'numeric', hour:'numeric', minute:'2-digit',
+        timeZone:'Asia/Kuala_Lumpur'
+      }).format(published);
+      stamp.hidden = false;
+    } catch (error) {
+      console.debug('Tarikh publish review tidak dapat disemak.', error);
+    }
+  }
+  loadReviewPublishedAt();
   const loadedReviewModified = Date.parse(document.lastModified) || 0;
   const loadedReviewAsset = document.querySelector('script[src*="review-app.js"]')?.getAttribute('src')?.match(/[?&]v=([^&#]+)/)?.[1] || '';
   let latestReviewUpdateKey = '';
@@ -359,7 +379,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     const loggedIn = adminOk();
     document.documentElement.dataset.adminAuth = loggedIn ? 'true' : 'false';
     if (btnLogoutAdmin) btnLogoutAdmin.style.display = loggedIn ? 'flex' : 'none';
-    if (btnOpenAdminConfig) btnOpenAdminConfig.textContent = loggedIn ? '⚙️ Admin' : '🔐 Login Admin';
+    const adminMenuText = btnOpenAdminConfig?.querySelector('.admin-menu-text');
+    if (adminMenuText) adminMenuText.textContent = loggedIn ? 'Admin' : 'Login Admin';
     document.querySelectorAll('[data-admin-ctrl-row]').forEach(row => {
       row.style.removeProperty('display');
     });
@@ -2230,10 +2251,13 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     adminPanelModal.classList.add('show');
   });
 
-  btnCloseAdmin.addEventListener('click', () => {
+  function tutupAdminPanel() {
     adminOverlayBg.classList.remove('show');
     adminPanelModal.classList.remove('show');
-  });
+  }
+  btnCloseAdmin.addEventListener('click', tutupAdminPanel);
+  document.getElementById('btnCloseAdminTop')?.addEventListener('click', tutupAdminPanel);
+  adminOverlayBg.addEventListener('click', tutupAdminPanel);
 
   btnOpenBulkDelete.addEventListener('click', () => {
     if (!mintaAdmin()) return;
@@ -2967,7 +2991,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const codeSnap = await getDoc(doc(db,"review_codes",kod));
       if (!codeSnap.exists()) {
         showToast("Kod pengesahan tidak sah atau telah digunakan.", "error"); 
-        butangHantar.disabled = false; butangHantar.textContent = "🚀 Hantar Ulasan";
+        butangHantar.disabled = false; butangHantar.innerHTML = 'Hantar Ulasan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
         return;
       }
       
@@ -2989,10 +3013,17 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const existingReview = await getDoc(reviewRef);
       if (existingReview.exists()) {
         showToast("Kod pengesahan ini telah digunakan.", "error");
-        butangHantar.disabled = false; butangHantar.textContent = "ðŸš€ Hantar Ulasan";
+        butangHantar.disabled = false; butangHantar.innerHTML = 'Hantar Ulasan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
         return;
       }
       await setDoc(reviewRef, dataToSave);
+      if (adminOk()) {
+        try {
+          await updateDoc(reviewRef, { adminAuthorUid:currentUser.uid });
+        } catch (adminMarkError) {
+          console.warn('Penanda logo admin tidak dapat disimpan:', adminMarkError);
+        }
+      }
       try {
         await deleteDoc(doc(db,"review_codes",kod));
       } catch (codeDeleteError) {
@@ -3046,7 +3077,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const sebab = err.code ? `(${err.code})` : (err.message || "");
       showToast(`Gagal hantar ulasan ${sebab}. Cuba lagi.`, "error");
     } finally {
-      butangHantar.disabled = false; butangHantar.textContent = "🚀 Hantar Ulasan";
+      butangHantar.disabled = false; butangHantar.innerHTML = 'Hantar Ulasan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
     }
   });
 
@@ -3346,7 +3377,8 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       }
       
       const warna=data.warnaProfil||warnaAuto(rawNama);
-      const hasImg=!!(data.profileImg);
+      const officialAdminReview=ADMIN_UIDS.includes(String(data.adminAuthorUid || ''));
+      const hasImg=officialAdminReview || !!(data.profileImg);
       const avatarIsi=data.emojiProfil||rawNama.charAt(0).toUpperCase();
       const adaBalasan=!!(data.balasanAdmin?.trim());
       const adaUlasan = !!(data.ulasan?.trim()) && data.ulasan !== "Tiada ulasan ditinggalkan.";
@@ -3365,7 +3397,9 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       if (data.balasanPada) masaBalasan=reviewAdminSettings.showRelativeTime === false ? reviewDateAndAge(data.balasanPada, false) : reviewDateAndAge(data.balasanPada);
 
       const starHtml=Array.from({length:5},(_,si)=>`<span style="color:${si<score?"#f0a500":"#cde"}">${si<score?"★":"☆"}</span>`).join("");
-      const avatarInner=hasImg?`<img src="${escapeHtml(data.profileImg)}" alt="">`:escapeHtml(avatarIsi);
+      const avatarInner=officialAdminReview
+        ? `<img src="https://i.imgur.com/cLPulXQ.png" alt="H4SX Admin"><span class="admin-avatar-shield" aria-label="Admin rasmi"><i class="fa-solid fa-shield-halved"></i></span>`
+        : hasImg ? `<img src="${escapeHtml(data.profileImg)}" alt="">` : escapeHtml(avatarIsi);
       
       const customBadgeStyle = badgeStyle(data);
       const customBadgeClass = "verified-badge custom-badge" + (data.badgeAnimated === false && data.badgeRainbow !== true ? "" : " is-animated") + (data.badgeRainbow === true ? " is-rainbow" : "");
@@ -3380,7 +3414,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       card.dataset.reviewId = id;
       card.style.animationDelay=`${i*36}ms`;
       card.innerHTML=`
-        <div class="avatar${hasImg ? " has-profile-image" : ""}" style="background:${warna}">${avatarInner}</div>
+        <div class="avatar${hasImg ? " has-profile-image" : ""}${officialAdminReview ? " is-official-admin" : ""}" style="background:${warna}">${avatarInner}</div>
         <div class="review-content">
           <div class="review-header">
             <div class="buyer-name-container">
@@ -3420,7 +3454,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
           <button class="admin-reply-view-toggle" type="button" aria-expanded="false">Balasan admin ↓</button>
           <div class="admin-reply-box">
             <div class="admin-reply-header">
-              <img src="https://i.imgur.com/cLPulXQ.png" class="admin-reply-avatar" alt="Logo H4SX STORE">
+              <span class="admin-reply-identity"><img src="https://i.imgur.com/cLPulXQ.png" class="admin-reply-avatar" alt="Logo H4SX STORE"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
               <div class="admin-reply-heading">
                 <span class="admin-reply-kicker">JAWAPAN RASMI</span>
                 <p class="admin-reply-label">H4SX STORE</p>
@@ -3587,7 +3621,9 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     const score = clampBintang(data.bintang);
     const warna = data.warnaProfil || warnaAuto(rawNama);
     const avatarIsi = data.emojiProfil || rawNama.charAt(0).toUpperCase();
-    const avatar = data.profileImg ? `<img src="${escapeHtml(data.profileImg)}" alt="">` : escapeHtml(avatarIsi);
+    const officialAdminReview = ADMIN_UIDS.includes(String(data.adminAuthorUid || ''));
+    const avatar = officialAdminReview ? '<img src="https://i.imgur.com/cLPulXQ.png" alt="H4SX Admin">'
+      : data.profileImg ? `<img src="${escapeHtml(data.profileImg)}" alt="">` : escapeHtml(avatarIsi);
     const stars = "★".repeat(score) + "☆".repeat(5-score);
     const text = data.ulasan && data.ulasan !== "Tiada ulasan ditinggalkan."
       ? data.ulasan
@@ -3598,7 +3634,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     return `
       <div class="ss-review-card">
         <div class="ss-review-top">
-          <div class="ss-avatar${data.profileImg ? " has-profile-image" : ""}" style="background:${warna}">${avatar}</div>
+          <div class="ss-avatar${data.profileImg || officialAdminReview ? " has-profile-image" : ""}" style="background:${warna}">${avatar}</div>
           <div class="ss-review-meta">
             <div class="ss-review-name">${escapeHtml(rawNama)}</div>
             <div class="ss-review-date">${reviewDateText(data)}</div>

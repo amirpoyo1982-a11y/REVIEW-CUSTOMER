@@ -285,3 +285,77 @@ body.review-rewrite-v3.midmonth-refresh {
 @media (prefers-reduced-motion: reduce) {
   .midmonth-refresh .review-card:hover { transform: none !important; }
 }
+
+/* Publish time comes from the deployed index.htm Last-Modified header. */
+.review-publish-stamp[hidden] { display: none !important; }
+.midmonth-refresh .review-publish-stamp {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 22px; padding: 8px 11px;
+  border: 1px solid rgba(119,207,241,.24); border-radius: 9px;
+  color: #b9deed; background: rgba(4,30,53,.31);
+  font-size: 10px; font-weight: 800;
+}
+.midmonth-refresh .review-publish-stamp i { color: #57d7f7; }
+
+/* Admin identity uses the same store mark and shield treatment as H4SX. */
+.admin-identity-logo {
+  position: relative; display: inline-grid; place-items: center;
+  flex: 0 0 auto; width: 36px; height: 36px; padding: 3px;
+  border-radius: 12px; background: linear-gradient(135deg,#0ea5e9,#7c3aed);
+  box-shadow: 0 7px 17px rgba(14,116,180,.18);
+}
+.admin-identity-logo::before { content: 'H'; position: absolute; color: #fff; font-size: 18px; font-weight: 900; }
+.admin-identity-logo img { position: relative; z-index: 1; width: 100%; height: 100%; border-radius: 9px; object-fit: cover; }
+.admin-identity-logo > i {
+  position: absolute; z-index: 2; right: -5px; bottom: -5px;
+  display: grid; place-items: center; width: 17px; height: 17px;
+  border: 2px solid #fff; border-radius: 50%; background: #0fbaa9;
+  color: #fff; font-size: 7px;
+}
+#btnOpenAdminConfig.admin-menu-button {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 42px !important; padding: 3px 12px 3px 4px !important;
+  border: 1px solid #bfe1f1 !important; border-radius: 12px !important;
+  background: #f3fbff !important; color: #0b648d !important;
+  font-family: inherit; font-size: 11px; font-weight: 800; line-height: 1.2; cursor: pointer;
+}
+#btnOpenAdminConfig::before { display: none !important; }
+#btnOpenAdminConfig .admin-identity-logo { width: 31px; height: 31px; border-radius: 10px; }
+#btnOpenAdminConfig .admin-identity-logo img { border-radius: 7px; }
+.admin-panel-modal .admin-profile-head {
+  position: sticky; z-index: 3; top: -24px;
+  display: flex; align-items: center; gap: 12px;
+  margin: -4px 0 17px; padding: 8px 0 14px;
+  border-bottom: 1px solid #d9eaf2; background: #fff;
+}
+.admin-profile-head .admin-identity-logo { width: 48px; height: 48px; border-radius: 15px; }
+.admin-profile-head .admin-identity-logo img { border-radius: 11px; }
+.admin-profile-head .admin-identity-logo > i { width: 21px; height: 21px; font-size: 9px; }
+.admin-profile-copy { display: grid; gap: 3px; min-width: 0; }
+.admin-profile-copy small { color: #0b8ec0; font-size: 9px; font-weight: 900; letter-spacing: .13em; }
+.admin-profile-copy strong { color: #0c314e; font-size: 17px; font-weight: 900; }
+.admin-panel-close-top {
+  flex: 0 0 auto; width: 36px; height: 36px; margin-left: auto;
+  border: 1px solid #d2e4ed; border-radius: 10px;
+  background: #f6fbfe; color: #28516a; cursor: pointer;
+}
+.admin-panel-close-top:hover { background: #e7f6fe; }
+.admin-center-brand .admin-center-icon { width: 42px; height: 42px; border-radius: 13px; }
+.admin-reply-identity { position: relative; flex: 0 0 38px; width: 38px; height: 38px; }
+.admin-reply-identity .admin-reply-avatar { display: block; width: 38px !important; height: 38px !important; }
+.admin-reply-identity > i,
+.avatar.is-official-admin .admin-avatar-shield {
+  position: absolute; right: -5px; bottom: -5px; z-index: 2;
+  display: grid; place-items: center; width: 17px; height: 17px;
+  border: 2px solid #fff; border-radius: 50%; background: #13b7ab;
+  color: #fff; font-size: 7px;
+}
+.avatar.is-official-admin { position: relative; border: 2px solid #8ad6f2 !important; box-shadow: 0 0 0 3px rgba(14,165,233,.11) !important; }
+.avatar.is-official-admin img { border-radius: inherit; }
+:root[data-theme="dark"] .admin-panel-modal .admin-profile-head { border-color: #294b61; background: #0f2031; }
+:root[data-theme="dark"] .admin-profile-copy strong { color: #eaf8ff; }
+:root[data-theme="dark"] .admin-panel-close-top { border-color: #30566d; background: #132b40; color: #d8f3ff; }
+@media (max-width: 600px) {
+  .admin-panel-modal .admin-profile-head { top: -18px; }
+  .midmonth-refresh .review-publish-stamp { margin-top: 17px; }
+}

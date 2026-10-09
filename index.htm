@@ -53,7 +53,7 @@
     })();
   </script>
   <link rel="stylesheet" href="review-style.css?v=per-color-rgb-20261009">
-  <link rel="stylesheet" href="review-midmonth.css?v=20261009-1">
+  <link rel="stylesheet" href="review-midmonth.css?v=20261010-1">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 </head>
@@ -107,7 +107,11 @@
 <!-- ══ ADMIN PANEL MODAL ══ -->
 <div id="adminOverlayBg" class="admin-overlay-bg"></div>
 <div id="adminPanelModal" class="admin-panel-modal" data-nosnippet>
-  <div class="admin-title">⚙️ Tetapan Admin</div>
+  <div class="admin-title admin-profile-head">
+    <span class="admin-identity-logo"><img src="https://i.imgur.com/cLPulXQ.png" alt=""><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
+    <span class="admin-profile-copy"><small>H4SX STORE · ADMIN</small><strong>Tetapan Admin</strong></span>
+    <button id="btnCloseAdminTop" class="admin-panel-close-top" type="button" aria-label="Tutup tetapan admin"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+  </div>
   <div class="admin-form-group">
     <label>Teks Pengumuman (Atas)</label>
     <textarea id="adminAnnounceText" rows="8" placeholder="KEMASKINI SISTEM H4SX STORE&#10;&#10;Kami telah melancarkan sistem ulasan yang lebih mantap! Sebagai tanda penghargaan kepada pelanggan setia yang telah menyokong kami sejak awal, kini setiap pembeli lama akan diberikan lencana khas: &quot;OLD SUPPORTER&quot;.&#10;&#10;Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adalah keutamaan kami! 💙"></textarea>
@@ -183,7 +187,7 @@
   <section id="adminReviewCenter" class="admin-review-center" role="dialog" aria-modal="true" aria-labelledby="adminCenterTitle">
     <header class="admin-center-head">
       <div class="admin-center-brand">
-        <span class="admin-center-icon"><i class="fa-solid fa-shield-halved"></i></span>
+        <span class="admin-identity-logo admin-center-icon"><img src="https://i.imgur.com/cLPulXQ.png" alt=""><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
         <div><small>H4SX ADMIN</small><h2 id="adminCenterTitle">Review Center</h2></div>
       </div>
       <div class="admin-center-head-actions">
@@ -617,7 +621,7 @@
       <span class="hard-refresh-text">Hard Refresh</span>
     </button>
     <button class="theme-toggle" id="btnThemeToggle" title="Tukar mode" type="button">Light</button>
-    <div class="topbar-badge" style="cursor:pointer; background:var(--bg2); color:var(--navy); border-color:var(--line-mid);" id="btnOpenAdminConfig" title="Tetapan Admin">⚙️ Admin</div>
+    <button class="topbar-badge admin-menu-button" id="btnOpenAdminConfig" title="Tetapan Admin" type="button"><span class="admin-identity-logo"><img src="https://i.imgur.com/cLPulXQ.png" alt=""><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span><span class="admin-menu-text">Login Admin</span></button>
     <div class="topbar-badge" style="cursor:pointer; background:#fef0f0; color:#b83232; border-color:rgba(224,82,82,.28); display:none;" id="btnLogoutAdmin" title="Log Keluar Admin" onclick="logoutAdmin()">Keluar Admin</div>
     <div class="topbar-badge">Ulasan Pelanggan</div>
   </div>
@@ -642,6 +646,7 @@
         <button class="hero-share-link" type="button" onclick="shareH4sxReview()"><i class="fa-solid fa-share-nodes"></i> Ajak Kawan</button>
         <a class="hero-store-link" href="https://www.h4sxmy.xyz/">Ke Kedai Utama <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
       </div>
+      <div class="review-publish-stamp" id="reviewPublishStamp" hidden><i class="fa-regular fa-clock" aria-hidden="true"></i><span>Last update <time id="reviewPublishTime"></time></span></div>
     </div>
     <aside class="hero-ledger" aria-label="Ringkasan sistem ulasan">
       <div class="hero-ledger-top"><span>DALAM RUANG INI</span><i class="fa-solid fa-circle-check"></i></div>
@@ -904,7 +909,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=per-color-rgb-20261009"></script>
+<script type="module" src="review-app.js?v=admin-logo-publish-20261010"></script>
 </body>
 </html>
 
