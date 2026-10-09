@@ -2917,6 +2917,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   }
 
   function useRatingSuggestion() {
+    if (suggestionTyping) return;
     const rating = Math.max(1, Math.min(5, parseInt(pilihBintang.value) || 5));
     const text = CDG_PREFIX + CONTOH_RATING[rating];
     ulasanPelanggan.value = text;
@@ -2930,7 +2931,9 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   syncRatingSuggestion();
 
   let lastDaduIdx = -1;
+  let suggestionTyping = false;
   btnDadu.addEventListener("click", () => {
+    if (suggestionTyping) return;
     const rating = parseInt(pilihBintang.value)||5;
     const pool   = CADANGAN[rating] || CADANGAN[5];
     let idx;
@@ -2939,12 +2942,30 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     const teks = CDG_PREFIX + pool[idx];
     reviewSuggestionUsed = true;
     ulasanPelanggan.value = ""; charCounter.textContent = "0 / 500";
-    ulasanPelanggan.focus();
+    suggestionTyping = true;
+    btnDadu.disabled = true;
+    btnUseRatingSuggestion.disabled = true;
+    pilihBintang.disabled = true;
+    butangHantar.disabled = true;
+    ulasanPelanggan.readOnly = true;
+    ulasanPelanggan.setAttribute("aria-busy", "true");
     let i = 0;
     const iv = setInterval(()=>{
-      if (i >= teks.length) { clearInterval(iv); return; }
-      ulasanPelanggan.value += teks[i++];
-      charCounter.textContent = `${ulasanPelanggan.value.length} / 500`;
+      i = Math.min(i + 1, teks.length);
+      ulasanPelanggan.value = teks.slice(0, i);
+      charCounter.textContent = `${i} / 500`;
+      charCounter.classList.toggle("warn", i > 450);
+      if (i === teks.length) {
+        clearInterval(iv);
+        suggestionTyping = false;
+        btnDadu.disabled = false;
+        btnUseRatingSuggestion.disabled = false;
+        pilihBintang.disabled = false;
+        butangHantar.disabled = false;
+        ulasanPelanggan.readOnly = false;
+        ulasanPelanggan.removeAttribute("aria-busy");
+        ulasanPelanggan.focus();
+      }
     }, 16);
     const d = btnDadu.querySelector(".dice-icon");
     d.style.transform="rotate(360deg) scale(1.3)";
