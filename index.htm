@@ -53,7 +53,7 @@
     })();
   </script>
   <link rel="stylesheet" href="review-style.css?v=per-color-rgb-20261009">
-  <link rel="stylesheet" href="review-midmonth.css?v=20261010-1">
+  <link rel="stylesheet" href="review-midmonth.css?v=20261010-2">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 </head>
@@ -814,15 +814,28 @@
             <button class="btn-dadu" id="btnDadu" type="button">
               <span class="dice-icon">🎲</span> Cadangan
             </button>
-            <span class="dadu-label">Malas taip?</span>
+            <span class="dadu-label">Idea awal — ubah ikut pengalaman sebenar.</span>
           </div>
           <div class="rating-suggestion" id="ratingSuggestion">
             <div class="rating-suggestion-copy">
               <span id="ratingSuggestionLabel">Contoh ayat 5 bintang</span>
               <p id="ratingSuggestionText"></p>
             </div>
-            <button id="btnUseRatingSuggestion" type="button">Guna ayat</button>
+            <button id="btnUseRatingSuggestion" type="button">Jadikan draf</button>
           </div>
+          <details class="review-story-builder">
+            <summary><i class="fa-solid fa-pen" aria-hidden="true"></i> Susun ayat ikut pengalaman sendiri</summary>
+            <div class="review-story-fields">
+              <label for="reviewStoryItem">Barang yang dibeli <span>(pilihan)</span></label>
+              <input id="reviewStoryItem" type="text" maxlength="80" placeholder="Contoh: Robux 80">
+              <label for="reviewStoryTime">Masa proses <span>(pilihan)</span></label>
+              <input id="reviewStoryTime" type="text" maxlength="40" placeholder="Contoh: 10 minit">
+              <label for="reviewStoryExperience">Apa yang berlaku? <span>(cerita sendiri)</span></label>
+              <textarea id="reviewStoryExperience" rows="2" maxlength="250" placeholder="Contoh: Admin cepat jawab dan item masuk seperti dijanjikan."></textarea>
+              <button id="btnBuildOwnReview" type="button">Susun cerita saya</button>
+              <small>Isi sekurang-kurangnya satu butiran. Semak dan ubah ayat sebelum hantar.</small>
+            </div>
+          </details>
           <span class="char-counter" id="charCounter">0 / 500</span>
         </div>
 
@@ -873,6 +886,7 @@
           <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:44%"></div><div class="skel-line skeleton" style="width:70%"></div></div></div>
           <div class="skel-card"><div class="skel-avatar skeleton"></div><div class="skel-lines"><div class="skel-line skeleton" style="width:58%"></div><div class="skel-line skeleton" style="width:48%"></div></div></div>
         </div>
+        <button id="btnMoreReviews" class="review-load-more" type="button" hidden>Lihat lagi ulasan</button>
       </div>
     </div><!-- end card-grid -->
   </div><!-- end main-card -->
@@ -909,7 +923,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=suggestion-guard-20261010"></script>
+<script type="module" src="review-app.js?v=review-mobile-story-20261010"></script>
 </body>
 </html>
 

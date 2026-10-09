@@ -359,3 +359,39 @@ body.review-rewrite-v3.midmonth-refresh {
   .admin-panel-modal .admin-profile-head { top: -18px; }
   .midmonth-refresh .review-publish-stamp { margin-top: 17px; }
 }
+
+/* A short, optional writing aid built from the buyer's own details. */
+.review-story-builder {
+  margin-top: 11px; border: 1px solid #cbe8f6; border-radius: 12px;
+  background: #f5fbff; color: #153d56;
+}
+.review-story-builder summary {
+  padding: 11px 13px; cursor: pointer; font-size: 12px; font-weight: 800;
+}
+.review-story-builder summary i { margin-right: 6px; color: #009bd5; }
+.review-story-fields { display: grid; gap: 7px; padding: 0 13px 13px; }
+.review-story-fields label { font-size: 11px; font-weight: 800; }
+.review-story-fields label span { color: #6b8799; font-weight: 500; }
+.review-story-fields input,
+.review-story-fields textarea {
+  box-sizing: border-box; width: 100%; padding: 10px 11px;
+  border: 1px solid #cde4f0; border-radius: 9px;
+  background: #fff; color: #17364a; font: inherit; font-size: 12px;
+}
+.review-story-fields button,
+.review-load-more {
+  justify-self: start; padding: 10px 15px; border: 1px solid #90d3f1;
+  border-radius: 10px; background: #e4f7ff; color: #007dab;
+  font: inherit; font-size: 12px; font-weight: 850; cursor: pointer;
+}
+.review-story-fields button:hover,
+.review-load-more:hover { background: #d1f0ff; }
+.review-story-fields small { color: #607f91; font-size: 10px; }
+.review-load-more { display: block; width: 100%; margin-top: 13px; }
+.review-load-more[hidden] { display: none; }
+.review-story-fields button:disabled { opacity: .55; cursor: wait; }
+:root[data-theme="dark"] .review-story-builder { border-color: #28516a; background: #102b3d; color: #e7f7ff; }
+:root[data-theme="dark"] .review-story-fields input,
+:root[data-theme="dark"] .review-story-fields textarea { border-color: #345d72; background: #102437; color: #e8f7ff; }
+:root[data-theme="dark"] .review-load-more,
+:root[data-theme="dark"] .review-story-fields button { border-color: #347ca0; background: #103950; color: #c8f2ff; }
