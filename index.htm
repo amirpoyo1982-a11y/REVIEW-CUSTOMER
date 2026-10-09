@@ -52,7 +52,7 @@
       } catch(e) {}
     })();
   </script>
-<link rel="stylesheet" href="review-style.css?v=reply-card-refresh-20261009">
+<link rel="stylesheet" href="review-style.css?v=rgb-import-20261009">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 </head>
@@ -321,6 +321,12 @@
         <input type="color" id="badgeGlowColorInput" value="#2fa8e0">
       </div>
     </div>
+    <div class="color-import" data-color-import="badge">
+      <label>Import satu set warna RGB / HEX</label>
+      <input type="text" placeholder="217 101 112 atau #D96570" aria-label="Import warna badge" maxlength="240">
+      <button type="button">Import</button><span class="color-import-swatch" aria-hidden="true"></span>
+      <small aria-live="polite">Paste terus untuk isi warna badge, gradient, teks dan glow.</small>
+    </div>
     <div class="badge-toggle-row">
       <label>Effect Badge</label>
       <span class="badge-switch"><input type="checkbox" id="badgeGradientToggle" checked> Gradient combo</span>
@@ -337,6 +343,12 @@
       </div>
       <label class="badge-switch"><input type="checkbox" id="customCheckEnabledToggle"> Aktifkan</label>
       <label class="badge-color-field custom-check-color-field">Warna <input type="color" id="customCheckColorInput" value="#0284c7"></label>
+      <div class="color-import" data-color-import="check">
+        <label>Import warna centang</label>
+        <input type="text" placeholder="217 101 112 atau #D96570" aria-label="Import warna centang" maxlength="240">
+        <button type="button">Import</button><span class="color-import-swatch" aria-hidden="true"></span>
+        <small aria-live="polite">Paste RGB atau HEX untuk preview.</small>
+      </div>
       <label for="customCheckTypeSelect" class="custom-check-mode-field">Gaya centang
         <select id="customCheckTypeSelect">
           <option value="default">Centang asal</option>
@@ -400,6 +412,12 @@
         <input type="text" id="customerEmojiInput" maxlength="4" placeholder="H">
       </div>
     </div>
+    <div class="color-import" data-color-import="profile">
+      <label>Import warna profil RGB / HEX</label>
+      <input type="text" placeholder="217 101 112 atau #D96570" aria-label="Import warna profil" maxlength="240">
+      <button type="button">Import</button><span class="color-import-swatch" aria-hidden="true"></span>
+      <small aria-live="polite">Paste terus untuk tukar warna profil.</small>
+    </div>
     <label for="customerImageUrl">Link Gambar Profil</label>
     <input type="url" id="customerImageUrl" placeholder="https://i.imgur.com/gambar.png" maxlength="2048">
     <small>Letak link terus ke gambar, kemudian tekan Preview. Simpan untuk kemaskini ulasan ini.</small>
@@ -438,6 +456,12 @@
           <option value="900">Super Bold</option>
         </select>
       </div>
+    </div>
+    <div class="color-import" data-color-import="name">
+      <label>Import satu set warna nama RGB / HEX</label>
+      <input type="text" placeholder="217 101 112 atau #D96570" aria-label="Import warna nama" maxlength="240">
+      <button type="button">Import</button><span class="color-import-swatch" aria-hidden="true"></span>
+      <small aria-live="polite">Isi warna utama, gradient dan glow secara automatik.</small>
     </div>
   </div>
   <div class="admin-form-group customer-designer">
@@ -498,6 +522,12 @@
         </select>
       </div>
     </div>
+    <div class="color-import" data-color-import="medal">
+      <label>Import satu set warna pingat RGB / HEX</label>
+      <input type="text" placeholder="217 101 112 atau #D96570" aria-label="Import warna pingat" maxlength="240">
+      <button type="button">Import</button><span class="color-import-swatch" aria-hidden="true"></span>
+      <small aria-live="polite">Isi warna utama, gradient, teks dan glow secara automatik.</small>
+    </div>
     <div class="badge-toggle-row">
       <label>Effect Pingat</label>
       <span class="badge-switch"><input type="checkbox" id="medalGradientToggle" checked> Gradient</span>
@@ -538,6 +568,12 @@
         <label>Teks Tutup</label>
         <input type="text" id="reviewCollapseLabelInput" maxlength="24" placeholder="Tutup ↑">
       </div>
+    </div>
+    <div class="color-import" data-color-import="review-button">
+      <label>Import warna butang ulasan RGB / HEX</label>
+      <input type="text" placeholder="217 101 112 atau #D96570" aria-label="Import warna butang ulasan" maxlength="240">
+      <button type="button">Import</button><span class="color-import-swatch" aria-hidden="true"></span>
+      <small aria-live="polite">Warna butang disimpan bila tekan Simpan.</small>
     </div>
   </div>
   <div class="admin-btn-row">
@@ -900,7 +936,7 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=reply-card-refresh-20261009"></script>
+<script type="module" src="review-app.js?v=rgb-import-20261009"></script>
 </body>
 </html>
 

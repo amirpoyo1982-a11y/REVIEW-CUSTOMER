@@ -1006,6 +1006,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     customCheckTypeSelect.value = checkTypeSedia === 'gif' ? 'gif' : 'default';
     customCheckGifInput.value = checkGifSedia || '';
     if (verifiedBuyerEnabledToggle) verifiedBuyerEnabledToggle.checked = verifiedDisorok !== true;
+    resetColorImport(badgePanelModal);
     kemaskiniBadgePreview();
     badgeOverlayBg.classList.add('show');
     badgePanelModal.classList.add('show');
@@ -1461,6 +1462,115 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     medalLivePreview.style.cssText = medalCss;
   }
 
+  function parseImportedColor(raw) {
+    const value = String(raw || '').replace(/&#(?:x[0-9a-f]+|\d+);/gi, ' ').trim();
+    const hex = value.match(/^#?([0-9a-f]{6}|[0-9a-f]{3})$/i);
+    if (hex) {
+      const digits = hex[1].toLowerCase();
+      return '#' + (digits.length === 3 ? [...digits].map(char => char + char).join('') : digits);
+    }
+    const channels = value.match(/\d+/g);
+    if (!channels || channels.length !== 3 || channels.some(channel => Number(channel) > 255)) return null;
+    return '#' + channels.map(channel => Number(channel).toString(16).padStart(2, '0')).join('');
+  }
+  function darkenImportedColor(hex, amount = .22) {
+    return '#' + [1, 3, 5].map(index => Math.round(parseInt(hex.slice(index, index + 2), 16) * (1 - amount)).toString(16).padStart(2, '0')).join('');
+  }
+  function importedColorLuminance(hex) {
+    const channels = [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16) / 255);
+    const linear = channels.map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+    return linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
+  }
+  function importedTextColor(base, gradient) {
+    const ratio = (first, second) => {
+      const a = importedColorLuminance(first), b = importedColorLuminance(second);
+      return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+    };
+    const white = '#ffffff', dark = '#102033';
+    return Math.min(ratio(white, base), ratio(white, gradient)) >= Math.min(ratio(dark, base), ratio(dark, gradient)) ? white : dark;
+  }
+  function applyImportedColor(group, hex) {
+    const gradient = darkenImportedColor(hex);
+    if (group === 'badge') {
+      badgeColorInput.value = hex;
+      badgeColorInput2.value = gradient;
+      badgeTextColorInput.value = importedTextColor(hex, gradient);
+      badgeGlowColorInput.value = hex;
+      badgeGradientToggle.checked = true;
+      badgeRainbowToggle.checked = false;
+      kemaskiniBadgePreview();
+    } else if (group === 'check') {
+      customCheckColorInput.value = hex;
+      customCheckTypeSelect.value = 'default';
+      customCheckEnabledToggle.checked = true;
+      kemaskiniBadgePreview();
+    } else if (group === 'profile') {
+      customerColorInput.value = hex;
+      kemaskiniCustomerPreview();
+    } else if (group === 'name') {
+      nameColorInput.value = hex;
+      nameColor2Input.value = gradient;
+      nameGlowColorInput.value = hex;
+      nameColorEnabledToggle.checked = true;
+      nameGradientToggle.checked = true;
+      nameRainbowToggle.checked = false;
+      kemaskiniCustomerPreview();
+    } else if (group === 'medal') {
+      medalColorInput.value = hex;
+      medalColor2Input.value = gradient;
+      medalTextColorInput.value = importedTextColor(hex, gradient);
+      medalGlowColorInput.value = hex;
+      medalGradientToggle.checked = true;
+      medalRainbowToggle.checked = false;
+      kemaskiniCustomerPreview();
+    } else if (group === 'review-button') {
+      reviewToggleColorInput.value = hex;
+    }
+  }
+  function resetColorImport(panel) {
+    const baseColorIds = {
+      badge:'badgeColorInput', check:'customCheckColorInput', profile:'customerColorInput',
+      name:'nameColorInput', medal:'medalColorInput', 'review-button':'reviewToggleColorInput'
+    };
+    panel.querySelectorAll('[data-color-import]').forEach(widget => {
+      widget.querySelector('input').value = '';
+      widget.querySelector('small').textContent = widget.dataset.defaultHint || '';
+      widget.querySelector('.color-import-swatch').style.backgroundColor = document.getElementById(baseColorIds[widget.dataset.colorImport])?.value || '#d96570';
+      widget.classList.remove('is-error');
+    });
+  }
+  document.querySelectorAll('[data-color-import]').forEach(widget => {
+    const input = widget.querySelector('input');
+    const status = widget.querySelector('small');
+    const swatch = widget.querySelector('.color-import-swatch');
+    widget.dataset.defaultHint = status.textContent;
+    const importValue = raw => {
+      const hex = parseImportedColor(raw);
+      if (!hex) {
+        widget.classList.add('is-error');
+        status.textContent = 'Format tidak sah. Guna 3 nombor RGB (0–255) atau HEX, contoh 217 101 112.';
+        return;
+      }
+      widget.classList.remove('is-error');
+      input.value = hex.toUpperCase();
+      swatch.style.backgroundColor = hex;
+      applyImportedColor(widget.dataset.colorImport, hex);
+      status.textContent = hex.toUpperCase() + ' · Preview siap. Tekan Simpan untuk kekalkan.';
+    };
+    widget.querySelector('button').addEventListener('click', () => importValue(input.value));
+    input.addEventListener('keydown', event => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      importValue(input.value);
+    });
+    input.addEventListener('paste', event => {
+      const pasted = event.clipboardData?.getData('text');
+      if (!pasted) return;
+      event.preventDefault();
+      importValue(pasted);
+    });
+  });
+
   function bukaCustomerModal(id, data = {}) {
     const nama = data.nama || 'Pelanggan';
     editingCustomerId = id;
@@ -1501,6 +1611,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     reviewCollapseLabelInput.value = data.reviewCollapseLabel || 'Tutup ↑';
     btnRemoveCustomerImage.disabled = !data.profileImg;
     btnRemoveCustomerImage.textContent = data.profileImg ? 'Buang Gambar Profil' : 'Tiada Gambar Profil';
+    resetColorImport(customerPanelModal);
     kemaskiniCustomerPreview();
     customerOverlayBg.classList.add('show');
     customerPanelModal.classList.add('show');
@@ -3954,5 +4065,4 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   blockInspect();
 
   // Penghalang UI sahaja; data sensitif tetap dilindungi oleh Firebase Rules.
-
 
