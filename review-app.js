@@ -364,6 +364,13 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
 
   // ── Admin gate ────────────────────────────────────────────────
   const ADMIN_UIDS = ["LWRN6IDv4OV1PZd7Vldgp6F9pdH3"];
+  const H4SX_LOGO_URL = "https://i.imgur.com/cLPulXQ.png";
+  function isOfficialAdminReview(data = {}) {
+    const name = String(data.nama || "").trim();
+    const legacyOfficialName = /^h4sx(?:$|[\s_-])/i.test(name);
+    return ADMIN_UIDS.includes(String(data.adminAuthorUid || ""))
+      && (data.adminIdentityConfirmed === true || legacyOfficialName);
+  }
   let currentUser = null;
   let latestCodeSnapshot = null;
   let usedReviewCodeIds = new Set();
@@ -378,6 +385,8 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
   function updateAdminUi() {
     const loggedIn = adminOk();
     document.documentElement.dataset.adminAuth = loggedIn ? 'true' : 'false';
+    if (!loggedIn) document.getElementById('adminOfficialReview').checked = false;
+    setTimeout(updatePreview, 0);
     if (btnLogoutAdmin) btnLogoutAdmin.style.display = loggedIn ? 'flex' : 'none';
     const adminMenuText = btnOpenAdminConfig?.querySelector('.admin-menu-text');
     if (adminMenuText) adminMenuText.textContent = loggedIn ? 'Admin' : 'Login Admin';
@@ -2635,14 +2644,16 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
   function updatePreview() {
     const nama  = namaPelanggan.value.trim();
     const warna = pilihanWarna || warnaAuto(nama);
+    const officialLogo = adminOk() && document.getElementById("adminOfficialReview").checked;
+    const previewSrc = officialLogo ? H4SX_LOGO_URL : profileImgB64;
     const letter = avatarPreview.querySelector(".av-letter");
     avatarPreview.style.backgroundColor = warna;
-    avatarPreview.classList.toggle("has-profile-image", Boolean(profileImgB64));
+    avatarPreview.classList.toggle("has-profile-image", Boolean(previewSrc));
     const oldImg = avatarPreview.querySelector("img.av-img");
     if (oldImg) oldImg.remove();
-    if (profileImgB64) {
+    if (previewSrc) {
       const img = document.createElement("img");
-      img.className = "av-img"; img.src = profileImgB64;
+      img.className = "av-img"; img.src = previewSrc;
       avatarPreview.insertBefore(img, avatarPreview.querySelector(".av-edit-hint"));
       letter.textContent = "";
     } else {
@@ -2650,6 +2661,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     }
   }
   namaPelanggan.addEventListener("input", updatePreview);
+  document.getElementById("adminOfficialReview").addEventListener("change", updatePreview);
   btnGenerateName.addEventListener("click", () => {
     const nama = NAMA_AUTO[Math.floor(Math.random() * NAMA_AUTO.length)];
     const suffix = NAMA_SUFFIX[Math.floor(Math.random() * NAMA_SUFFIX.length)];
@@ -3066,9 +3078,9 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
         return;
       }
       await setDoc(reviewRef, dataToSave);
-      if (adminOk()) {
+      if (adminOk() && document.getElementById("adminOfficialReview").checked) {
         try {
-          await updateDoc(reviewRef, { adminAuthorUid:currentUser.uid });
+          await updateDoc(reviewRef, { adminAuthorUid:currentUser.uid, adminIdentityConfirmed:true });
         } catch (adminMarkError) {
           console.warn('Penanda logo admin tidak dapat disimpan:', adminMarkError);
         }
@@ -3108,6 +3120,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
 
       // Reset
       kodVerification.value = namaPelanggan.value = ulasanPelanggan.value = "";
+      document.getElementById("adminOfficialReview").checked = false;
       reviewStoryItem.value = reviewStoryTime.value = reviewStoryExperience.value = "";
       pilihBintang.value = "5";
       reviewSuggestionUsed = false;
@@ -3441,7 +3454,8 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       let namaDisorok=rawNama;
       
       // Semak adakah ini admin yang post ulasan
-      const isReviewAdmin = rawNama.toLowerCase().includes("h4sx");
+      const officialAdminReview = isOfficialAdminReview(data);
+      const isReviewAdmin = officialAdminReview || rawNama.toLowerCase().includes("h4sx");
       
       if (rawNama!=="Pelanggan Misteri" && !isReviewAdmin) {
         // Jangan sensor kalau tak perlu, tapi sebab tadi awak cakap "jngn bgi sensor untuk nama tu",
@@ -3451,7 +3465,6 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       }
       
       const warna=data.warnaProfil||warnaAuto(rawNama);
-      const officialAdminReview=ADMIN_UIDS.includes(String(data.adminAuthorUid || ''));
       const hasImg=officialAdminReview || !!(data.profileImg);
       const avatarIsi=data.emojiProfil||rawNama.charAt(0).toUpperCase();
       const adaBalasan=!!(data.balasanAdmin?.trim());
@@ -3473,7 +3486,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
       const starHtml=Array.from({length:5},(_,si)=>`<span style="color:${si<score?"#f0a500":"#cde"}">${si<score?"★":"☆"}</span>`).join("");
       const avatarLoading = i < 2 ? "eager" : "lazy";
       const avatarInner=officialAdminReview
-        ? `<img src="https://i.imgur.com/cLPulXQ.png" alt="H4SX Admin" loading="${avatarLoading}" decoding="async"><span class="admin-avatar-shield" aria-label="Admin rasmi"><i class="fa-solid fa-shield-halved"></i></span>`
+        ? `<img src="${H4SX_LOGO_URL}" alt="H4SX Admin" loading="${avatarLoading}" decoding="async"><span class="admin-avatar-shield" aria-label="Admin rasmi"><i class="fa-solid fa-shield-halved"></i></span>`
         : hasImg ? `<img src="${escapeHtml(data.profileImg)}" alt="" loading="${avatarLoading}" decoding="async">` : escapeHtml(avatarIsi);
       
       const customBadgeStyle = badgeStyle(data);
@@ -3696,8 +3709,8 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     const score = clampBintang(data.bintang);
     const warna = data.warnaProfil || warnaAuto(rawNama);
     const avatarIsi = data.emojiProfil || rawNama.charAt(0).toUpperCase();
-    const officialAdminReview = ADMIN_UIDS.includes(String(data.adminAuthorUid || ''));
-    const avatar = officialAdminReview ? '<img src="https://i.imgur.com/cLPulXQ.png" alt="H4SX Admin">'
+    const officialAdminReview = isOfficialAdminReview(data);
+    const avatar = officialAdminReview ? `<img src="${H4SX_LOGO_URL}" alt="H4SX Admin">`
       : data.profileImg ? `<img src="${escapeHtml(data.profileImg)}" alt="">` : escapeHtml(avatarIsi);
     const stars = "★".repeat(score) + "☆".repeat(5-score);
     const text = data.ulasan && data.ulasan !== "Tiada ulasan ditinggalkan."
