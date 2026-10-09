@@ -52,11 +52,12 @@
       } catch(e) {}
     })();
   </script>
-<link rel="stylesheet" href="review-style.css?v=per-color-rgb-20261009">
+  <link rel="stylesheet" href="review-style.css?v=per-color-rgb-20261009">
+  <link rel="stylesheet" href="review-midmonth.css?v=20261009-1">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 </head>
-<body class="review-rewrite-v3">
+<body class="review-rewrite-v3 midmonth-refresh">
 
 <noscript>
   <main>
@@ -609,7 +610,7 @@
       <span class="topbar-logo-name">H4SX <span>STORE</span></span>
     </a>
     <div class="topbar-divider"></div>
-    <span class="topbar-page-title">Review Lounge</span>
+    <span class="topbar-page-title">Ruang Ulasan</span>
     <div class="topbar-spacer"></div>
     <button class="hard-refresh-review" id="btnHardRefreshReview" title="Clear cache dan muat semula versi terbaru" type="button">
       <span class="hard-refresh-icon">↻</span>
@@ -618,7 +619,7 @@
     <button class="theme-toggle" id="btnThemeToggle" title="Tukar mode" type="button">Light</button>
     <div class="topbar-badge" style="cursor:pointer; background:var(--bg2); color:var(--navy); border-color:var(--line-mid);" id="btnOpenAdminConfig" title="Tetapan Admin">⚙️ Admin</div>
     <div class="topbar-badge" style="cursor:pointer; background:#fef0f0; color:#b83232; border-color:rgba(224,82,82,.28); display:none;" id="btnLogoutAdmin" title="Log Keluar Admin" onclick="logoutAdmin()">Keluar Admin</div>
-    <div class="topbar-badge">Kedai Dipercayai</div>
+    <div class="topbar-badge">Ulasan Pelanggan</div>
   </div>
 </nav>
 
@@ -633,19 +634,19 @@
 <div class="hero-band">
   <div class="hero-band-inner">
     <div class="hero-copy-block">
-      <div class="hero-eyebrow"><i class="fa-solid fa-shield-heart"></i> Review hub rasmi H4SX</div>
-      <h1>Suara pelanggan.<br><span>Bukti nyata.</span></h1>
-      <p class="hero-sub">Semak pengalaman pembeli sebenar, rating yang disahkan dan balasan terus daripada pasukan H4SX—semuanya dalam satu pusat review.</p>
+      <div class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> EDISI PERTENGAHAN BULAN · H4SX REVIEW</div>
+      <h1>Pengalaman sebenar.<br><span>Keyakinan baharu.</span></h1>
+      <p class="hero-sub">Dengar sendiri cerita komuniti H4SX. Teroka rating, baca pengalaman pembeli dan kongsi ulasan anda selepas pembelian.</p>
       <div class="hero-actions">
-        <button class="btn-scroll-reviews" id="btnScrollUlasan">Teroka Ulasan <span class="arrow">↓</span></button>
+        <button class="btn-scroll-reviews" id="btnScrollUlasan">Baca Ulasan <span class="arrow">↓</span></button>
         <button class="hero-share-link" type="button" onclick="shareH4sxReview()"><i class="fa-solid fa-share-nodes"></i> Ajak Kawan</button>
         <a class="hero-store-link" href="https://www.h4sxmy.xyz/">Ke Kedai Utama <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
       </div>
     </div>
     <aside class="hero-ledger" aria-label="Ringkasan sistem ulasan">
-      <div class="hero-ledger-top"><span>TRUST SIGNAL</span><i class="fa-solid fa-sparkles"></i></div>
-      <div class="hero-ledger-score"><strong>LIVE</strong><span>Review komuniti aktif</span></div>
-      <div class="hero-ledger-lines"><span><i></i>Pembelian disahkan</span><span><i></i>Balasan admin tersedia</span><span><i></i>Rating masa nyata</span></div>
+      <div class="hero-ledger-top"><span>DALAM RUANG INI</span><i class="fa-solid fa-circle-check"></i></div>
+      <div class="hero-ledger-score"><strong>H4SX<span> / REVIEW</span></strong><span>Tempat suara pembeli didengar.</span></div>
+      <div class="hero-ledger-lines"><span><i></i>Kod unik selepas pembelian</span><span><i></i>Rating daripada komuniti</span><span><i></i>Balasan rasmi H4SX</span></div>
     </aside>
   </div>
 </div>
@@ -653,10 +654,10 @@
 <div class="page-body">
 
   <section class="review-journey" aria-label="Cara sistem review H4SX berfungsi">
-    <div class="review-journey-intro"><span>ALIRAN REVIEW</span><strong>Mudah, sah dan telus.</strong></div>
+    <div class="review-journey-intro"><span>3 LANGKAH MUDAH</span><strong>Review tanpa pening.</strong></div>
     <article><i class="fa-solid fa-receipt"></i><div><b>01</b><strong>Dapatkan kod</strong><small>Kod unik diberi selepas pembelian.</small></div></article>
     <article><i class="fa-solid fa-star"></i><div><b>02</b><strong>Kongsi pengalaman</strong><small>Pilih rating dan tulis jika mahu.</small></div></article>
-    <article><i class="fa-solid fa-shield-check"></i><div><b>03</b><strong>Review disahkan</strong><small>Terus muncul dalam komuniti H4SX.</small></div></article>
+    <article><i class="fa-solid fa-circle-check"></i><div><b>03</b><strong>Review disahkan</strong><small>Terus muncul dalam komuniti H4SX.</small></div></article>
   </section>
 
   <!-- ══ PROMO BANNER FROM GIST ══ -->
@@ -670,6 +671,11 @@
       <div class="review-promo-dots" id="reviewPromoDots" aria-label="Pilihan banner"></div>
     </div>
   </section>
+
+  <div class="midmonth-section-head">
+    <div><span class="midmonth-kicker">KOMUNITI H4SX</span><h2>Angka yang bercerita.</h2></div>
+    <p>Ringkasan rating dan ulasan yang dikemas kini bersama komuniti.</p>
+  </div>
 
   <!-- ══ STATS ROW ══ -->
   <div class="stats-row">
@@ -707,10 +713,8 @@
     <div class="launch-notice">
       <span class="icon">📣</span>
       <p>
-        <strong>Sistem feedback rasmi H4SX STORE.</strong>
-        Setiap ulasan memerlukan <strong>Kod Pengesahan</strong> unik — satu kod, satu ulasan.
-        Ulasan teks adalah <strong>pilihan</strong> — jika anda malas taip, boleh hantar rating sahaja.
-        Kami hargai kejujuran anda. 🙏
+        <strong>Setiap suara bermakna.</strong>
+        Gunakan <strong>kod pengesahan</strong> yang diterima selepas membeli. Satu kod untuk satu ulasan; anda boleh beri rating sahaja atau ceritakan pengalaman dengan lebih lanjut.
       </p>
     </div>
 
@@ -722,7 +726,7 @@
     <div class="card-grid">
       <!-- ════ FORM COLUMN ════ -->
       <div class="form-col">
-        <p class="form-section-title">✍️ Hantar Ulasan</p>
+        <p class="form-section-title">Tulis ulasan anda</p>
 
         <div class="form-group">
           <label for="kodVerification">🔐 Kod Pengesahan Pembelian *</label>
@@ -827,13 +831,13 @@
           <div class="feedback-image-preview" id="feedbackImagePreview"></div>
         </div>
 
-        <button id="butangHantar">🚀 Hantar Ulasan</button>
+        <button id="butangHantar">Hantar Ulasan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
       </div>
 
       <!-- ════ REVIEWS COLUMN ════ -->
       <div class="reviews-col">
         <div class="reviews-col-head">
-          <p class="reviews-col-title">💬 Ulasan Terkini</p>
+          <p class="reviews-col-title">Cerita komuniti</p>
           <button class="btn-review-ss" id="btnReviewScreenshot" type="button">Copy SS</button>
         </div>
 
