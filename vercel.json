@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://www.h4sxmy.xyz/review",
+      "permanent": false
+    },
+    {
+      "source": "/index.htm",
+      "destination": "https://www.h4sxmy.xyz/review",
+      "permanent": false
+    }
+  ]
+}
