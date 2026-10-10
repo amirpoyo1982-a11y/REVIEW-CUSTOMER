@@ -405,6 +405,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
     adminLoginPassword.value = '';
   }
   async function logoutAdmin() {
+    await window.H4SXAdminSessions?.endCurrentSession();
     await signOut(auth);
     showToast("Berjaya log keluar dari mod Admin.", "success");
   }
@@ -2214,7 +2215,7 @@ Zixu hanya menggunakan SATU nombor telefon rasmi dan semua ulasan (review) dikaw
     updateAdminUi();
     window.H4SXAdminSessions?.bind({
       user:currentUser, signOut:() => signOut(auth),
-      watchRevocations:callback => onSnapshot(doc(db, 'config', 'admin_session_security'), snapshot => callback(snapshot.data()?.revokedAt || 0), () => {})
+      watchRevocations:callback => onSnapshot(doc(db, 'config', 'admin_session_security'), snapshot => callback(snapshot.data() || {}), () => {})
     });
     syncReviewCodesListener();
     syncVisitStatsListener();
