@@ -56,6 +56,7 @@
   <link rel="stylesheet" href="review-midmonth.css?v=20261010-3">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+  <link rel="stylesheet" href="admin-sessions.css?v=20261010-1">
 </head>
 <body class="review-rewrite-v3 midmonth-refresh">
 
@@ -113,6 +114,7 @@
     <button id="btnCloseAdminTop" class="admin-panel-close-top" type="button" aria-label="Tutup tetapan admin"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
   </div>
   <div class="admin-form-group">
+    <button class="admin-btn" type="button" id="btnReviewAdminSessions">Perangkat & Sesi Admin</button>
     <label>Teks Pengumuman (Atas)</label>
     <textarea id="adminAnnounceText" rows="8" placeholder="KEMASKINI SISTEM H4SX STORE&#10;&#10;Kami telah melancarkan sistem ulasan yang lebih mantap! Sebagai tanda penghargaan kepada pelanggan setia yang telah menyokong kami sejak awal, kini setiap pembeli lama akan diberikan lencana khas: &quot;OLD SUPPORTER&quot;.&#10;&#10;Terima kasih atas sokongan berterusan anda kepada H4SX STORE. Kepuasan anda adalah keutamaan kami! 💙"></textarea>
   </div>
@@ -927,7 +929,8 @@
   </aside>
 </div>
 
-<script type="module" src="review-app.js?v=preview-banner-fix-20261010"></script>
+<script src="admin-sessions.js?v=20261010-1"></script>
+<script type="module" src="review-app.js?v=admin-sessions-20261010"></script>
 </body>
 </html>
 
