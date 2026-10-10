@@ -735,10 +735,6 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
 
   let latestReviewStoreConfig = null;
   async function semakStatusKedai(realtimeConfig = null, refreshPromo = true) {
-    if (isPreviewBypass()) {
-      document.getElementById('shopClosedOverlay').classList.remove('active');
-      return;
-    }
     try {
       let data = realtimeConfig;
       if (!data) {
@@ -758,6 +754,12 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
         maintenanceMessage: String(data?.mesej_maintenance || data?.maintenance_message || '').trim()
       };
       if (refreshPromo) renderReviewPromoBanners(data);
+
+      // Preview bypasses the closure overlay after shared page content is loaded.
+      if (isPreviewBypass()) {
+        document.getElementById('shopClosedOverlay').classList.remove('active');
+        return;
+      }
 
       // 1. Maintenance khas untuk page ulasan sahaja.
       if (data && (
@@ -803,6 +805,7 @@ import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.0/fireb
       document.getElementById('shopClosedOverlay').classList.remove('active');
     } catch (e) {
       console.log('Gagal semak status kedai', e);
+      if (isPreviewBypass()) document.getElementById('shopClosedOverlay').classList.remove('active');
     }
   }
   let realtimeStoreConfigConnected = false;
